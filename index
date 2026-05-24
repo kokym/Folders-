@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOKYM | Project Portfolio</title>
+    <style>
+        /* กำหนดธีมสีพื้นหลังและฟอนต์ (มู้ดคลาสสิก ย้อนยุค) */
+        body {
+            background-color: #1a1a1a;
+            color: #e0d5c1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* ส่วนหัวของเว็บไซต์ */
+        header {
+            background: linear-gradient(135deg, #2c1a1a 0%, #0f0f0f 100%);
+            border-bottom: 3px solid #8b0000;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            color: #d4af37; /* สีทอง */
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        }
+
+        header p {
+            color: #b0a48e;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 15px auto 25px auto;
+        }
+
+        .social-links a {
+            color: #ff4500;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #d4af37;
+        }
+
+        /* ส่วนเนื้อหาหลัก */
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            color: #d4af37;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* โครงสร้างกล่องผลงาน (Grid) */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        /* ดีไซน์กล่องการ์ดผลงาน */
+        .project-card {
+            background-color: #242424;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            border-color: #8b0000; /* ขอบเปลี่ยนเป็นสีแดงเข้มเวลามีคนชี้ */
+        }
+
+        .card-content {
+            padding: 25px;
+            flex-grow: 1;
+        }
+
+        .card-content h3 {
+            color: #e0d5c1;
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+
+        .card-content p {
+            color: #9c9280;
+            font-size: 0.95rem;
+        }
+
+        /* ดีไซน์ปุ่มกด */
+        .btn {
+            display: inline-block;
+            background-color: #8b0000;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background-color: #b22222;
+        }
+
+        /* ส่วนพิเศษ: กระดานสเตตัสแบบเกมจำลอง (Sandbox) */
+        .status-board {
+            background-color: #1f1414;
+            border: 2px dashed #8b0000;
+            padding: 25px;
+            border-radius: 6px;
+            margin-top: 40px;
+        }
+
+        .status-board h3 {
+            color: #d4af37;
+            margin-top: 0;
+        }
+
+        .status-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .status-item {
+            background-color: #111;
+            padding: 10px 15px;
+            border-left: 4px solid #d4af37;
+            font-family: monospace;
+        }
+
+        /* ส่วนท้ายเว็บ */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 0.85rem;
+            border-top: 1px solid #222;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>KOKYM ARCHIVE</h1>
+        <p>ยินดีต้อนรับสู่คลังรวบรวมโปรเจกต์ นิยายฟิคชั่นอิงประวัติศาสตร์ และโปรเจกต์พัฒนาเกมแนว Sandbox</p>
+        <div class="social-links">
+            <a href="https://www.youtube.com" target="_blank">🎬 YouTube Channel</a>
+            <a href="https://github.com/kokym" target="_blank">💻 GitHub Profile</a>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <h2 class="section-title">📂 ผลงานและโปรเจกต์ทั้งหมด</h2>
+        
+        <div class="project-grid">
+            
+            <div class="project-card">
+                <div class="card-content">
+                    <h3>🎮 Sandbox Game Project</h3>
+                    <p>โปรเจกต์พัฒนาเกมแนวจำลองสถานการณ์/Sandbox ที่มีระบบสมาร์ตโฟนตรวจสอบสเตตัส ลิงก์นี้จะพาเข้าสู่หน้าทดสอบตัวเกมเวอร์ชันเว็บ</p>
+                    <a href="game.html" class="btn">เข้าสู่ระบบเกม</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-content">
+                    <h3>📜 Three Kingdoms Fiction</h3>
+                    <p>เรื่องราวประวัติศาสตร์ยุคสามก๊ก ราชวงศ์ฮั่น และราชวงศ์ฉิน ที่ถูกนำมาตีความใหม่ในรูปแบบฟิคชั่น และพงศาวลีวิเคราะห์ตัวละครฉบับเจาะลึก</p>
+                    <a href="history.html" class="btn">อ่านเนื้อหาทั้งหมด</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="status-board">
+            <h3>📊 Server & Project Status</h3>
+            <p style="font-size: 0.9rem; color: #9c9280;">ข้อมูลสถานะการอัปเดตระบบในปัจจุบัน</p>
+            <ul class="status-list">
+                <li class="status-item">📌 Engine: GitHub Pages</li>
+                <li class="status-item">⚔️ Timeline: ยุคสามก๊ก (190 AD)</li>
+                <li class="status-item">🚀 Web Version: 1.0.0 (Live)</li>
+                <li class="status-item">🔋 Progress: กำลังพัฒนาเนื้อหา</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>© 2026 KOKYM. Powered by GitHub Pages.</p>
+    </footer>
+
+</body>
+</html>
