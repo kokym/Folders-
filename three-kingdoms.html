@@ -1,0 +1,3387 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<!-- ===== HEAD ===== -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三國志 · กลยุทธ์สามก๊ก</title>
+<style>
+/* ===== CSS ===== */
+
+/* --- Reset & Variables --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --parchment:       #F5E6C8;
+  --parchment-dark:  #E8D5A3;
+  --parchment-shadow:#C8A96E;
+  --dark-brown:      #2F1B0E;
+  --saddle:          #8B4513;
+  --chocolate:       #D2691E;
+  --burlywood:       #DEB887;
+  --moccasin:        #FFE4B5;
+  --ink:             #3A2010;
+  --gold:            #C8952A;
+  --gold-light:      #F0C040;
+  --wei-color:       #6B8CAE;
+  --wei-bg:          rgba(107,140,174,0.35);
+  --wei-border:      #4a6fa5;
+  --shu-color:       #4A7C59;
+  --shu-bg:          rgba(74,124,89,0.35);
+  --shu-border:      #2d6b42;
+  --wu-color:        #3D7068;
+  --wu-bg:           rgba(61,112,104,0.35);
+  --wu-border:       #215a52;
+  --ind-color:       #C9973A;
+  --ind-bg:          rgba(201,151,58,0.25);
+  --ind-border:      #a07520;
+  --asia-color:      #555;
+  --asia-bg:         rgba(80,80,80,0.25);
+  --asia-border:     #444;
+  --panel-w:         300px;
+}
+
+html, body {
+  height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--dark-brown);
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--parchment);
+  background-image:
+    radial-gradient(ellipse at 20% 30%, rgba(180,130,60,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(160,100,40,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(200,160,80,0.10) 0%, transparent 70%),
+    repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(139,69,19,0.03) 2px, rgba(139,69,19,0.03) 4px),
+    repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(210,105,30,0.02) 3px, rgba(210,105,30,0.02) 6px);
+}
+
+/* --- Header --- */
+.header {
+  background: linear-gradient(135deg, var(--dark-brown) 0%, #4A2010 50%, var(--saddle) 100%);
+  color: var(--moccasin);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--gold);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(200,149,42,0.06) 8px, rgba(200,149,42,0.06) 9px);
+  pointer-events: none;
+}
+
+.header-title h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(1rem, 2.5vw, 1.6rem);
+  color: var(--gold-light);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.header-title .subtitle {
+  font-size: 0.7rem;
+  color: var(--burlywood);
+  font-style: italic;
+  letter-spacing: 0.08em;
+}
+
+/* --- Faction Score Bar --- */
+.faction-scores {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.faction-score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.25);
+  min-width: 60px;
+  font-size: 0.68rem;
+}
+
+.faction-score-item .fs-name {
+  font-family: Georgia, serif;
+  font-size: 0.78rem;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.faction-score-item .fs-stats {
+  opacity: 0.85;
+  white-space: nowrap;
+  font-size: 0.65rem;
+}
+
+.faction-score-item.wei  { border-color: var(--wei-border);  }
+.faction-score-item.shu  { border-color: var(--shu-border);  }
+.faction-score-item.wu   { border-color: var(--wu-border);   }
+.faction-score-item.ind  { border-color: var(--ind-border);  }
+
+/* --- Unlock Button --- */
+.btn-unlock {
+  padding: 5px 10px;
+  font-family: Georgia, serif;
+  font-size: 0.72rem;
+  color: var(--gold-light);
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-unlock:hover { background: rgba(200,149,42,0.3); }
+.btn-unlock.unlocked { opacity: 0.5; cursor: default; }
+
+/* --- Main Area --- */
+.main-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* --- Map Container --- */
+.map-container {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Water backdrop */
+.map-wrapper {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 60% 40%, rgba(135,206,235,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(100,180,210,0.18) 0%, transparent 50%),
+    linear-gradient(160deg, rgba(135,206,235,0.08) 0%, rgba(135,186,200,0.12) 100%);
+  border: 2px solid var(--saddle);
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: inset 0 0 20px rgba(139,69,19,0.15), 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* Compass Rose */
+.compass {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 52px;
+  height: 52px;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+/* --- Province Grid --- */
+.province-grid {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(78px, 90px));
+  grid-template-rows: repeat(9, minmax(60px, 70px));
+  gap: 3px;
+}
+
+/* Empty cell water texture */
+.grid-cell-empty {
+  background:
+    radial-gradient(ellipse at center, rgba(135,206,235,0.15) 0%, transparent 80%),
+    repeating-linear-gradient(30deg, transparent, transparent 5px, rgba(100,160,200,0.04) 5px, rgba(100,160,200,0.04) 6px);
+  border-radius: 3px;
+}
+
+/* --- Province Tile --- */
+.province-tile {
+  position: relative;
+  border-radius: 5px;
+  border: 1.5px solid;
+  padding: 4px 5px 4px 5px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  user-select: none;
+  min-width: 0;
+}
+
+.province-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.04) 6px, rgba(255,255,255,0.04) 7px);
+  pointer-events: none;
+}
+
+.province-tile:hover {
+  transform: scale(1.08);
+  z-index: 50;
+  box-shadow: 0 0 0 2px var(--gold), 0 4px 16px rgba(200,149,42,0.5);
+}
+
+.province-tile.selected {
+  box-shadow: 0 0 0 2.5px var(--gold-light), 0 4px 20px rgba(240,192,64,0.6);
+  z-index: 40;
+}
+
+/* Faction coloring */
+.province-tile.wei  { background: var(--wei-bg);  border-color: var(--wei-border);  }
+.province-tile.shu  { background: var(--shu-bg);  border-color: var(--shu-border);  }
+.province-tile.wu   { background: var(--wu-bg);   border-color: var(--wu-border);   }
+.province-tile.independent { background: var(--ind-bg); border-color: var(--ind-border); }
+
+/* ASIA locked tile */
+.province-tile.asia-locked {
+  background: var(--asia-bg);
+  border-color: var(--asia-border);
+  cursor: default;
+  filter: grayscale(0.6);
+}
+
+.province-tile.asia-locked:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 1.5px #888, 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.province-tile.asia-unlocked {
+  filter: none;
+  cursor: pointer;
+}
+
+/* Lock overlay */
+.lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(40,40,40,0.55);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.lock-icon { font-size: 1.1rem; line-height: 1; }
+
+.lock-hint {
+  font-size: 0.52rem;
+  color: #ccc;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0 2px;
+  display: none;
+}
+
+.province-tile.asia-locked:hover .lock-hint { display: block; }
+.province-tile.asia-locked:hover .lock-overlay { background: rgba(40,40,40,0.7); }
+
+/* Tile content */
+.tile-name-zh {
+  font-family: Georgia, serif;
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+  font-weight: bold;
+  color: var(--dark-brown);
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-name-th {
+  font-size: clamp(0.52rem, 0.9vw, 0.62rem);
+  color: var(--ink);
+  opacity: 0.8;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-stats {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tile-stat {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.6rem;
+  color: var(--dark-brown);
+  background: rgba(255,255,255,0.3);
+  border-radius: 3px;
+  padding: 1px 3px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tile-stat .stat-icon { font-size: 0.7rem; }
+
+/* Faction badge */
+.faction-badge {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  font-size: 0.55rem;
+  font-family: Georgia, serif;
+  padding: 1px 3px;
+  border-radius: 2px;
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+}
+
+/* --- Side Panel --- */
+.side-panel {
+  width: var(--panel-w);
+  flex-shrink: 0;
+  background: rgba(245,230,200,0.92);
+  border-left: 2px solid var(--saddle);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-section {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(139,69,19,0.25);
+}
+
+.panel-title {
+  font-family: Georgia, serif;
+  font-size: 0.72rem;
+  color: var(--saddle);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.panel-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--saddle);
+  opacity: 0.3;
+}
+
+/* Province detail */
+.detail-name-zh {
+  font-family: Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--dark-brown);
+  line-height: 1.2;
+}
+
+.detail-name-th {
+  font-size: 0.8rem;
+  color: var(--ink);
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.detail-faction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: Georgia, serif;
+  color: #fff;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.detail-ruler {
+  font-size: 0.78rem;
+  color: var(--dark-brown);
+  margin-bottom: 8px;
+}
+
+/* Stat bars */
+.stat-row {
+  margin-bottom: 10px;
+}
+
+.stat-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--dark-brown);
+  margin-bottom: 3px;
+}
+
+.stat-bar-bg {
+  height: 10px;
+  background: rgba(139,69,19,0.15);
+  border-radius: 5px;
+  border: 1px solid rgba(139,69,19,0.2);
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.stat-bar-fill.troops { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+.stat-bar-fill.wealth { background: linear-gradient(90deg, #b8860b, var(--gold)); }
+
+/* Historical note */
+.hist-note {
+  font-size: 0.72rem;
+  color: var(--ink);
+  font-style: italic;
+  line-height: 1.55;
+  background: rgba(139,69,19,0.06);
+  border-left: 3px solid var(--saddle);
+  padding: 6px 8px;
+  border-radius: 0 3px 3px 0;
+}
+
+/* Empty state */
+.panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+  opacity: 0.5;
+}
+
+.panel-empty .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
+.panel-empty p { font-size: 0.78rem; font-style: italic; font-family: Georgia, serif; }
+
+/* ASIA detail */
+.asia-detail-note {
+  font-size: 0.72rem;
+  color: #555;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: center;
+  padding: 8px;
+  background: rgba(80,80,80,0.08);
+  border-radius: 4px;
+  border: 1px dashed #aaa;
+}
+
+/* --- Bottom Bar --- */
+.bottom-bar {
+  display: flex;
+  flex-shrink: 0;
+  border-top: 2px solid var(--saddle);
+  max-height: 140px;
+  min-height: 90px;
+}
+
+/* Legend */
+.legend {
+  padding: 8px 14px;
+  border-right: 1px solid rgba(139,69,19,0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.legend-title {
+  font-family: Georgia, serif;
+  font-size: 0.65rem;
+  color: var(--saddle);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1.5px solid rgba(0,0,0,0.25);
+  flex-shrink: 0;
+}
+
+/* Event Log */
+.event-log {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  min-width: 0;
+}
+
+.event-log-title {
+  font-family: Georgia, serif;
+  font-size: 0.65rem;
+  color: var(--saddle);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.event-log-list {
+  overflow-y: auto;
+  flex: 1;
+  font-size: 0.68rem;
+  color: var(--dark-brown);
+  line-height: 1.6;
+  padding-right: 4px;
+}
+
+.event-log-list::-webkit-scrollbar { width: 5px; }
+.event-log-list::-webkit-scrollbar-track { background: rgba(139,69,19,0.08); }
+.event-log-list::-webkit-scrollbar-thumb { background: var(--saddle); border-radius: 3px; }
+
+.event-entry { border-bottom: 1px solid rgba(139,69,19,0.1); padding: 1px 0; }
+.event-entry:last-child { border-bottom: none; }
+
+.event-time { color: var(--saddle); font-size: 0.63rem; margin-right: 4px; }
+
+.event-faction-wei  { color: var(--wei-border);  }
+.event-faction-shu  { color: var(--shu-border);  }
+.event-faction-wu   { color: var(--wu-border);   }
+.event-faction-independent { color: var(--ind-border); }
+.event-faction-asia { color: #666; }
+
+/* Tooltip */
+.tooltip {
+  position: fixed;
+  background: rgba(47,27,14,0.95);
+  color: var(--moccasin);
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  pointer-events: none;
+  z-index: 9999;
+  border: 1px solid var(--gold);
+  white-space: nowrap;
+  display: none;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+}
+
+/* Scrollbar styling for map */
+.map-container::-webkit-scrollbar { width: 6px; height: 6px; }
+.map-container::-webkit-scrollbar-track { background: rgba(139,69,19,0.1); }
+.map-container::-webkit-scrollbar-thumb { background: var(--saddle); border-radius: 3px; }
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  body { overflow: auto; }
+  .main-area { flex-direction: column; overflow: visible; }
+  .side-panel { width: 100%; border-left: none; border-top: 2px solid var(--saddle); max-height: 240px; }
+  .bottom-bar { flex-direction: column; max-height: none; }
+  .legend { border-right: none; border-bottom: 1px solid rgba(139,69,19,0.3); }
+  .province-grid { grid-template-columns: repeat(9, minmax(62px, 76px)); grid-template-rows: repeat(9, minmax(52px, 64px)); }
+}
+
+/* ===== GAME SYSTEM CSS ===== */
+
+/* --- Title Screen Overlay --- */
+#titleOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(180,130,60,0.3) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 60%, rgba(160,100,40,0.25) 0%, transparent 55%),
+    var(--parchment);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.title-card {
+  background: rgba(245,230,200,0.97);
+  border: 3px solid var(--gold);
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 0 30px rgba(200,149,42,0.08);
+  padding: 36px 40px;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+}
+
+.title-main {
+  font-family: Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--dark-brown);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.title-sub {
+  font-size: 0.9rem;
+  color: var(--saddle);
+  font-style: italic;
+  letter-spacing: 0.1em;
+  margin-bottom: 28px;
+}
+
+.title-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 16px 0;
+}
+
+.title-section-label {
+  font-family: Georgia, serif;
+  font-size: 0.75rem;
+  color: var(--saddle);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 12px;
+}
+
+/* Faction select buttons */
+.faction-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-faction {
+  flex: 1;
+  min-width: 130px;
+  padding: 12px 10px;
+  border-radius: 6px;
+  border: 2px solid;
+  cursor: pointer;
+  font-family: Georgia, serif;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.4);
+  text-align: center;
+}
+
+.btn-faction:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+
+.btn-faction.selected { transform: translateY(-2px); box-shadow: 0 0 0 3px var(--gold-light), 0 4px 16px rgba(200,149,42,0.4); }
+
+.btn-faction .bf-char {
+  font-size: 1.8rem;
+  line-height: 1.1;
+  display: block;
+}
+
+.btn-faction .bf-name {
+  font-size: 0.78rem;
+  font-weight: bold;
+  display: block;
+  margin-top: 2px;
+}
+
+.btn-faction .bf-ruler {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  display: block;
+  margin-top: 2px;
+}
+
+.btn-faction.wei  { border-color: var(--wei-border);  color: var(--wei-border);  }
+.btn-faction.shu  { border-color: var(--shu-border);  color: var(--shu-border);  }
+.btn-faction.wu   { border-color: var(--wu-border);   color: var(--wu-border);   }
+.btn-faction.wei.selected  { background: var(--wei-bg);  }
+.btn-faction.shu.selected  { background: var(--shu-bg);  }
+.btn-faction.wu.selected   { background: var(--wu-bg);   }
+
+/* Difficulty buttons */
+.diff-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.btn-diff {
+  padding: 7px 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--saddle);
+  background: rgba(255,255,255,0.35);
+  color: var(--dark-brown);
+  font-family: Georgia, serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-diff:hover { background: rgba(139,69,19,0.12); }
+.btn-diff.selected { background: rgba(139,69,19,0.2); border-color: var(--dark-brown); font-weight: bold; }
+
+/* Start button */
+.btn-start {
+  width: 100%;
+  padding: 13px;
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  color: var(--moccasin);
+  background: linear-gradient(135deg, var(--dark-brown), var(--saddle));
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+  transition: all 0.2s;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.btn-start:hover {
+  background: linear-gradient(135deg, #4A2010, #a0521a);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(0,0,0,0.4);
+}
+
+.btn-start:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* --- Control Bar --- */
+#controlBar {
+  display: none;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(47,27,14,0.92), rgba(74,32,16,0.92));
+  border-bottom: 2px solid var(--gold);
+  padding: 6px 14px;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  z-index: 90;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.ctrl-info {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.ctrl-badge {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: Georgia, serif;
+  font-size: 0.72rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  white-space: nowrap;
+}
+
+.ctrl-badge.turn-badge    { background: rgba(200,149,42,0.25); color: var(--gold-light); border-color: var(--gold); }
+.ctrl-badge.phase-badge   { background: rgba(80,80,80,0.3); color: #ddd; }
+.ctrl-badge.phase-badge.management { background: rgba(74,124,89,0.35); color: #a8dfb8; border-color: var(--shu-border); }
+.ctrl-badge.phase-badge.attack     { background: rgba(180,50,50,0.35); color: #ffaaaa; border-color: #c0392b; }
+.ctrl-badge.phase-badge.ai         { background: rgba(100,80,160,0.35); color: #ccbbff; border-color: #7050c0; }
+.ctrl-badge.wealth-badge  { background: rgba(184,134,11,0.25); color: #f0c040; border-color: #b8860b; }
+.ctrl-badge.troops-badge  { background: rgba(192,57,43,0.25); color: #ff9999; border-color: #c0392b; }
+
+.btn-phase {
+  padding: 6px 14px;
+  font-family: Georgia, serif;
+  font-size: 0.78rem;
+  border-radius: 5px;
+  border: 1.5px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-phase.to-attack {
+  color: #ffaaaa;
+  background: rgba(180,50,50,0.3);
+  border-color: #c0392b;
+}
+.btn-phase.to-attack:hover { background: rgba(180,50,50,0.5); }
+
+.btn-phase.end-turn {
+  color: var(--gold-light);
+  background: rgba(200,149,42,0.25);
+  border-color: var(--gold);
+}
+.btn-phase.end-turn:hover { background: rgba(200,149,42,0.45); }
+
+.btn-phase:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* --- Province tile ownership states (game mode) --- */
+.province-tile.owner-player {
+  border-width: 2.5px;
+  filter: brightness(1.08);
+}
+
+.province-tile.owner-ai1 { opacity: 0.88; }
+.province-tile.owner-ai2 { opacity: 0.82; }
+.province-tile.owner-none { background: var(--ind-bg); border-color: var(--ind-border); }
+
+/* Attacker selected highlight */
+.province-tile.attacker-selected {
+  box-shadow: 0 0 0 3px #e74c3c, 0 4px 20px rgba(231,76,60,0.6) !important;
+  z-index: 40;
+}
+
+/* Managed badge */
+.managed-badge {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  font-size: 0.5rem;
+  background: rgba(46,125,50,0.85);
+  color: #c8ffcc;
+  padding: 1px 4px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* --- Action Buttons in Side Panel --- */
+.action-section {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(139,69,19,0.25);
+}
+
+.action-title {
+  font-family: Georgia, serif;
+  font-size: 0.68rem;
+  color: var(--saddle);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+}
+
+.btn-action {
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  border: 1.5px solid;
+  cursor: pointer;
+  font-size: 0.75rem;
+  text-align: left;
+  transition: all 0.18s;
+  background: rgba(255,255,255,0.4);
+  color: var(--dark-brown);
+  border-color: var(--saddle);
+  font-family: system-ui, sans-serif;
+  line-height: 1.35;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: rgba(139,69,19,0.12);
+  transform: translateX(2px);
+}
+
+.btn-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-action.recruit  { border-color: #c0392b; }
+.btn-action.develop  { border-color: var(--gold); }
+.btn-action.transfer { border-color: #2980b9; }
+
+/* --- Modals --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(20,10,5,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background: var(--parchment);
+  border: 3px solid var(--gold);
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  padding: 36px 40px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-icon { font-size: 3.5rem; margin-bottom: 12px; line-height: 1; }
+.modal-title { font-family: Georgia, serif; font-size: 1.8rem; color: var(--dark-brown); margin-bottom: 8px; }
+.modal-sub { font-size: 0.9rem; color: var(--ink); font-style: italic; margin-bottom: 24px; line-height: 1.5; }
+
+.btn-restart {
+  padding: 11px 28px;
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+  color: var(--moccasin);
+  background: linear-gradient(135deg, var(--dark-brown), var(--saddle));
+  border: 2px solid var(--gold);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.btn-restart:hover { background: linear-gradient(135deg, #4A2010, #a0521a); transform: translateY(-1px); }
+
+/* Transfer mode highlight */
+.province-tile.transfer-target {
+  box-shadow: 0 0 0 2.5px #2980b9, 0 4px 14px rgba(41,128,185,0.5) !important;
+  z-index: 38;
+}
+
+/* Player indicator star on tile */
+.player-star {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: 0.6rem;
+  color: var(--gold-light);
+  line-height: 1;
+  text-shadow: 0 0 4px rgba(200,149,42,0.8);
+}
+
+/* ===== NEW SYSTEMS CSS ===== */
+
+/* --- Season Badge --- */
+.season-badge {
+  font-family: Georgia, serif;
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.25);
+  white-space: nowrap;
+  transition: background 0.5s;
+}
+.season-badge.season-spring { background: rgba(100,180,80,0.35);  color: #c8ffb0; border-color: #5aaa30; }
+.season-badge.season-summer { background: rgba(200,100,50,0.35);  color: #ffd0a0; border-color: #c06020; }
+.season-badge.season-autumn { background: rgba(180,120,40,0.35);  color: #ffe0a0; border-color: #a07820; }
+.season-badge.season-winter { background: rgba(100,130,170,0.35); color: #c0d8ff; border-color: #6080b0; }
+
+/* --- Resource Badge --- */
+.resource-badge {
+  background: rgba(139,100,20,0.3);
+  color: #f0d080;
+  border-color: #a07820;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+/* --- Tile Resources row --- */
+.tile-resources {
+  font-size: 0.6rem;
+  line-height: 1;
+  margin-top: 1px;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+}
+
+/* --- General Badge on tile --- */
+.general-badge {
+  position: absolute;
+  bottom: 18px;
+  left: 3px;
+  font-size: 0.5rem;
+  background: rgba(180,140,20,0.85);
+  color: #fff8d0;
+  padding: 1px 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Official Badge on tile --- */
+.official-badge {
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  font-size: 0.5rem;
+  background: rgba(80,40,140,0.8);
+  color: #e0ccff;
+  padding: 1px 4px;
+  border-radius: 2px;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Emperor Button --- */
+.btn-emperor {
+  padding: 5px 12px;
+  font-family: Georgia, serif;
+  font-size: 0.72rem;
+  color: #fff8c0;
+  background: rgba(160,100,0,0.45);
+  border: 1.5px solid var(--gold-light);
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  animation: emperorPulse 2s infinite;
+  transition: background 0.2s;
+}
+.btn-emperor:hover { background: rgba(200,149,42,0.5); }
+@keyframes emperorPulse {
+  0%,100% { box-shadow: 0 0 4px rgba(240,192,64,0.4); }
+  50%      { box-shadow: 0 0 10px rgba(240,192,64,0.9); }
+}
+
+/* --- Emperor Badge in header --- */
+.emperor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(180,130,0,0.4);
+  border: 1px solid var(--gold-light);
+  color: var(--gold-light);
+  font-family: Georgia, serif;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+/* --- Custom Faction Form (inline in title card) --- */
+.custom-faction-form {
+  text-align: left;
+  margin-top: 10px;
+  padding: 14px;
+  background: rgba(139,69,19,0.06);
+  border: 1px solid var(--saddle);
+  border-radius: 6px;
+}
+.custom-faction-form label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--saddle);
+  margin-bottom: 3px;
+  font-family: Georgia, serif;
+}
+.custom-faction-form input[type="text"],
+.custom-faction-form select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--saddle);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.6);
+  color: var(--dark-brown);
+  font-family: Georgia, serif;
+  font-size: 0.78rem;
+  margin-bottom: 10px;
+}
+.color-swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.color-swatch:hover    { transform: scale(1.15); }
+.color-swatch.selected { border-color: var(--gold-light); box-shadow: 0 0 6px rgba(240,192,64,0.7); transform: scale(1.15); }
+
+/* Custom faction tile coloring */
+.province-tile.custom {
+  background: rgba(var(--custom-rgb), 0.35);
+  border-color: var(--custom-color, #888);
+}
+.faction-score-item.custom { border-color: var(--custom-color, #888); }
+
+/* --- General transfer highlight --- */
+.province-tile.general-transfer-target {
+  box-shadow: 0 0 0 2.5px #c8952a, 0 4px 14px rgba(200,149,42,0.5) !important;
+  z-index: 38;
+}
+
+/* --- Side panel extras --- */
+.resource-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.resource-chip {
+  font-size: 0.68rem;
+  background: rgba(139,100,20,0.15);
+  border: 1px solid rgba(139,100,20,0.3);
+  border-radius: 3px;
+  padding: 2px 6px;
+  color: var(--dark-brown);
+}
+.general-stat-bar-bg {
+  height: 6px;
+  background: rgba(139,69,19,0.15);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.general-stat-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--saddle), var(--gold));
+}
+.han-emperor-note {
+  font-size: 0.72rem;
+  background: rgba(180,130,0,0.12);
+  border: 1px solid rgba(180,130,0,0.4);
+  border-radius: 4px;
+  padding: 6px 8px;
+  color: var(--dark-brown);
+  margin-top: 6px;
+  font-family: Georgia, serif;
+  line-height: 1.5;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ===== HTML ===== -->
+
+<!-- ===== TITLE SCREEN OVERLAY ===== -->
+<div id="titleOverlay">
+  <div class="title-card">
+    <div class="title-main">三國志</div>
+    <div class="title-sub">กลยุทธ์สามก๊ก · เลือกฝ่าย</div>
+    <div class="title-divider"></div>
+
+    <div class="title-section-label">เลือกฝ่ายของคุณ</div>
+    <div class="faction-buttons">
+      <button class="btn-faction wei" onclick="selectFaction('wei')">
+        <span class="bf-char">魏</span>
+        <span class="bf-name">เว่ย (Wei)</span>
+        <span class="bf-ruler">曹操 โจโฉ</span>
+      </button>
+      <button class="btn-faction shu" onclick="selectFaction('shu')">
+        <span class="bf-char">蜀</span>
+        <span class="bf-name">สู่ (Shu)</span>
+        <span class="bf-ruler">劉備 เล่าปี่</span>
+      </button>
+      <button class="btn-faction wu" onclick="selectFaction('wu')">
+        <span class="bf-char">吳</span>
+        <span class="bf-name">อู๋ (Wu)</span>
+        <span class="bf-ruler">孫權 ซุนกวน</span>
+      </button>
+      <button class="btn-faction" id="btnCustomFaction" style="border-color:var(--gold);color:var(--saddle);" onclick="selectFaction('custom')">
+        <span class="bf-char" style="font-size:1.2rem;">✦</span>
+        <span class="bf-name">สร้างฝ่ายใหม่</span>
+        <span class="bf-ruler">กำหนดเอง</span>
+      </button>
+    </div>
+
+    <!-- Custom Faction Form (hidden until custom selected) -->
+    <div class="custom-faction-form" id="customFactionForm" style="display:none;">
+      <label>ชื่อฝ่าย (อาณาจักร)</label>
+      <input type="text" id="cfName" placeholder="ชื่ออาณาจักร..." oninput="updateCustomFaction()">
+      <label>ชื่อผู้นำ</label>
+      <input type="text" id="cfLeader" placeholder="ชื่อผู้ปกครอง..." oninput="updateCustomFaction()">
+      <label>สีธง</label>
+      <div class="color-swatches" id="cfSwatches">
+        <div class="color-swatch" style="background:#A0263A;" data-color="#A0263A" onclick="pickSwatchColor(this)"></div>
+        <div class="color-swatch" style="background:#6B4FA0;" data-color="#6B4FA0" onclick="pickSwatchColor(this)"></div>
+        <div class="color-swatch" style="background:#2E8B8B;" data-color="#2E8B8B" onclick="pickSwatchColor(this)"></div>
+        <div class="color-swatch" style="background:#C0692A;" data-color="#C0692A" onclick="pickSwatchColor(this)"></div>
+        <div class="color-swatch" style="background:#607080;" data-color="#607080" onclick="pickSwatchColor(this)"></div>
+        <div class="color-swatch" style="background:#8B7020;" data-color="#8B7020" onclick="pickSwatchColor(this)"></div>
+      </div>
+      <label>จังหวัดตั้งต้น</label>
+      <select id="cfStartProvince" onchange="updateCustomFaction()">
+        <option value="">-- เลือกมณฑล --</option>
+      </select>
+    </div>
+
+    <div class="title-divider"></div>
+    <div class="title-section-label">ความยาก</div>
+    <div class="diff-buttons">
+      <button class="btn-diff" onclick="selectDiff('easy')">ง่าย</button>
+      <button class="btn-diff selected" onclick="selectDiff('normal')">ปกติ</button>
+      <button class="btn-diff" onclick="selectDiff('hard')">ยาก</button>
+    </div>
+
+    <button class="btn-start" id="btnStart" onclick="startGame()" disabled>⚔ เริ่มสงคราม</button>
+  </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<!-- Victory Modal -->
+<div class="modal-overlay" id="modalVictory" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-icon">🏆</div>
+    <div class="modal-title">ชนะ!</div>
+    <div class="modal-sub" id="victoryText">รวมแผ่นดินจีนเป็นหนึ่ง!</div>
+    <button class="btn-restart" onclick="restartGame()">เริ่มใหม่</button>
+  </div>
+</div>
+
+<!-- Defeat Modal -->
+<div class="modal-overlay" id="modalDefeat" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-icon">💀</div>
+    <div class="modal-title">พ่ายแพ้...</div>
+    <div class="modal-sub">อาณาจักรของคุณล่มสลายแล้ว<br>ประวัติศาสตร์จะจดจำท่าน...</div>
+    <button class="btn-restart" onclick="restartGame()">เริ่มใหม่</button>
+  </div>
+</div>
+
+<!-- Asia Unlock Modal -->
+<div class="modal-overlay" id="modalAsia" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-icon">🌏</div>
+    <div class="modal-title">จีนเป็นหนึ่ง!</div>
+    <div class="modal-sub">ดินแดนเอเชียปลดล็อคแล้ว<br>ขยายอำนาจออกนอกจีนต่อไป!</div>
+    <button class="btn-restart" onclick="closeAsiaModal()">เดินหน้าต่อ</button>
+  </div>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-title">
+    <h1>三國志 · กลยุทธ์สามก๊ก</h1>
+    <div class="subtitle" id="headerSubtitle">ยุคสามก๊ก 189–280 CE — เลือกฝ่ายเพื่อเริ่มเกม</div>
+  </div>
+  <div class="faction-scores" id="factionScores"></div>
+  <span class="emperor-badge" id="emperorBadge" style="display:none;">⚜ ฮ่องเต้: —</span>
+  <button class="btn-unlock" id="btnUnlock" style="display:none;" onclick="unlockAsia()">รวมจีนแล้ว → ปลดล็อคเอเชีย</button>
+</header>
+
+<!-- Control Bar (shown after game starts) -->
+<div id="controlBar">
+  <div class="ctrl-info">
+    <span class="ctrl-badge turn-badge" id="ctrlTurn">เทิร์น 1</span>
+    <span class="ctrl-badge phase-badge" id="ctrlPhase">ระยะ: จัดการ</span>
+    <span class="ctrl-badge wealth-badge" id="ctrlWealth">💰 0</span>
+    <span class="ctrl-badge troops-badge" id="ctrlTroops">⚔ 0</span>
+    <span class="ctrl-badge season-badge season-spring" id="ctrlSeason">春 ใบไม้ผลิ · 189 CE</span>
+    <span class="ctrl-badge resource-badge" id="ctrlResources">🪙0 🧂0 ⚙0 🌾0</span>
+  </div>
+  <button class="btn-emperor" id="btnEmperor" onclick="declareEmperor()" style="display:none">皇帝 ประกาศตนเป็นฮ่องเต้</button>
+  <button class="btn-phase to-attack" id="btnPhase" onclick="advancePhase()">⚔ เข้าสู่ระยะโจมตี</button>
+</div>
+
+<!-- Main -->
+<div class="main-area">
+
+  <!-- Map -->
+  <div class="map-container">
+    <div class="map-wrapper">
+      <!-- Compass Rose SVG -->
+      <svg class="compass" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="26" r="24" fill="none" stroke="#8B4513" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="26" cy="26" r="3" fill="#C8952A"/>
+        <!-- N arrow -->
+        <polygon points="26,4 23,22 29,22" fill="#2F1B0E" opacity="0.85"/>
+        <!-- S arrow -->
+        <polygon points="26,48 23,30 29,30" fill="#8B4513" opacity="0.6"/>
+        <!-- E arrow -->
+        <polygon points="48,26 30,23 30,29" fill="#8B4513" opacity="0.6"/>
+        <!-- W arrow -->
+        <polygon points="4,26 22,23 22,29" fill="#8B4513" opacity="0.6"/>
+        <!-- Cardinal labels -->
+        <text x="26" y="3" text-anchor="middle" font-size="6" fill="#C8952A" font-family="Georgia,serif">北</text>
+        <text x="26" y="52" text-anchor="middle" font-size="6" fill="#8B4513" font-family="Georgia,serif">南</text>
+        <text x="51" y="28" text-anchor="middle" font-size="6" fill="#8B4513" font-family="Georgia,serif">東</text>
+        <text x="1" y="28" text-anchor="middle" font-size="6" fill="#8B4513" font-family="Georgia,serif">西</text>
+      </svg>
+      <div class="province-grid" id="provinceGrid"></div>
+    </div>
+  </div>
+
+  <!-- Side Panel -->
+  <aside class="side-panel" id="sidePanel">
+    <div class="panel-empty" id="panelEmpty">
+      <div class="empty-icon">地圖</div>
+      <p>คลิกมณฑลบนแผนที่<br>เพื่อดูรายละเอียด</p>
+    </div>
+    <div id="panelDetail" style="display:none; overflow-y:auto; flex:1;">
+      <div class="panel-section">
+        <div class="panel-title">มณฑล</div>
+        <div class="detail-name-zh" id="dNameZh"></div>
+        <div class="detail-name-th" id="dNameTh"></div>
+        <div class="detail-faction" id="dFaction"></div>
+        <div class="detail-ruler" id="dRuler"></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-title">กำลังทหาร &amp; ความมั่งคั่ง</div>
+        <div class="stat-row">
+          <div class="stat-label">
+            <span>⚔ กำลังพล</span>
+            <span id="dTroopsNum"></span>
+          </div>
+          <div class="stat-bar-bg"><div class="stat-bar-fill troops" id="dTroopsBar"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">
+            <span>💰 ทรัพยากร</span>
+            <span id="dWealthNum"></span>
+          </div>
+          <div class="stat-bar-bg"><div class="stat-bar-fill wealth" id="dWealthBar"></div></div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-title">บันทึกประวัติศาสตร์</div>
+        <div class="hist-note" id="dHistNote"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <div class="legend">
+    <div class="legend-title">ตำนาน</div>
+    <div class="legend-items" id="legendItems"></div>
+  </div>
+  <div class="event-log">
+    <div class="event-log-title">บันทึกเหตุการณ์</div>
+    <div class="event-log-list" id="eventLog">
+      <div class="event-entry"><span class="event-time">[ระบบ]</span> เริ่มต้นเกม — ยุคสามก๊ก 189 CE</div>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ===== JS =====
+
+// --- Data ---
+
+const FACTIONS = {
+  wei:         { name: '魏 (เว่ย)',    ruler: '曹操 โจโฉ',     color: '#6B8CAE', bg: 'rgba(107,140,174,0.35)', border: '#4a6fa5' },
+  shu:         { name: '蜀 (สู่)',     ruler: '劉備 เล่าปี่',    color: '#4A7C59', bg: 'rgba(74,124,89,0.35)',  border: '#2d6b42' },
+  wu:          { name: '吳 (อู๋)',     ruler: '孫權 ซุนกวน',    color: '#3D7068', bg: 'rgba(61,112,104,0.35)', border: '#215a52' },
+  independent: { name: 'อิสระ',        ruler: '—',              color: '#C9973A', bg: 'rgba(201,151,58,0.25)', border: '#a07520' },
+};
+
+const PROVINCES = {
+  liangzhou: { name: '涼州 เหลียงโจว', troops: 50, wealth: 60,  faction: 'wei',         hist: 'มณฑลเหลียงโจวเป็นดินแดนตะวันตกไกล ผลิตม้าศึกชั้นยอด โจโฉส่งทัพมาปราบกวนจงและหม่าเฉา' },
+  bingzhou:  { name: '幷州 ปิ่นโจว',   troops: 40, wealth: 55,  faction: 'wei',         hist: 'ปิ่นโจวเคยเป็นอาณาเขตของหลิวผิ่วก่อนที่โจโฉจะผนวกเข้า เป็นฐานทัพทางเหนือ' },
+  youzhou:   { name: '幽州 อิวโจว',    troops: 45, wealth: 60,  faction: 'wei',         hist: 'อิวโจวดินแดนชายแดนเหนือ ต้านทานการรุกรานของซงหนู เคยเป็นฐานของหลิวเปียว' },
+  tianshui:  { name: '天水 เทียนสุ่ย', troops: 50, wealth: 65,  faction: 'shu',         hist: 'เทียนสุ่ยเป็นที่ตั้งฐานทัพทางตะวันตกเฉียงเหนือ จูกัดเหลียงเปิดศึกเหนือผ่านดินแดนนี้' },
+  changan:   { name: '長安 ฉางอัน',    troops: 70, wealth: 100, faction: 'wei',         hist: 'ฉางอันเมืองหลวงเก่าของฮั่น ตงจัวเผาทำลายเมืองก่อนอพยพ โจโฉยึดคืนและสร้างใหม่' },
+  luoyang:   { name: '洛陽 ลั่วหยาง',  troops: 80, wealth: 120, faction: 'wei',         hist: 'ลั่วหยางเมืองหลวงฮั่นตะวันออก ศูนย์กลางอำนาจ โจโฉกุมอำนาจด้วยการควบคุมฮ่องเต้ฮั่น' },
+  ye:        { name: '鄴 เย่',          troops: 75, wealth: 105, faction: 'wei',         hist: 'เย่เมืองหลวงใหม่ของเว่ย โจโฉสร้างพระราชวังทองแดงที่นี่ ศูนย์กลางวรรณกรรมและวัฒนธรรม' },
+  beiping:   { name: '北平 เป่ยผิง',    troops: 50, wealth: 70,  faction: 'wei',         hist: 'เป่ยผิงป้อมปราการทางเหนือสุด กันทัพซงหนูและเซียนเปย ต้นกำเนิดพีกิ่งในอนาคต' },
+  guandu:    { name: '官渡 กวนตู้',     troops: 45, wealth: 75,  faction: 'wei',         hist: 'กวนตู้สถานที่ยุทธการสำคัญ 200 CE โจโฉเอาชนะยฺหยวนเส้าด้วยกลยุทธ์เผาเสบียงที่อู๋เฉา' },
+  xuchang:   { name: '許昌 สวี่ชาง',   troops: 65, wealth: 95,  faction: 'wei',         hist: 'สวี่ชางเมืองที่โจโฉอัญเชิญฮ่องเต้ฮั่นประทับ ศูนย์กลางอำนาจรัฐบาลเว่ย' },
+  puyang:    { name: '濮陽 ผูหยาง',    troops: 50, wealth: 80,  faction: 'wei',         hist: 'ผูหยางบ้านเดิมของลิโป้ หลวจี๋สู้รบกับโจโฉที่นี่ก่อนพ่ายแพ้' },
+  qingzhou:  { name: '青州 ชิงโจว',    troops: 55, wealth: 75,  faction: 'wei',         hist: 'ชิงโจวดินแดนชายฝั่งตะวันออก โจโฉได้รับกองทัพโจรเหลืองสามสิบล้านคนที่นี่' },
+  xiapi:     { name: '下邳 เสียพิว',    troops: 50, wealth: 85,  faction: 'wu',          hist: 'เสียพิวป้อมของลิโป้ โจโฉล้อมจนตัดน้ำท่วม ลิโป้ถูกจับและประหาร 198 CE' },
+  xiangyang: { name: '襄陽 เซียงหยาง', troops: 60, wealth: 90,  faction: 'independent', hist: 'เซียงหยางประตูสู่เอกเทศเจ๋ง หลิวเปียวปกครองจนตายก่อนโจโฉมาถึง กวนอูสูญเสียจิ๋งโจว' },
+  wan:       { name: '宛 อ้วน',         troops: 50, wealth: 80,  faction: 'independent', hist: 'อ้วนดินแดนจางซิ่ว โจโฉถูกซุ่มโจมตี ทั้งเจี่ยเซียนและทั่วต้าวู่เสียชีวิตในการรบที่นี่' },
+  shouchun:  { name: '壽春 โซ่วชุน',   troops: 55, wealth: 85,  faction: 'independent', hist: 'โซ่วชุนฐานที่มั่นยฺหยวนซู่ ประกาศตนเป็นฮ่องเต้ แต่พ่ายแพ้และสูญเสียหยกราชวงศ์' },
+  jianye:    { name: '建業 เจี้ยนเย่',  troops: 70, wealth: 110, faction: 'wu',          hist: 'เจี้ยนเย่เมืองหลวงอู๋ ตั้งอยู่ปากแม่น้ำแยงซีเกียง ซุนกวนสร้างอำนาจที่นี่นานหลายทศวรรษ' },
+  donghai:   { name: '東海 ตงไฮ',      troops: 40, wealth: 65,  faction: 'wu',          hist: 'ตงไฮมณฑลชายฝั่งทะเลตะวันออก เส้นทางการค้าและประมงที่สำคัญของอู๋' },
+  chengdu:   { name: '成都 เฉิงตู',    troops: 70, wealth: 110, faction: 'shu',         hist: 'เฉิงตูเมืองหลวงสู่ เล่าปี่ยึดได้จากเล่าจ้างปี 214 CE จูกัดเหลียงบริหารจากที่นี่' },
+  baidi:     { name: '白帝 ไป๋ตี้',    troops: 45, wealth: 60,  faction: 'shu',         hist: 'ไป๋ตี้ป้อมปราการริมแม่น้ำ เล่าปี่สิ้นพระชนม์ที่นี่หลังพ่ายอิลิ้ง ฝากจูกัดเหลียงดูแลอาทิตย์สยาม' },
+  jiangling: { name: '江陵 เจียงหลิง', troops: 60, wealth: 85,  faction: 'shu',         hist: 'เจียงหลิงฐานที่มั่นในจิ๋งโจว กวนอูปกป้องจนถูกลิบองและลกซุนโอบล้อม' },
+  changsha:  { name: '長沙 ฉางซา',     troops: 50, wealth: 75,  faction: 'independent', hist: 'ฉางซาดินแดนทางใต้ ฮันสวนปกครองก่อนยอมแพ้ต่อซุนกวน กวนอูเคยพบฮวยท้อที่นี่' },
+  caisang:   { name: '柴桑 ไฉซัง',     troops: 55, wealth: 80,  faction: 'wu',          hist: 'ไฉซังที่ประชุมแผนรบเจ็กปี๋ โจรรอินแนะนำพันธมิตรสู่-อู๋ต่อต้านเว่ย' },
+  kuaiji:    { name: '會稽 ห้อยเข้',   troops: 45, wealth: 70,  faction: 'wu',          hist: 'ห้อยเข้ดินแดนตอนใต้ตระกูลซุน ซุนเซ็กและซุนกวนสร้างฐานอำนาจอู๋จากที่นี่' },
+  yunnan:    { name: '雲南 ยูนนาน',    troops: 40, wealth: 50,  faction: 'shu',         hist: 'ยูนนานดินแดนชนเผ่าหนานหมาน จูกัดเหลียงปราบเบ้งเฮ็กเจ็ดครั้งเจ็ดปล่อย สงบใต้ก่อนบุกเหนือ' },
+  wuling:    { name: '武陵 บูเหลิง',   troops: 40, wealth: 60,  faction: 'independent', hist: 'บูเหลิงดินแดนชายแดนทางตะวันตกเฉียงใต้ ชนเผ่าหลากหลาย เส้นทางสู่ดินแดนตอนใต้' },
+  guangzhou: { name: '廣州 กวางโจว',   troops: 45, wealth: 75,  faction: 'independent', hist: 'กวางโจวท่าเรือทางใต้ เส้นทางการค้าทางทะเลสู่เอเชียตะวันออกเฉียงใต้' },
+  jiaozhou:  { name: '交州 เจียวโจว',  troops: 40, wealth: 60,  faction: 'independent', hist: 'เจียวโจวดินแดนใต้สุด ต่อมากลายเป็นเวียดนาม ซื่อเซี่ปกครองอย่างอิสระยาวนาน' },
+};
+
+const ASIA_PROVINCES = {
+  mongolia: { name: '匈奴/鮮卑 ซงหนู/เซียนเปย', troops: 80, wealth: 50,  hist: 'ชนเผ่าเร่ร่อนมหาสเต็ปป์ ภัยคุกคามชายแดนเหนือตลอดประวัติศาสตร์จีน' },
+  goguryeo: { name: '高句麗 โกคูรยอ',           troops: 55, wealth: 65,  hist: 'อาณาจักรเกาหลีโบราณทางเหนือ มีอิทธิพลทางวัฒนธรรมและการทหารในคาบสมุทรเกาหลี' },
+  baekje:   { name: '百濟 แพกเจ',               troops: 45, wealth: 55,  hist: 'อาณาจักรเกาหลีตะวันตกเฉียงใต้ มีความสัมพันธ์ทางการค้ากับอู๋' },
+  silla:    { name: '新羅 ชิลลา',               troops: 40, wealth: 55,  hist: 'อาณาจักรเกาหลีตะวันออกเฉียงใต้ รวมคาบสมุทรเกาหลีในศตวรรษที่ 7' },
+  japan:    { name: '倭國 ยามาโตะ (วา)',          troops: 50, wealth: 60,  hist: 'หมู่เกาะญี่ปุ่น ราชินีฮิมิโกะส่งทูตเยี่ยมเว่ยใน 238 CE ตามบันทึกเว่ยจื้อ' },
+  wusun:    { name: '烏孫 อูซุน',               troops: 65, wealth: 70,  hist: 'ชนเผ่าเอเชียกลาง ผลิตม้าศึกชั้นเลิศ ตั้งอยู่ริมทะเลสาบบัลคาช' },
+  persia:   { name: '安息 เปอร์เซีย (พาร์เธีย)',  troops: 75, wealth: 100, hist: 'จักรวรรดิพาร์เธียผู้ควบคุมเส้นทางสายไหม มีอิทธิพลต่อการค้าระหว่างจีนและโรมัน' },
+  tibet:    { name: '羌族 ชนเผ่าเชียง (ทิเบต)',    troops: 50, wealth: 45,  hist: 'ชนเผ่าเชียงในที่ราบสูงทิเบต โจรรอมักต้องรบกับพวกเขาในพื้นที่ตะวันตก' },
+  india:    { name: '天竺 ต้าเทียนจู๋ (อินเดีย)',  troops: 85, wealth: 120, hist: 'อนุทวีปอินเดีย ศูนย์กลางพระพุทธศาสนาและการค้าทางทะเลกับจีน' },
+  funan:    { name: '扶南 ฟูนัน (เขมรโบราณ)',      troops: 50, wealth: 75,  hist: 'อาณาจักรฟูนันในดินแดนที่เป็นกัมพูชาและเวียดนามใต้ในปัจจุบัน ส่งทูตเยี่ยมอู๋' },
+  linyi:    { name: '林邑 หลินอี้ (จามปา)',         troops: 45, wealth: 60,  hist: 'อาณาจักรจามปาในเวียดนามกลาง ค้าขายกับจีนใต้และโลกมหาสมุทร' },
+};
+
+// --- Resource data: add resources array to each province ---
+(function assignResources() {
+  const resourceMap = {
+    liangzhou: ['gold'],
+    changan:   ['gold'],
+    ye:        ['gold'],
+    chengdu:   ['gold'],
+    yunnan:    ['gold'],
+    jianye:    ['gold'],
+    // salt
+    baidi:     ['salt'],
+    jiangling: ['salt', 'rice'],
+    changsha:  ['salt'],
+    qingzhou:  ['salt'],
+    donghai:   ['salt'],
+    kuaiji:    ['salt'],
+    guangzhou: ['salt'],
+    jiaozhou:  ['salt', 'rice'],
+    // iron
+    bingzhou:  ['iron'],
+    youzhou:   ['iron'],
+    beiping:   ['iron'],
+    guandu:    ['iron'],
+    xuchang:   ['iron'],
+    luoyang:   ['iron'],
+    puyang:    ['iron'],
+    // rice
+    xiangyang: ['rice'],
+    wan:       ['rice'],
+    shouchun:  ['rice'],
+    caisang:   ['rice'],
+    wuling:    ['rice'],
+  };
+  Object.keys(PROVINCES).forEach(k => {
+    PROVINCES[k].resources = resourceMap[k] || [];
+  });
+})();
+
+// --- Generals ---
+const GENERALS = {
+  guanyu:     { name: '關羽 กวนอู',         shortName: 'กวนอู',       atk: 95, def: 80, int: 65, faction: 'shu', province: 'jiangling', alive: true, woundedTurns: 0 },
+  zhangfei:   { name: '張飛 เตียวหุย',      shortName: 'เตียวหุย',    atk: 90, def: 75, int: 55, faction: 'shu', province: 'chengdu',   alive: true, woundedTurns: 0 },
+  zhugeliang: { name: '諸葛亮 จูกัดเหลียง', shortName: 'จูกัดเหลียง', atk: 60, def: 70, int: 100,faction: 'shu', province: 'chengdu',   alive: true, woundedTurns: 0 },
+  zhaoyun:    { name: '趙雲 จูล่ง',         shortName: 'จูล่ง',       atk: 88, def: 85, int: 75, faction: 'shu', province: 'baidi',     alive: true, woundedTurns: 0 },
+  caocao:     { name: '曹操 โจโฉ',           shortName: 'โจโฉ',        atk: 80, def: 75, int: 95, faction: 'wei', province: 'xuchang',   alive: true, woundedTurns: 0 },
+  xiahoudon:  { name: '夏侯惇 เซียโหวตุน',  shortName: 'เซียโหวตุน', atk: 88, def: 82, int: 60, faction: 'wei', province: 'luoyang',   alive: true, woundedTurns: 0 },
+  zhanghe:    { name: '張郃 เตียวคับ',      shortName: 'เตียวคับ',    atk: 82, def: 78, int: 72, faction: 'wei', province: 'ye',        alive: true, woundedTurns: 0 },
+  sunquan:    { name: '孫權 ซุนกวน',         shortName: 'ซุนกวน',      atk: 65, def: 72, int: 82, faction: 'wu',  province: 'jianye',    alive: true, woundedTurns: 0 },
+  zhouyu:     { name: '周瑜 จิวยี่',         shortName: 'จิวยี่',      atk: 78, def: 80, int: 95, faction: 'wu',  province: 'caisang',   alive: true, woundedTurns: 0 },
+  lvmeng:     { name: '呂蒙 ลิบอง',         shortName: 'ลิบอง',       atk: 82, def: 78, int: 85, faction: 'wu',  province: 'jianye',    alive: true, woundedTurns: 0 },
+  dianwei:    { name: '典韋 เตียนอุย',      shortName: 'เตียนอุย',   atk: 97, def: 85, int: 45, faction: 'wei', province: 'xuchang',   alive: true, woundedTurns: 0 },
+};
+
+// --- Officials ---
+const OFFICIALS = {
+  sima_yi:  { name: '司馬懿 ซือหม่าอี้', shortName: 'ซือหม่าอี้', type: 'strategist', int: 98, faction: 'wei', province: 'ye'        },
+  xu_shu:   { name: '徐庶 สวีซู่',       shortName: 'สวีซู่',      type: 'strategist', int: 82, faction: 'shu', province: 'chengdu'   },
+  lu_su:    { name: '魯肅 หลู่ซู่',       shortName: 'หลู่ซู่',     type: 'strategist', int: 80, faction: 'wu',  province: 'jianye'    },
+  cao_ren:  { name: '曹仁 โจยิ้น',        shortName: 'โจยิ้น',      type: 'governor',   int: 70, faction: 'wei', province: 'xuchang'   },
+  liu_biao: { name: '劉表 หลิวเปียว',     shortName: 'หลิวเปียว',   type: 'governor',   int: 65, faction: 'independent', province: 'xiangyang' },
+};
+
+// Grid layout: [css_row, css_col, key, isAsia]
+const GRID_LAYOUT = [
+  // ASIA outer ring
+  [1, 4, 'mongolia', true],
+  [1, 6, 'goguryeo', true],
+  [3, 1, 'wusun',    true],
+  [3, 8, 'baekje',   true],
+  [4, 1, 'persia',   true],
+  [4, 8, 'silla',    true],
+  [5, 1, 'tibet',    true],
+  [5, 8, 'japan',    true],
+  [8, 2, 'india',    true],
+  [8, 5, 'funan',    true],
+  [8, 6, 'linyi',    true],
+  // China provinces
+  [2, 2, 'liangzhou',  false],
+  [2, 4, 'bingzhou',   false],
+  [2, 6, 'youzhou',    false],
+  [3, 2, 'tianshui',   false],
+  [3, 3, 'changan',    false],
+  [3, 4, 'luoyang',    false],
+  [3, 5, 'ye',         false],
+  [3, 6, 'beiping',    false],
+  [4, 3, 'guandu',     false],
+  [4, 4, 'xuchang',    false],
+  [4, 5, 'puyang',     false],
+  [4, 6, 'qingzhou',   false],
+  [4, 7, 'xiapi',      false],
+  [5, 3, 'xiangyang',  false],
+  [5, 4, 'wan',        false],
+  [5, 5, 'shouchun',   false],
+  [5, 6, 'jianye',     false],
+  [5, 7, 'donghai',    false],
+  [6, 2, 'chengdu',    false],
+  [6, 3, 'baidi',      false],
+  [6, 4, 'jiangling',  false],
+  [6, 5, 'changsha',   false],
+  [6, 6, 'caisang',    false],
+  [6, 7, 'kuaiji',     false],
+  [7, 2, 'yunnan',     false],
+  [7, 4, 'wuling',     false],
+  [7, 6, 'guangzhou',  false],
+  [7, 7, 'jiaozhou',   false],
+];
+
+// Historical notes by key (already embedded in PROVINCES/ASIA_PROVINCES above)
+
+// --- State ---
+let selectedKey = null;
+let asiaUnlocked = false; // kept for legacy unlock button compat
+
+// --- GAME STATE ---
+let G = {
+  phase: 'title',           // 'title' | 'management' | 'attack' | 'ai' | 'over'
+  turn: 0,
+  playerFaction: null,      // 'wei' | 'shu' | 'wu' | 'custom'
+  ai1Faction: null,
+  ai2Faction: null,
+  difficulty: 'normal',
+  owner: {},                // provinceKey → 'player' | 'ai1' | 'ai2' | 'none'
+  attackerKey: null,        // province selected as attacker in attack phase
+  managedThisTurn: new Set(), // provinces that already used a management action
+  transferSource: null,     // province key selected for transfer
+  playerWealth: 0,          // total player wealth pool
+  asiaUnlocked: false,
+  // Season system
+  year: 189,
+  turnInYear: 1,
+  season: 'spring',
+  // Resource system
+  resources: { gold: 0, salt: 0, iron: 0, rice: 0 },
+  ironBonus: 0,
+  // Generals system
+  generals: {},             // generalKey → provinceKey (current location)
+  generalTransferSource: null,
+  // Officials system
+  officials: {},            // officialKey → provinceKey
+  // Emperor system
+  emperor: null,            // 'player' | 'ai1' | 'ai2' | null
+  emperorYear: null,
+};
+
+// Title screen selection state
+let titleFaction = null;
+let titleDiff = 'normal';
+
+// Custom faction builder state
+let customFaction = { name: '', leader: '', color: '#A0263A', startProvince: '' };
+
+// Adjacency map: key → Set of adjacent province keys
+let ADJACENCY = {};
+
+// --- Helpers ---
+function splitName(fullName) {
+  // "涼州 เหลียงโจว" → {zh: "涼州", th: "เหลียงโจว"}
+  const spaceIdx = fullName.indexOf(' ');
+  if (spaceIdx === -1) return { zh: fullName, th: '' };
+  return { zh: fullName.slice(0, spaceIdx), th: fullName.slice(spaceIdx + 1) };
+}
+
+function timestamp() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${hh}:${mm}:${ss}`;
+}
+
+function addLog(msg, factionKey) {
+  const log = document.getElementById('eventLog');
+  const entry = document.createElement('div');
+  entry.className = 'event-entry';
+  const cls = factionKey ? `event-faction-${factionKey}` : '';
+  entry.innerHTML = `<span class="event-time">[${timestamp()}]</span><span class="${cls}">${msg}</span>`;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+}
+
+function getProvince(key) {
+  return PROVINCES[key] || ASIA_PROVINCES[key] || null;
+}
+
+function getFactionForKey(key) {
+  if (PROVINCES[key]) return PROVINCES[key].faction;
+  return 'asia';
+}
+
+// --- Build Grid (initial render, wires up click events) ---
+function buildGrid() {
+  const grid = document.getElementById('provinceGrid');
+  grid.innerHTML = '';
+
+  // Fill all 9×9 cells with empty placeholders first
+  const occupied = new Set();
+  GRID_LAYOUT.forEach(([row, col]) => occupied.add(`${row},${col}`));
+
+  for (let r = 1; r <= 9; r++) {
+    for (let c = 1; c <= 9; c++) {
+      if (!occupied.has(`${r},${c}`)) {
+        const empty = document.createElement('div');
+        empty.className = 'grid-cell-empty';
+        empty.style.gridRow = r;
+        empty.style.gridColumn = c;
+        grid.appendChild(empty);
+      }
+    }
+  }
+
+  // Create province tiles (structure only; visual state set by refreshGrid)
+  GRID_LAYOUT.forEach(([row, col, key, isAsia]) => {
+    const tile = document.createElement('div');
+    tile.id = `tile-${key}`;
+    tile.style.gridRow = row;
+    tile.style.gridColumn = col;
+
+    const prov = getProvince(key);
+    const { zh, th } = splitName(prov.name);
+
+    if (isAsia) {
+      // Asia tile default (locked)
+      tile.className = 'province-tile asia-locked';
+      tile.innerHTML = `
+        <div class="tile-name-zh" style="color:#666;">${zh}</div>
+        <div class="tile-name-th" style="color:#888;">${th}</div>
+        <div class="tile-stats">
+          <div class="tile-stat" style="background:rgba(80,80,80,0.2);color:#666;">
+            <span class="stat-icon">⚔</span>${prov.troops}
+          </div>
+        </div>
+        <div class="lock-overlay">
+          <div class="lock-icon">🔒</div>
+          <div class="lock-hint">ปลดล็อคหลัง<br>รวมจีน</div>
+        </div>`;
+      tile.addEventListener('click', () => onAsiaClick(key));
+    } else {
+      // China province — click handled by onProvinceClick which checks phase
+      const faction = PROVINCES[key].faction;
+      tile.className = `province-tile ${faction}`;
+
+      const fData = FACTIONS[faction];
+      const badge = faction === 'independent' ? 'อิสระ' : fData.name.split(' ')[0];
+
+      tile.innerHTML = `
+        <div class="faction-badge" style="background:${fData.color}88;">${badge}</div>
+        <div>
+          <div class="tile-name-zh">${zh}</div>
+          <div class="tile-name-th">${th}</div>
+        </div>
+        <div class="tile-stats">
+          <div class="tile-stat"><span class="stat-icon">⚔</span>${prov.troops}</div>
+          <div class="tile-stat"><span class="stat-icon">💰</span>${prov.wealth}</div>
+        </div>`;
+
+      tile.addEventListener('click', () => onProvinceClick(key));
+      tile.addEventListener('mouseenter', (e) => showTooltip(e, key));
+      tile.addEventListener('mousemove', (e) => moveTooltip(e));
+      tile.addEventListener('mouseleave', hideTooltip);
+    }
+
+    grid.appendChild(tile);
+  });
+}
+
+// --- Refresh Grid Visual (call after any game state change) ---
+function refreshGrid() {
+  if (G.phase === 'title') return; // no game state yet
+
+  GRID_LAYOUT.forEach(([row, col, key, isAsia]) => {
+    const tile = document.getElementById(`tile-${key}`);
+    if (!tile) return;
+    const prov = getProvince(key);
+    const { zh, th } = splitName(prov.name);
+
+    if (isAsia) {
+      if (G.asiaUnlocked) {
+        const owner = G.owner[key] || 'none';
+        tile.className = 'province-tile asia-unlocked ' + getOwnerClass(owner);
+        const fColor = getOwnerColor(owner);
+        tile.innerHTML = buildTileInner(key, zh, th, prov, owner, fColor, false);
+      } else {
+        tile.className = 'province-tile asia-locked';
+        tile.innerHTML = `
+          <div class="tile-name-zh" style="color:#666;">${zh}</div>
+          <div class="tile-name-th" style="color:#888;">${th}</div>
+          <div class="tile-stats"><div class="tile-stat" style="background:rgba(80,80,80,0.2);color:#666;"><span class="stat-icon">⚔</span>${prov.troops}</div></div>
+          <div class="lock-overlay"><div class="lock-icon">🔒</div><div class="lock-hint">ปลดล็อคหลัง<br>รวมจีน</div></div>`;
+      }
+      return;
+    }
+
+    // China province
+    const owner = G.owner[key] || 'none';
+    const ownerClass = getOwnerClass(owner);
+    const fColor = getOwnerColor(owner);
+
+    // Base class from owner
+    let classes = 'province-tile ' + ownerClass;
+    if (owner === 'player') classes += ' owner-player';
+    else if (owner === 'ai1') classes += ' owner-ai1';
+    else if (owner === 'ai2') classes += ' owner-ai2';
+    else classes += ' owner-none';
+
+    tile.className = classes;
+    tile.innerHTML = buildTileInner(key, zh, th, prov, owner, fColor, true);
+  });
+}
+
+// Build the inner HTML of a province tile based on owner
+function buildTileInner(key, zh, th, prov, owner, fColor, isChina) {
+  const isPlayer  = owner === 'player';
+  const isManaged = G.managedThisTurn.has(key);
+
+  // Owner label for badge
+  let badgeLabel = '';
+  if (owner === 'player')  badgeLabel = G.playerFaction  ? factionChar(G.playerFaction)  : '?';
+  else if (owner === 'ai1') badgeLabel = G.ai1Faction ? factionChar(G.ai1Faction) : '?';
+  else if (owner === 'ai2') badgeLabel = G.ai2Faction ? factionChar(G.ai2Faction) : '?';
+  else badgeLabel = '中';
+
+  const playerStar = isPlayer ? '<div class="player-star">★</div>' : '';
+  const managedBadge = (isPlayer && isManaged) ? '<div class="managed-badge">✓ จัดการแล้ว</div>' : '';
+
+  // Resource icons (player-owned China provinces only)
+  let resourceHtml = '';
+  if (isPlayer && prov.resources && prov.resources.length > 0) {
+    const icons = { gold: '🪙', salt: '🧂', iron: '⚙', rice: '🌾' };
+    resourceHtml = `<div class="tile-resources">${prov.resources.map(r => icons[r] || '').join('')}</div>`;
+  }
+
+  // General badge
+  let generalHtml = '';
+  const gen = getGeneralInProvince(key);
+  if (gen) generalHtml = `<div class="general-badge">⚔ ${gen.shortName}</div>`;
+
+  // Official badge (player-owned only)
+  let officialHtml = '';
+  if (isPlayer) {
+    const off = getOfficialInProvince(key);
+    if (off) {
+      const offIcon = off.type === 'governor' ? '🏛' : '📋';
+      officialHtml = `<div class="official-badge">${offIcon} ${off.shortName}</div>`;
+    }
+  }
+
+  return `
+    ${playerStar}
+    <div class="faction-badge" style="background:${fColor}88;">${badgeLabel}</div>
+    <div>
+      <div class="tile-name-zh">${zh}</div>
+      <div class="tile-name-th">${th}</div>
+    </div>
+    <div class="tile-stats">
+      <div class="tile-stat"><span class="stat-icon">⚔</span>${prov.troops}</div>
+      <div class="tile-stat"><span class="stat-icon">💰</span>${prov.wealth}</div>
+    </div>
+    ${resourceHtml}
+    ${managedBadge}
+    ${generalHtml}
+    ${officialHtml}`;
+}
+
+// Get CSS class string for an owner role
+function getOwnerClass(owner) {
+  if (owner === 'player') {
+    const f = G.playerFaction;
+    return (f === 'custom') ? 'custom' : (f || 'independent');
+  }
+  if (owner === 'ai1') return G.ai1Faction || 'independent';
+  if (owner === 'ai2') return G.ai2Faction || 'independent';
+  return 'independent'; // 'none'
+}
+
+// Get hex color for owner
+function getOwnerColor(owner) {
+  const f = ownerToFaction(owner);
+  if (!f) return FACTIONS.independent.color;
+  if (f === 'custom') return customFaction.color || '#A0263A';
+  return FACTIONS[f] ? FACTIONS[f].color : FACTIONS.independent.color;
+}
+
+// Convert owner role → faction key
+function ownerToFaction(owner) {
+  if (owner === 'player') return G.playerFaction;
+  if (owner === 'ai1')    return G.ai1Faction;
+  if (owner === 'ai2')    return G.ai2Faction;
+  return null;
+}
+
+// Convert faction key → short Chinese character
+function factionChar(faction) {
+  const map = { wei: '魏', shu: '蜀', wu: '吳', custom: '✦' };
+  return map[faction] || '?';
+}
+
+// Get general currently in a province
+function getGeneralInProvince(provKey) {
+  for (const [gKey, pKey] of Object.entries(G.generals)) {
+    if (pKey === provKey) {
+      const gen = GENERALS[gKey];
+      if (gen && gen.alive) return { key: gKey, ...gen };
+    }
+  }
+  return null;
+}
+
+// Get official currently in a province
+function getOfficialInProvince(provKey) {
+  for (const [oKey, pKey] of Object.entries(G.officials)) {
+    if (pKey === provKey) return { key: oKey, ...OFFICIALS[oKey] };
+  }
+  return null;
+}
+
+// Hex color to rgb components string "r,g,b"
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `${r},${g},${b}`;
+}
+
+// Season display info
+const SEASON_INFO = {
+  spring: { zh: '春', th: 'ใบไม้ผลิ', cls: 'season-spring' },
+  summer: { zh: '夏', th: 'ฤดูร้อน',  cls: 'season-summer' },
+  autumn: { zh: '秋', th: 'ใบไม้ร่วง', cls: 'season-autumn' },
+  winter: { zh: '冬', th: 'หน้าหนาว', cls: 'season-winter'  },
+};
+
+const RESOURCE_NAMES = { gold: '🪙ทอง', salt: '🧂เกลือ', iron: '⚙เหล็ก', rice: '🌾ข้าว' };
+
+// --- Tooltip ---
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(e, key) {
+  const prov = getProvince(key);
+  if (!prov) return;
+  const { zh, th } = splitName(prov.name);
+  let factionName = '';
+  if (PROVINCES[key]) {
+    factionName = FACTIONS[PROVINCES[key].faction].name;
+  }
+  tooltip.innerHTML = `<strong>${zh} ${th}</strong> — ${factionName}<br>⚔ ${prov.troops} &nbsp; 💰 ${prov.wealth}`;
+  tooltip.style.display = 'block';
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const x = e.clientX + 14;
+  const y = e.clientY - 10;
+  tooltip.style.left = `${Math.min(x, window.innerWidth - tooltip.offsetWidth - 10)}px`;
+  tooltip.style.top  = `${Math.max(y, 5)}px`;
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// --- Province Click (phase-aware) ---
+function onProvinceClick(key) {
+  // Pre-game (title): show province info only
+  if (G.phase === 'title') {
+    selectTileVisual(key);
+    showProvinceInfo(key);
+    return;
+  }
+
+  const owner = G.owner[key];
+  const prov  = PROVINCES[key];
+  const { zh, th } = splitName(prov.name);
+
+  // ── General transfer mode ──
+  if (G.generalTransferSource !== null) {
+    if (owner === 'player' && key !== G.generalTransferSource && isAdjacent(G.generalTransferSource, key)) {
+      doMoveGeneral(G.generalTransferSource, key);
+    } else if (key === G.generalTransferSource) {
+      cancelGeneralTransfer();
+      addLog('ยกเลิกการย้ายขุนพล', null);
+    } else {
+      addLog(`${zh} ${th} — ไม่ใช่มณฑลของคุณหรือไม่ติดกัน`, null);
+    }
+    return;
+  }
+
+  // ── Transfer mode: player clicked a destination ──
+  if (G.transferSource !== null) {
+    if (owner === 'player' && key !== G.transferSource && isAdjacent(G.transferSource, key)) {
+      doTransfer(G.transferSource, key);
+    } else if (key === G.transferSource) {
+      cancelTransfer();
+      addLog('ยกเลิกการโอนทหาร', null);
+    } else {
+      addLog(`${zh} ${th} — ไม่ใช่มณฑลของคุณหรือไม่ติดกัน`, null);
+    }
+    return;
+  }
+
+  // ── Management Phase ──
+  if (G.phase === 'management') {
+    selectTileVisual(key);
+
+    if (owner === 'player') {
+      showProvinceInfo(key);
+      showManagementActions(key);
+    } else {
+      // Enemy / neutral — info only
+      showProvinceInfo(key);
+      clearActionSection();
+    }
+    return;
+  }
+
+  // ── Attack Phase ──
+  if (G.phase === 'attack') {
+    // Case 1: No attacker selected yet — select own province as attacker
+    if (G.attackerKey === null) {
+      if (owner === 'player') {
+        if (prov.troops <= 10) {
+          addLog(`${zh} ${th} — กำลังพลน้อยเกินไปจะโจมตี (ต้องการ > 10)`, null);
+          return;
+        }
+        setAttackerKey(key);
+        selectTileVisual(key);
+        showProvinceInfo(key);
+        clearActionSection();
+        addLog(`เลือก ${zh} ${th} เป็นผู้โจมตี — คลิกมณฑลศัตรูที่ต้องการโจมตี`, null);
+      } else {
+        selectTileVisual(key);
+        showProvinceInfo(key);
+        clearActionSection();
+      }
+      return;
+    }
+
+    // Case 2: Attacker already selected
+    if (key === G.attackerKey) {
+      // Clicked same tile — deselect attacker
+      clearAttackerKey();
+      selectTileVisual(key);
+      addLog('ยกเลิกการเลือกผู้โจมตี', null);
+      return;
+    }
+
+    if (owner === 'player') {
+      // Switch attacker to a different own province
+      if (prov.troops > 10) {
+        setAttackerKey(key);
+        selectTileVisual(key);
+        showProvinceInfo(key);
+        addLog(`เปลี่ยนผู้โจมตีเป็น ${zh} ${th}`, null);
+      } else {
+        addLog(`${zh} ${th} — กำลังพลน้อยเกินไป`, null);
+      }
+      return;
+    }
+
+    // Click on enemy/neutral → try to attack
+    if (!isAdjacent(G.attackerKey, key)) {
+      const atk = PROVINCES[G.attackerKey];
+      const { zh: azh, th: ath } = splitName(atk.name);
+      addLog(`${azh} ${ath} ไม่ติดกับ ${zh} ${th} — ไม่สามารถโจมตีได้`, null);
+      return;
+    }
+
+    combat(G.attackerKey, key);
+    return;
+  }
+}
+
+// Visual-only tile selection (highlight)
+function selectTileVisual(key) {
+  if (selectedKey && selectedKey !== G.attackerKey) {
+    const old = document.getElementById(`tile-${selectedKey}`);
+    if (old) old.classList.remove('selected');
+  }
+  selectedKey = key;
+  const tile = document.getElementById(`tile-${key}`);
+  if (tile && key !== G.attackerKey) tile.classList.add('selected');
+}
+
+// Set the attacker key and apply orange highlight
+function setAttackerKey(key) {
+  // Remove old attacker highlight
+  if (G.attackerKey) {
+    const oldTile = document.getElementById(`tile-${G.attackerKey}`);
+    if (oldTile) {
+      oldTile.classList.remove('attacker-selected', 'selected');
+    }
+  }
+  G.attackerKey = key;
+  const tile = document.getElementById(`tile-${key}`);
+  if (tile) {
+    tile.classList.remove('selected');
+    tile.classList.add('attacker-selected');
+  }
+}
+
+// Clear attacker highlight
+function clearAttackerKey() {
+  if (G.attackerKey) {
+    const tile = document.getElementById(`tile-${G.attackerKey}`);
+    if (tile) tile.classList.remove('attacker-selected', 'selected');
+  }
+  G.attackerKey = null;
+}
+
+// Cancel transfer mode
+function cancelTransfer() {
+  if (G.transferSource) {
+    // Remove transfer-target highlights
+    Object.keys(G.owner).forEach(k => {
+      const t = document.getElementById(`tile-${k}`);
+      if (t) t.classList.remove('transfer-target');
+    });
+  }
+  G.transferSource = null;
+}
+
+// Show province info in side panel (read-only)
+function showProvinceInfo(key) {
+  const prov = PROVINCES[key];
+  if (!prov) return;
+  const { zh, th } = splitName(prov.name);
+
+  // Determine display faction from G.owner when game is active
+  let displayFaction, displayRuler, displayColor;
+  if (G.phase !== 'title') {
+    const owner = G.owner[key];
+    const fKey  = ownerToFaction(owner) || 'independent';
+    const fData = FACTIONS[fKey] || FACTIONS.independent;
+    displayFaction = fData.name;
+    displayRuler   = fData.ruler;
+    displayColor   = fData.color;
+  } else {
+    const fData = FACTIONS[prov.faction] || FACTIONS.independent;
+    displayFaction = fData.name;
+    displayRuler   = fData.ruler;
+    displayColor   = fData.color;
+  }
+
+  document.getElementById('panelEmpty').style.display = 'none';
+  document.getElementById('panelDetail').style.display = 'block';
+
+  document.getElementById('dNameZh').textContent = zh;
+  document.getElementById('dNameTh').textContent = th;
+
+  const fEl = document.getElementById('dFaction');
+  fEl.textContent = displayFaction;
+  fEl.style.background = displayColor;
+
+  document.getElementById('dRuler').textContent = `ผู้ปกครอง: ${displayRuler}`;
+
+  const maxTroops = 150, maxWealth = 150;
+  document.getElementById('dTroopsNum').textContent = `${prov.troops} / ${maxTroops}`;
+  document.getElementById('dWealthNum').textContent = `${prov.wealth} / ${maxWealth}`;
+  document.getElementById('dTroopsBar').style.width = `${Math.min(100,(prov.troops / maxTroops * 100)).toFixed(1)}%`;
+  document.getElementById('dWealthBar').style.width = `${Math.min(100,(prov.wealth / maxWealth * 100)).toFixed(1)}%`;
+
+  document.getElementById('dHistNote').textContent = prov.hist;
+
+  // Remove old extra sections then rebuild them
+  ['panelExtras'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
+
+  const extrasDiv = document.createElement('div');
+  extrasDiv.id = 'panelExtras';
+
+  // Resources section
+  if (prov.resources && prov.resources.length > 0) {
+    const icons = { gold: '🪙', salt: '🧂', iron: '⚙', rice: '🌾' };
+    const names = { gold: 'ทอง', salt: 'เกลือ', iron: 'เหล็ก', rice: 'ข้าว' };
+    const chips = prov.resources.map(r => `<span class="resource-chip">${icons[r]} ${names[r]}</span>`).join('');
+    extrasDiv.innerHTML += `<div class="panel-section"><div class="panel-title">ทรัพยากร</div><div class="resource-row">${chips}</div></div>`;
+  }
+
+  // General section
+  const gen = getGeneralInProvince(key);
+  if (gen) {
+    const atkPct = gen.atk;
+    const defPct = gen.def;
+    const intPct = gen.int;
+    extrasDiv.innerHTML += `<div class="panel-section">
+      <div class="panel-title">ขุนพล</div>
+      <div style="font-family:Georgia,serif;font-size:0.82rem;color:var(--dark-brown);margin-bottom:4px;">${gen.name}</div>
+      <div style="font-size:0.68rem;color:var(--ink);">
+        <div>โจมตี: <span style="color:#c0392b;">${gen.atk}</span>
+          <div class="general-stat-bar-bg"><div class="general-stat-bar-fill" style="width:${atkPct}%;background:linear-gradient(90deg,#c0392b,#e74c3c);"></div></div>
+        </div>
+        <div style="margin-top:3px;">ป้องกัน: <span style="color:var(--saddle);">${gen.def}</span>
+          <div class="general-stat-bar-bg"><div class="general-stat-bar-fill" style="width:${defPct}%;background:linear-gradient(90deg,var(--saddle),var(--gold));"></div></div>
+        </div>
+        <div style="margin-top:3px;">ปัญญา: <span style="color:#2980b9;">${gen.int}</span>
+          <div class="general-stat-bar-bg"><div class="general-stat-bar-fill" style="width:${intPct}%;background:linear-gradient(90deg,#2980b9,#6dd5fa);"></div></div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Official section
+  if (G.phase !== 'title') {
+    const off = getOfficialInProvince(key);
+    if (off) {
+      const typeLabel = off.type === 'governor' ? '🏛 ผู้ว่าราชการ (รายได้ ×1.2)' : '📋 นักยุทธศาสตร์ (ค่าจัดการ −5 💰)';
+      extrasDiv.innerHTML += `<div class="panel-section">
+        <div class="panel-title">ขุนนาง</div>
+        <div style="font-family:Georgia,serif;font-size:0.82rem;color:var(--dark-brown);">${off.name}</div>
+        <div style="font-size:0.68rem;color:var(--saddle);margin-top:3px;">${typeLabel}</div>
+        <div style="font-size:0.65rem;color:var(--ink);margin-top:2px;">ปัญญา: ${off.int}</div>
+      </div>`;
+    }
+  }
+
+  // Han Emperor note for Xuchang / Luoyang
+  if ((key === 'xuchang' || key === 'luoyang') && G.phase !== 'title') {
+    const isOwned = G.owner[key] === 'player';
+    const hasBoth = G.owner['xuchang'] === 'player' && G.owner['luoyang'] === 'player';
+    let hanNote = `<div class="han-emperor-note">🏛 ฮ่องเต้ฮั่น 漢帝 หลิวเสีย ประทับอยู่ที่นี่`;
+    if (isOwned) {
+      hanNote += `<br><span style="color:var(--saddle);">คุณควบคุมฮ่องเต้ฮั่น — ความชอบธรรมเพิ่ม +10% รายได้</span>`;
+    }
+    if (hasBoth) {
+      hanNote += `<br><span style="color:#b8860b;">★ คุณครองทั้งสองเมืองหลวง — รายได้ +10% พิเศษ</span>`;
+    }
+    hanNote += `</div>`;
+    extrasDiv.innerHTML += `<div class="panel-section">${hanNote}</div>`;
+  }
+
+  const detail = document.getElementById('panelDetail');
+  detail.appendChild(extrasDiv);
+
+  // Remove old action section (but keep panelExtras we just built)
+  const existingActions = document.getElementById('panelActions');
+  if (existingActions) existingActions.remove();
+}
+
+// Clear action buttons from panel
+function clearActionSection() {
+  const existing = document.getElementById('panelActions');
+  if (existing) existing.remove();
+  // Also clean extras (generals/officials/resources panel)
+  const extras = document.getElementById('panelExtras');
+  if (extras) extras.remove();
+}
+
+// Show management action buttons in side panel for a player-owned province
+function showManagementActions(key) {
+  clearActionSection();
+  const prov = PROVINCES[key];
+  const { zh } = splitName(prov.name);
+  const alreadyManaged = G.managedThisTurn.has(key);
+
+  const section = document.createElement('div');
+  section.id = 'panelActions';
+  section.className = 'action-section';
+
+  // Build adjacency list for transfer
+  const adjOwned = (ADJACENCY[key] || []).filter(k => G.owner[k] === 'player' && PROVINCES[k]);
+  const canTransfer = adjOwned.length > 0 && prov.troops > 20;
+
+  // Official discount for strategist
+  const off = getOfficialInProvince(key);
+  const strategistDiscount = (off && off.type === 'strategist') ? 5 : 0;
+  const recruitCost  = Math.max(0, 20 - strategistDiscount);
+  const developCost  = Math.max(0, 15 - strategistDiscount);
+
+  // General transfer button
+  const hasGeneral = !!getGeneralInProvince(key);
+  const canMoveGeneral = hasGeneral && adjOwned.length > 0;
+
+  section.innerHTML = `
+    <div class="action-title">⚙ การจัดการมณฑล</div>
+    <button class="btn-action recruit"
+      onclick="doRecruit('${key}')"
+      ${alreadyManaged || G.playerWealth < recruitCost ? 'disabled' : ''}>
+      ⚔ เกณฑ์ทหาร<br>
+      <small>+15 กำลังพล (ค่าใช้จ่าย ${recruitCost} 💰)${G.playerWealth < recruitCost ? ' — ทุนไม่พอ' : ''}${strategistDiscount > 0 ? ' ✦ส่วนลด' : ''}</small>
+    </button>
+    <button class="btn-action develop"
+      onclick="doDevelop('${key}')"
+      ${alreadyManaged || G.playerWealth < developCost ? 'disabled' : ''}>
+      💰 พัฒนาเศรษฐกิจ<br>
+      <small>+10 ความมั่งคั่ง (ค่าใช้จ่าย ${developCost} 💰)${G.playerWealth < developCost ? ' — ทุนไม่พอ' : ''}${strategistDiscount > 0 ? ' ✦ส่วนลด' : ''}</small>
+    </button>
+    <button class="btn-action transfer"
+      onclick="startTransfer('${key}')"
+      ${!canTransfer ? 'disabled' : ''}>
+      🔄 โอนทหาร<br>
+      <small>ส่ง 20 กำลังพลไปมณฑลข้างเคียง${!canTransfer ? (adjOwned.length === 0 ? ' — ไม่มีมณฑลติดกัน' : ' — กำลังพลน้อยเกินไป') : ''}</small>
+    </button>
+    <button class="btn-action" style="border-color:#c8952a;"
+      onclick="startGeneralTransfer('${key}')"
+      ${!canMoveGeneral ? 'disabled' : ''}>
+      ⚔ ย้ายขุนพล<br>
+      <small>${hasGeneral ? getGeneralInProvince(key).shortName + ' → มณฑลข้างเคียง' : '(ไม่มีขุนพลที่นี่)'}${!canMoveGeneral && hasGeneral ? ' — ไม่มีมณฑลติดกัน' : ''}</small>
+    </button>
+    ${alreadyManaged ? '<div style="font-size:0.68rem;color:var(--saddle);text-align:center;margin-top:4px;">✓ ใช้การจัดการแล้วในเทิร์นนี้</div>' : ''}`;
+
+  const detail = document.getElementById('panelDetail');
+  detail.appendChild(section);
+}
+
+// --- ASIA Click ---
+function onAsiaClick(key) {
+  if (!G.asiaUnlocked) {
+    addLog(`🔒 ${ASIA_PROVINCES[key].name} — ยังล็อคอยู่ (ต้องรวมจีนก่อน)`, 'asia');
+    return;
+  }
+
+  // In attack phase: Asia provinces can be attacked from adjacent player province
+  if (G.phase === 'attack' && G.attackerKey !== null) {
+    if (!isAdjacent(G.attackerKey, key)) {
+      addLog('ไม่ติดกัน — ไม่สามารถโจมตีดินแดนเอเชียนี้ได้', null);
+      return;
+    }
+    combat(G.attackerKey, key);
+    return;
+  }
+
+  // Show info
+  if (selectedKey) {
+    const old = document.getElementById(`tile-${selectedKey}`);
+    if (old) old.classList.remove('selected');
+  }
+  selectedKey = key;
+  const tile = document.getElementById(`tile-${key}`);
+  if (tile) tile.classList.add('selected');
+
+  const prov = ASIA_PROVINCES[key];
+  const { zh, th } = splitName(prov.name);
+
+  document.getElementById('panelEmpty').style.display = 'none';
+  document.getElementById('panelDetail').style.display = 'block';
+
+  document.getElementById('dNameZh').textContent = zh;
+  document.getElementById('dNameTh').textContent = th;
+
+  const owner = G.owner[key] || 'none';
+  let fLabel = 'ดินแดนต่างชาติ';
+  let fColor = '#555';
+  if (owner === 'player')  { fLabel = FACTIONS[G.playerFaction].name; fColor = FACTIONS[G.playerFaction].color; }
+  else if (owner === 'ai1'){ fLabel = FACTIONS[G.ai1Faction].name;    fColor = FACTIONS[G.ai1Faction].color; }
+  else if (owner === 'ai2'){ fLabel = FACTIONS[G.ai2Faction].name;    fColor = FACTIONS[G.ai2Faction].color; }
+
+  const fEl = document.getElementById('dFaction');
+  fEl.textContent = fLabel;
+  fEl.style.background = fColor;
+
+  document.getElementById('dRuler').textContent = 'ผู้ปกครอง: (ดินแดนต่างชาติ)';
+
+  const maxTroops = 150, maxWealth = 150;
+  document.getElementById('dTroopsNum').textContent = `${prov.troops} / ${maxTroops}`;
+  document.getElementById('dWealthNum').textContent = `${prov.wealth} / ${maxWealth}`;
+  document.getElementById('dTroopsBar').style.width = `${Math.min(100,(prov.troops / maxTroops * 100)).toFixed(1)}%`;
+  document.getElementById('dWealthBar').style.width = `${Math.min(100,(prov.wealth / maxWealth * 100)).toFixed(1)}%`;
+
+  document.getElementById('dHistNote').textContent = prov.hist;
+
+  addLog(`เข้าชม (เอเชีย): ${zh} ${th}`, 'asia');
+}
+
+// --- Unlock ASIA ---
+function unlockAsia() {
+  if (asiaUnlocked) return;
+  asiaUnlocked = true;
+
+  document.getElementById('btnUnlock').textContent = '✓ ปลดล็อคเอเชียแล้ว';
+  document.getElementById('btnUnlock').classList.add('unlocked');
+
+  // Remove lock overlays and enable ASIA tiles
+  Object.keys(ASIA_PROVINCES).forEach(key => {
+    const tile = document.getElementById(`tile-${key}`);
+    if (!tile) return;
+    tile.classList.remove('asia-locked');
+    tile.classList.add('asia-unlocked');
+
+    // Remove lock overlay
+    const overlay = tile.querySelector('.lock-overlay');
+    if (overlay) overlay.remove();
+
+    // Add hover/tooltip
+    tile.addEventListener('mouseenter', (e) => {
+      const prov = ASIA_PROVINCES[key];
+      const { zh, th } = splitName(prov.name);
+      tooltip.innerHTML = `<strong>${zh} ${th}</strong> — ดินแดนต่างชาติ<br>⚔ ${prov.troops} &nbsp; 💰 ${prov.wealth}`;
+      tooltip.style.display = 'block';
+      moveTooltip(e);
+    });
+    tile.addEventListener('mousemove', moveTooltip);
+    tile.addEventListener('mouseleave', hideTooltip);
+  });
+
+  addLog('ปลดล็อคดินแดนเอเชียสำเร็จ — ขยายอำนาจออกนอกจีน!', 'ind');
+}
+
+// --- Faction Score Bar ---
+function buildFactionScores() {
+  const container = document.getElementById('factionScores');
+  container.innerHTML = '';
+
+  if (G.phase === 'title') {
+    // Pre-game: show static faction counts from data
+    const counts = { wei: 0, shu: 0, wu: 0, independent: 0 };
+    const troops  = { wei: 0, shu: 0, wu: 0, independent: 0 };
+    Object.values(PROVINCES).forEach(p => {
+      counts[p.faction]++;
+      troops[p.faction] += p.troops;
+    });
+    const order = ['wei', 'shu', 'wu', 'independent'];
+    const shortNames = { wei: '魏', shu: '蜀', wu: '吳', independent: 'อิสระ' };
+    const clsMap = { wei: 'wei', shu: 'shu', wu: 'wu', independent: 'ind' };
+    order.forEach(f => {
+      const item = document.createElement('div');
+      item.className = `faction-score-item ${clsMap[f]}`;
+      item.style.color = FACTIONS[f].color;
+      item.innerHTML = `<div class="fs-name">${shortNames[f]}</div><div class="fs-stats">📍${counts[f]} ⚔${troops[f]}</div>`;
+      container.appendChild(item);
+    });
+    return;
+  }
+
+  // Game mode: show dynamic ownership counts
+  const roles = ['player', 'ai1', 'ai2', 'none'];
+  const counts = { player: 0, ai1: 0, ai2: 0, none: 0 };
+  const troops  = { player: 0, ai1: 0, ai2: 0, none: 0 };
+
+  const allKeys = [...Object.keys(PROVINCES), ...(G.asiaUnlocked ? Object.keys(ASIA_PROVINCES) : [])];
+  allKeys.forEach(k => {
+    const own = G.owner[k] || 'none';
+    const prov = getProvince(k);
+    counts[own]++;
+    troops[own] += (prov ? prov.troops : 0);
+  });
+
+  roles.forEach(role => {
+    const fKey = ownerToFaction(role);
+    if (!fKey && role !== 'none') return;
+    const fData = role === 'none' ? FACTIONS.independent : (FACTIONS[fKey] || FACTIONS.independent);
+    const shortName = role === 'none' ? 'อิสระ' : (role === 'player' ? '★ ' : '') + factionChar(fKey);
+    const cls = role === 'none' ? 'ind' : (fKey === 'custom' ? 'custom' : (fKey === 'independent' ? 'ind' : fKey));
+    const item = document.createElement('div');
+    item.className = `faction-score-item ${cls}`;
+    item.style.color = fData.color;
+    item.innerHTML = `<div class="fs-name">${shortName}</div><div class="fs-stats">📍${counts[role]} ⚔${troops[role]}</div>`;
+    container.appendChild(item);
+  });
+}
+
+// --- Legend ---
+function buildLegend() {
+  const container = document.getElementById('legendItems');
+  container.innerHTML = '';
+
+  const items = [
+    { label: '魏 เว่ย',       color: '#6B8CAE' },
+    { label: '蜀 สู่',        color: '#4A7C59' },
+    { label: '吳 อู๋',        color: '#3D7068' },
+    { label: 'อิสระ',         color: '#C9973A' },
+    { label: 'ล็อค (เอเชีย)', color: '#555'    },
+  ];
+
+  items.forEach(({ label, color }) => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${color};border-color:${color};"></div><span>${label}</span>`;
+    container.appendChild(item);
+  });
+}
+
+// --- Init ---
+function init() {
+  buildGrid();
+  buildFactionScores();
+  buildLegend();
+  // Title overlay is already visible via HTML/CSS — no further action needed
+}
+
+init();
+
+// ===================================================================
+// ==================== GAME SYSTEM ==================================
+// ===================================================================
+
+// --- TITLE SCREEN CONTROLS ---
+// selectFaction is defined in the NEW SYSTEMS section below
+
+function selectDiff(diff) {
+  titleDiff = diff;
+  document.querySelectorAll('.btn-diff').forEach(btn => btn.classList.remove('selected'));
+  document.querySelectorAll('.btn-diff').forEach(btn => {
+    if (btn.textContent.includes(diff === 'easy' ? 'ง่าย' : diff === 'normal' ? 'ปกติ' : 'ยาก'))
+      btn.classList.add('selected');
+  });
+}
+
+// --- START GAME ---
+
+function startGame() {
+  if (!titleFaction) return;
+
+  // Custom faction validation
+  if (titleFaction === 'custom') {
+    if (!customFaction.name || !customFaction.leader || !customFaction.startProvince) {
+      addLog('กรุณากรอกชื่อฝ่าย ชื่อผู้นำ และเลือกมณฑลตั้งต้น', null);
+      return;
+    }
+    // Create FACTIONS entry dynamically
+    const hex = customFaction.color;
+    const r = parseInt(hex.slice(1,3),16), g2 = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    FACTIONS['custom'] = {
+      name:   customFaction.name,
+      ruler:  customFaction.leader,
+      color:  hex,
+      bg:     `rgba(${r},${g2},${b},0.35)`,
+      border: hex,
+    };
+    // Inject CSS for custom faction
+    let styleTag = document.getElementById('customFactionStyle');
+    if (!styleTag) { styleTag = document.createElement('style'); styleTag.id = 'customFactionStyle'; document.head.appendChild(styleTag); }
+    styleTag.textContent = `:root { --custom-color: ${hex}; --custom-rgb: ${r},${g2},${b}; }
+      .province-tile.custom { background: rgba(${r},${g2},${b},0.35); border-color: ${hex}; }
+      .faction-score-item.custom { border-color: ${hex}; }`;
+  }
+
+  const allFactions = ['wei', 'shu', 'wu'];
+  const otherFactions = allFactions.filter(f => f !== titleFaction);
+  // For custom, pick ai from all three original factions
+  const aiPool = titleFaction === 'custom' ? ['wei', 'shu', 'wu'] : allFactions.filter(f => f !== titleFaction);
+
+  G.playerFaction = titleFaction;
+  G.ai1Faction    = aiPool[0];
+  G.ai2Faction    = aiPool[1];
+  G.difficulty    = titleDiff;
+  G.turn          = 1;
+  G.phase         = 'management';
+  G.managedThisTurn = new Set();
+  G.attackerKey   = null;
+  G.transferSource = null;
+  G.generalTransferSource = null;
+  G.asiaUnlocked  = false;
+  G.playerWealth  = 80; // starting gold
+  G.year          = 189;
+  G.turnInYear    = 1;
+  G.season        = 'spring';
+  G.resources     = { gold: 0, salt: 0, iron: 0, rice: 0 };
+  G.emperor       = null;
+  G.emperorYear   = null;
+  asiaUnlocked    = false;
+
+  // Initialize G.owner from PROVINCES faction data
+  G.owner = {};
+  if (titleFaction === 'custom') {
+    // Custom: player owns only chosen province; rest by historical faction
+    Object.entries(PROVINCES).forEach(([key, prov]) => {
+      if (key === customFaction.startProvince) {
+        G.owner[key] = 'player';
+      } else if (prov.faction === aiPool[0]) {
+        G.owner[key] = 'ai1';
+      } else if (prov.faction === aiPool[1]) {
+        G.owner[key] = 'ai2';
+      } else {
+        G.owner[key] = 'none';
+      }
+    });
+  } else {
+    Object.entries(PROVINCES).forEach(([key, prov]) => {
+      if (prov.faction === titleFaction) {
+        G.owner[key] = 'player';
+      } else if (prov.faction === otherFactions[0]) {
+        G.owner[key] = 'ai1';
+      } else if (prov.faction === otherFactions[1]) {
+        G.owner[key] = 'ai2';
+      } else {
+        G.owner[key] = 'none'; // independent
+      }
+    });
+  }
+
+  // Initialize generals: assign each general to their starting province
+  G.generals = {};
+  Object.entries(GENERALS).forEach(([gKey, gen]) => {
+    gen.alive = true;
+    gen.woundedTurns = 0;
+    if (PROVINCES[gen.province]) {
+      G.generals[gKey] = gen.province;
+    }
+  });
+
+  // Initialize officials: assign each official to their starting province
+  G.officials = {};
+  Object.entries(OFFICIALS).forEach(([oKey, off]) => {
+    if (PROVINCES[off.province]) {
+      G.officials[oKey] = off.province;
+    }
+  });
+
+  // Build adjacency map from GRID_LAYOUT positions
+  buildAdjacency();
+
+  // Hide title overlay
+  document.getElementById('titleOverlay').style.display = 'none';
+
+  // Show control bar
+  const cb = document.getElementById('controlBar');
+  cb.style.display = 'flex';
+
+  // Update header subtitle
+  const fData = FACTIONS[titleFaction] || FACTIONS.independent;
+  document.getElementById('headerSubtitle').textContent =
+    `ยุคสามก๊ก 189 CE — คุณเล่นเป็น ${fData.name} (${fData.ruler})`;
+
+  // Refresh visuals
+  refreshGrid();
+  buildFactionScores();
+  updateControlBar();
+  clearActionSection();
+
+  const fName = fData.name;
+  addLog(`เริ่มเกม — คุณเล่นเป็น ${fName} ความยาก: ${diffLabel(titleDiff)} · 春 ใบไม้ผลิ 189 CE`, titleFaction);
+  addLog(`เทิร์น 1 — ระยะจัดการ: คลิกมณฑลของคุณเพื่อเกณฑ์ทหาร/พัฒนา`, null);
+}
+
+// --- ADJACENCY ---
+
+function buildAdjacency() {
+  ADJACENCY = {};
+  const posMap = {}; // "row,col" → key
+
+  GRID_LAYOUT.forEach(([row, col, key]) => {
+    posMap[`${row},${col}`] = key;
+    ADJACENCY[key] = [];
+  });
+
+  GRID_LAYOUT.forEach(([row, col, key]) => {
+    const dirs = [[row-1,col],[row+1,col],[row,col-1],[row,col+1]];
+    dirs.forEach(([r,c]) => {
+      const neighbor = posMap[`${r},${c}`];
+      if (neighbor && neighbor !== key) {
+        if (!ADJACENCY[key].includes(neighbor)) ADJACENCY[key].push(neighbor);
+      }
+    });
+  });
+}
+
+function isAdjacent(keyA, keyB) {
+  return ADJACENCY[keyA] && ADJACENCY[keyA].includes(keyB);
+}
+
+// --- CONTROL BAR ---
+
+function updateControlBar() {
+  document.getElementById('ctrlTurn').textContent = `เทิร์น ${G.turn}`;
+
+  const phaseEl = document.getElementById('ctrlPhase');
+  const btnPhase = document.getElementById('btnPhase');
+
+  if (G.phase === 'management') {
+    phaseEl.textContent = 'ระยะ: จัดการ';
+    phaseEl.className = 'ctrl-badge phase-badge management';
+    btnPhase.textContent = '⚔ เข้าสู่ระยะโจมตี';
+    btnPhase.className = 'btn-phase to-attack';
+    btnPhase.disabled = false;
+  } else if (G.phase === 'attack') {
+    phaseEl.textContent = 'ระยะ: โจมตี';
+    phaseEl.className = 'ctrl-badge phase-badge attack';
+    btnPhase.textContent = '✅ จบเทิร์น → AI เดิน';
+    btnPhase.className = 'btn-phase end-turn';
+    btnPhase.disabled = false;
+  } else if (G.phase === 'ai') {
+    phaseEl.textContent = 'ระยะ: AI เดิน...';
+    phaseEl.className = 'ctrl-badge phase-badge ai';
+    btnPhase.textContent = '⏳ รอ AI...';
+    btnPhase.disabled = true;
+  }
+
+  // Compute totals
+  const playerProvinces = Object.entries(G.owner).filter(([,o]) => o === 'player');
+  let totalTroops = 0;
+  playerProvinces.forEach(([k]) => {
+    const p = getProvince(k);
+    if (p) totalTroops += p.troops;
+  });
+
+  document.getElementById('ctrlWealth').textContent = `💰 ${Math.floor(G.playerWealth)}`;
+  document.getElementById('ctrlTroops').textContent = `⚔ ${totalTroops}`;
+
+  updateSeasonDisplay();
+
+  // Resource badge
+  const rb = document.getElementById('ctrlResources');
+  if (rb) {
+    rb.textContent = `🪙${G.resources.gold} 🧂${G.resources.salt} ⚙${G.resources.iron} 🌾${G.resources.rice}`;
+  }
+
+  // Emperor button visibility
+  const chinaOwned = Object.keys(PROVINCES).filter(k => G.owner[k] === 'player').length;
+  const btnEmp = document.getElementById('btnEmperor');
+  if (btnEmp) btnEmp.style.display = (chinaOwned >= 15 && !G.emperor) ? 'inline-flex' : 'none';
+
+  // Emperor badge in header
+  const empBadge = document.getElementById('emperorBadge');
+  if (empBadge) {
+    if (G.emperor) {
+      let empName = G.emperor === 'player'
+        ? (FACTIONS[G.playerFaction] ? FACTIONS[G.playerFaction].name : customFaction.name || 'ฝ่ายคุณ')
+        : (G.emperor === 'ai1' ? FACTIONS[G.ai1Faction].name : FACTIONS[G.ai2Faction].name);
+      empBadge.textContent = `⚜ ฮ่องเต้: ${empName} (${G.emperorYear} CE)`;
+      empBadge.style.display = 'inline-flex';
+    } else {
+      empBadge.style.display = 'none';
+    }
+  }
+}
+
+function updateSeasonDisplay() {
+  const el = document.getElementById('ctrlSeason');
+  if (!el) return;
+  const si = SEASON_INFO[G.season] || SEASON_INFO.spring;
+  el.textContent = `${si.zh} ${si.th} · ${G.year} CE`;
+  el.className = `ctrl-badge season-badge ${si.cls}`;
+}
+
+// Phase advance button handler
+function advancePhase() {
+  if (G.phase === 'management') {
+    G.phase = 'attack';
+    G.attackerKey = null;
+    clearActionSection();
+    updateControlBar();
+    addLog(`--- เทิร์น ${G.turn}: ระยะโจมตี --- คลิกมณฑลของคุณแล้วคลิกมณฑลศัตรู`, null);
+  } else if (G.phase === 'attack') {
+    clearAttackerKey();
+    cancelTransfer();
+    G.phase = 'ai';
+    updateControlBar();
+    addLog('--- AI กำลังเดิน ---', null);
+    // Give browser a tick to render the AI phase badge before processing
+    setTimeout(() => {
+      aiTurn();
+    }, 100);
+  }
+}
+
+// --- MANAGEMENT ACTIONS ---
+
+function doRecruit(key) {
+  if (G.managedThisTurn.has(key)) { addLog('ใช้การจัดการในเทิร์นนี้แล้ว', null); return; }
+  const off = getOfficialInProvince(key);
+  const discount = (off && off.type === 'strategist') ? 5 : 0;
+  const cost = Math.max(0, 20 - discount);
+  if (G.playerWealth < cost) { addLog(`ทุนไม่พอสำหรับการเกณฑ์ทหาร (ต้องการ ${cost} 💰)`, null); return; }
+
+  const prov = PROVINCES[key];
+  // Iron bonus: +5 per 2 iron units, capped at +20 extra
+  const ironExtra = Math.min(20, Math.floor(G.resources.iron / 2) * 5);
+  prov.troops += 15 + ironExtra;
+  G.playerWealth -= cost;
+  G.managedThisTurn.add(key);
+
+  const { zh, th } = splitName(prov.name);
+  refreshGrid();
+  updateControlBar();
+  buildFactionScores();
+  showProvinceInfo(key);
+  showManagementActions(key);
+  addLog(`เกณฑ์ทหาร: ${zh} ${th} +${15 + ironExtra} กำลังพล (เสีย ${cost} 💰)${ironExtra > 0 ? ` [⚙เหล็ก +${ironExtra}]` : ''}`, G.playerFaction);
+}
+
+function doDevelop(key) {
+  if (G.managedThisTurn.has(key)) { addLog('ใช้การจัดการในเทิร์นนี้แล้ว', null); return; }
+  const off = getOfficialInProvince(key);
+  const discount = (off && off.type === 'strategist') ? 5 : 0;
+  const cost = Math.max(0, 15 - discount);
+  if (G.playerWealth < cost) { addLog(`ทุนไม่พอสำหรับการพัฒนา (ต้องการ ${cost} 💰)`, null); return; }
+
+  const prov = PROVINCES[key];
+  prov.wealth += 10;
+  G.playerWealth -= cost;
+  G.managedThisTurn.add(key);
+
+  const { zh, th } = splitName(prov.name);
+  refreshGrid();
+  updateControlBar();
+  showProvinceInfo(key);
+  showManagementActions(key);
+  addLog(`พัฒนาเศรษฐกิจ: ${zh} ${th} +10 ความมั่งคั่ง (เสีย ${cost} 💰)`, G.playerFaction);
+}
+
+function startTransfer(fromKey) {
+  G.transferSource = fromKey;
+  // Highlight adjacent player provinces as targets
+  const adj = (ADJACENCY[fromKey] || []).filter(k => G.owner[k] === 'player' && PROVINCES[k]);
+  adj.forEach(k => {
+    const t = document.getElementById(`tile-${k}`);
+    if (t) t.classList.add('transfer-target');
+  });
+  const prov = PROVINCES[fromKey];
+  const { zh, th } = splitName(prov.name);
+  addLog(`โอนทหาร: เลือก ${zh} ${th} — คลิกมณฑลข้างเคียงที่ต้องการส่งทหารไป`, null);
+}
+
+function doTransfer(fromKey, toKey) {
+  const fromProv = PROVINCES[fromKey];
+  const toProv   = PROVINCES[toKey];
+
+  if (fromProv.troops <= 20) {
+    addLog('กำลังพลน้อยเกินไปสำหรับการโอน (ต้องการ > 20)', null);
+    cancelTransfer();
+    return;
+  }
+
+  fromProv.troops -= 20;
+  toProv.troops   += 20;
+  cancelTransfer();
+
+  const { zh: fzh, th: fth } = splitName(fromProv.name);
+  const { zh: tzh, th: tth } = splitName(toProv.name);
+
+  refreshGrid();
+  updateControlBar();
+  buildFactionScores();
+  addLog(`โอนทหาร: ${fzh} ${fth} → ${tzh} ${tth} (20 กำลังพล)`, G.playerFaction);
+  clearActionSection();
+  showProvinceInfo(toKey);
+}
+
+// --- COMBAT ---
+
+function rollDice(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function difficultyMod() {
+  if (G.difficulty === 'easy')   return 1.25;
+  if (G.difficulty === 'hard')   return 0.85;
+  return 1.0; // normal
+}
+
+function combat(attackerKey, defenderKey) {
+  const atkProv  = getProvince(attackerKey);
+  const defProv  = getProvince(defenderKey);
+  const atkOwner = G.owner[attackerKey] || 'none';
+  const defOwner = G.owner[defenderKey] || 'none';
+
+  const { zh: azh, th: ath } = splitName(atkProv.name);
+  const { zh: dzh, th: dth } = splitName(defProv.name);
+
+  // Attacker must have troops > 10
+  if (atkProv.troops <= 10) {
+    addLog(`${azh} ${ath} — กำลังพลน้อยเกินไปจะโจมตี`, null);
+    return;
+  }
+
+  const mod = atkOwner === 'player' ? difficultyMod() : 1.0;
+
+  // Emperor coalition: AI gets +20% vs player if emperor declared
+  let emperorMod = 1.0;
+  if (G.emperor === 'player' && atkOwner !== 'player') emperorMod = 1.2;
+
+  // Winter attacker penalty
+  let winterMod = 1.0;
+  if (G.season === 'winter') winterMod = 0.85;
+
+  // Base powers
+  let attackPower  = Math.floor(atkProv.troops * mod * winterMod * emperorMod) + rollDice(1, 20);
+  let defensePower = defProv.troops + rollDice(1, 15);
+
+  // Emperor income bonus already applied in income; if player is emperor, +10% atk
+  if (G.emperor === 'player' && atkOwner === 'player') attackPower = Math.floor(attackPower * 1.1);
+
+  // General bonuses
+  const atkGen = getGeneralInProvince(attackerKey);
+  const defGen = getGeneralInProvince(defenderKey);
+  if (atkGen) {
+    const bonus = Math.floor(atkGen.atk / 10);
+    attackPower += bonus;
+    addLog(`⚔ ${atkGen.shortName} นำทัพโจมตี! (+${bonus})`, ownerToFaction(atkOwner) || 'independent');
+  }
+  if (defGen) {
+    const bonus = Math.floor(defGen.def / 10);
+    defensePower += bonus;
+    addLog(`🛡 ${defGen.shortName} ป้องกัน! (+${bonus})`, ownerToFaction(defOwner) || 'independent');
+  }
+
+  const atkFaction = ownerToFaction(atkOwner) || 'independent';
+  const defFaction = ownerToFaction(defOwner) || 'independent';
+
+  if (attackPower > defensePower) {
+    // Attacker wins — take province
+    G.owner[defenderKey] = atkOwner;
+    atkProv.troops = Math.max(10, atkProv.troops - 10);
+    defProv.troops = 15;
+
+    addLog(`⚔ ${azh} ${ath} โจมตี ${dzh} ${dth} — ชนะ! (${attackPower} vs ${defensePower}) ยึดได้!`, atkFaction);
+
+    // General capture: 10% chance if attacker has general and defender has general
+    if (atkGen && defGen && Math.random() < 0.10) {
+      delete G.generals[defGen.key];
+      addLog(`⚔ ${defGen.shortName} ถูกจับกุม!`, atkFaction);
+    }
+    // Move attacker general into captured province
+    if (atkGen) {
+      G.generals[atkGen.key] = defenderKey;
+    }
+
+    // Special: if player just won a China province, check Asia unlock
+    if (atkOwner === 'player' && PROVINCES[defenderKey]) {
+      checkAsiaUnlock();
+    }
+  } else {
+    // Defender wins — attacker retreats with losses
+    atkProv.troops = Math.max(5, atkProv.troops - 15);
+    addLog(`⚔ ${azh} ${ath} โจมตี ${dzh} ${dth} — พ่ายแพ้ (${attackPower} vs ${defensePower}) เสียทหาร 15`, atkFaction);
+
+    // 5% chance attacking general is wounded
+    if (atkGen && Math.random() < 0.05) {
+      GENERALS[atkGen.key].alive = false;
+      GENERALS[atkGen.key].woundedTurns = 2;
+      delete G.generals[atkGen.key];
+      addLog(`⚠ ${atkGen.shortName} บาดเจ็บ — ออกจากสนามรบ 2 เทิร์น!`, atkFaction);
+    }
+  }
+
+  // Clear attacker selection after player combat
+  if (atkOwner === 'player') {
+    clearAttackerKey();
+  }
+
+  refreshGrid();
+  buildFactionScores();
+  updateControlBar();
+  checkEndGame();
+}
+
+// --- AI TURN ---
+
+function aiTurn() {
+  // Process ai1 then ai2
+  aiProcessFaction('ai1');
+  aiProcessFaction('ai2');
+
+  // Winter attrition: all provinces lose 3 troops (min 5)
+  if (G.season === 'winter') {
+    // Rice reduces player attrition: 1 fewer troop lost per rice unit (min 0)
+    const riceAttrition = Math.max(0, 3 - G.resources.rice);
+    Object.keys(G.owner).forEach(k => {
+      const p = getProvince(k);
+      if (!p) return;
+      const loss = (G.owner[k] === 'player') ? riceAttrition : 3;
+      p.troops = Math.max(5, p.troops - loss);
+    });
+    addLog(`❄ ฤดูหนาว — กองทัพทุกฝ่ายสูญเสียกำลังพล (ผู้เล่น -${riceAttrition}, AI -3)`, null);
+  }
+
+  // Advance season BEFORE income
+  advanceSeason();
+
+  // After both AIs done → income → new management phase
+  endOfTurnIncome();
+
+  // Recover wounded generals
+  Object.entries(GENERALS).forEach(([gKey, gen]) => {
+    if (!gen.alive && gen.woundedTurns > 0) {
+      gen.woundedTurns--;
+      if (gen.woundedTurns === 0) {
+        gen.alive = true;
+        // Return to faction's first province
+        const fKey = gen.faction;
+        const fRole = fKey === G.playerFaction ? 'player' : (fKey === G.ai1Faction ? 'ai1' : 'ai2');
+        const home = Object.keys(G.owner).find(k => G.owner[k] === fRole && PROVINCES[k]);
+        if (home) G.generals[gKey] = home;
+        addLog(`✦ ${gen.shortName} หายจากบาดแผล — กลับเข้าประจำการ`, fKey);
+      }
+    }
+  });
+
+  // AI Emperor check
+  if (!G.emperor) {
+    ['ai1', 'ai2'].forEach(role => {
+      const aiCount = Object.keys(PROVINCES).filter(k => G.owner[k] === role).length;
+      if (aiCount >= 15 && Math.random() < 0.30) {
+        G.emperor = role;
+        G.emperorYear = G.year;
+        const fKey = role === 'ai1' ? G.ai1Faction : G.ai2Faction;
+        const fName = FACTIONS[fKey] ? FACTIONS[fKey].name : fKey;
+        addLog(`⚜ ${fName} ประกาศตนเป็นฮ่องเต้แห่งราชวงศ์ใหม่! ปีที่ ${G.year} CE`, fKey);
+      }
+    });
+  }
+
+  G.turn++;
+  G.phase = 'management';
+  G.managedThisTurn = new Set();
+  G.attackerKey = null;
+
+  refreshGrid();
+  buildFactionScores();
+  updateControlBar();
+  checkEndGame();
+
+  if (G.phase !== 'over') {
+    addLog(`--- เทิร์น ${G.turn}: ระยะจัดการ ---`, null);
+  }
+}
+
+function advanceSeason() {
+  const seasons = ['spring', 'summer', 'autumn', 'winter'];
+  G.turnInYear++;
+  if (G.turnInYear > 4) {
+    G.turnInYear = 1;
+    G.year++;
+  }
+  G.season = seasons[G.turnInYear - 1];
+}
+
+function aiProcessFaction(role) {
+  const fKey = role === 'ai1' ? G.ai1Faction : G.ai2Faction;
+  const ownedKeys = Object.entries(G.owner).filter(([,o]) => o === role).map(([k]) => k);
+
+  if (ownedKeys.length === 0) return;
+
+  // Occasionally recruit on richest own province
+  if (Math.random() < 0.5) {
+    const richest = ownedKeys
+      .filter(k => PROVINCES[k])
+      .sort((a,b) => PROVINCES[b].wealth - PROVINCES[a].wealth)[0];
+    if (richest && PROVINCES[richest].troops < 90) {
+      PROVINCES[richest].troops += 10;
+    }
+  }
+
+  // Find best attack target
+  let bestAttacker = null, bestTarget = null, bestScore = -Infinity;
+
+  ownedKeys.forEach(ak => {
+    const aProv = getProvince(ak);
+    if (!aProv || aProv.troops <= 10) return;
+
+    (ADJACENCY[ak] || []).forEach(dk => {
+      const dOwner = G.owner[dk];
+      if (dOwner === role) return; // own province
+      const dProv = getProvince(dk);
+      if (!dProv) return;
+
+      // Score: prefer weaker defenders, richer provinces
+      const score = (dProv.wealth || 0) - dProv.troops + rollDice(1, 10);
+      if (score > bestScore) {
+        bestScore    = score;
+        bestAttacker = ak;
+        bestTarget   = dk;
+      }
+    });
+  });
+
+  if (!bestAttacker || !bestTarget) return;
+
+  const atkProv = getProvince(bestAttacker);
+  const defProv = getProvince(bestTarget);
+
+  // Difficulty-based attack threshold
+  let threshold = defProv.troops;
+  if (G.difficulty === 'easy')   threshold *= 1.5; // AI needs big advantage on easy
+  if (G.difficulty === 'normal') threshold *= 1.1;
+  // hard: AI attacks if troops ≥ defender (no multiplier)
+
+  if (atkProv.troops >= threshold) {
+    combat(bestAttacker, bestTarget);
+  }
+}
+
+// --- END OF TURN INCOME ---
+
+function endOfTurnIncome() {
+  // Season income multiplier
+  const seasonMult = { spring: 1.15, summer: 1.0, autumn: 1.35, winter: 0.75 }[G.season] || 1.0;
+
+  // Summer flood event (15% chance)
+  if (G.season === 'summer' && Math.random() < 0.15) {
+    const playerProvs = Object.keys(G.owner).filter(k => G.owner[k] === 'player' && PROVINCES[k]);
+    if (playerProvs.length > 0) {
+      const floodProv = playerProvs[Math.floor(Math.random() * playerProvs.length)];
+      const fp = PROVINCES[floodProv];
+      fp.troops = Math.max(5, fp.troops - 10);
+      const { zh, th } = splitName(fp.name);
+      addLog(`🌊 น้ำท่วม! ${zh} ${th} สูญเสียกำลังพล 10 หน่วย`, G.playerFaction);
+    }
+  }
+
+  // Han Emperor bonus: player owns xuchang or luoyang → +10%; both → +20%
+  let hanMult = 1.0;
+  if (G.owner['xuchang'] === 'player') hanMult += 0.10;
+  if (G.owner['luoyang'] === 'player') hanMult += 0.10;
+
+  // Emperor declared bonus
+  let emperorMult = 1.0;
+  if (G.emperor === 'player') emperorMult = 1.25;
+
+  // Reset resources each turn (accumulate fresh)
+  G.resources = { gold: 0, salt: 0, iron: 0, rice: 0 };
+
+  // Player income from owned provinces
+  let incomeGained = 0;
+  Object.entries(G.owner).forEach(([key, owner]) => {
+    if (owner !== 'player') return;
+    const prov = getProvince(key);
+    if (!prov || !prov.wealth) return;
+
+    // Governor official bonus
+    const off = getOfficialInProvince(key);
+    const govMult = (off && off.type === 'governor') ? 1.2 : 1.0;
+
+    incomeGained += Math.round(prov.wealth * 0.12 * seasonMult * govMult * hanMult * emperorMult);
+
+    // Collect resources
+    (prov.resources || []).forEach(r => {
+      G.resources[r] = (G.resources[r] || 0) + 1;
+    });
+  });
+
+  // Resource conversions
+  // Salt → gold (+3 per salt unit)
+  const saltGold = G.resources.salt * 3;
+  incomeGained += saltGold;
+  // Gold resource → +4 each
+  const goldBonus = G.resources.gold * 4;
+  incomeGained += goldBonus;
+
+  G.playerWealth += incomeGained;
+
+  // AI province troop regeneration (minor, to keep AIs competitive)
+  ['ai1', 'ai2'].forEach(role => {
+    Object.entries(G.owner).filter(([,o]) => o === role).forEach(([k]) => {
+      const p = getProvince(k);
+      if (p && p.troops < 60) p.troops += 5;
+    });
+  });
+
+  addLog(`รายได้เทิร์น ${G.turn}: +${incomeGained} 💰 [ฤดู×${seasonMult.toFixed(2)}] (${Math.floor(G.playerWealth - incomeGained)} → ${Math.floor(G.playerWealth)})`, G.playerFaction);
+}
+
+// --- WIN / LOSE CHECK ---
+
+function checkEndGame() {
+  if (G.phase === 'over') return;
+
+  const chinaKeys   = Object.keys(PROVINCES);
+  const playerOwns  = chinaKeys.filter(k => G.owner[k] === 'player');
+  const playerCount = playerOwns.length;
+
+  // Player loses all provinces
+  if (playerCount === 0) {
+    G.phase = 'over';
+    document.getElementById('modalDefeat').style.display = 'flex';
+    addLog('DEFEAT — อาณาจักรล่มสลาย', G.playerFaction);
+    return;
+  }
+
+  // Player controls all China provinces
+  if (playerCount === chinaKeys.length && !G.asiaUnlocked) {
+    showAsiaModal();
+    return;
+  }
+
+  // Full victory: all provinces including Asia
+  if (G.asiaUnlocked) {
+    const allKeys     = [...chinaKeys, ...Object.keys(ASIA_PROVINCES)];
+    const playerTotal = allKeys.filter(k => G.owner[k] === 'player').length;
+    if (playerTotal === allKeys.length) {
+      G.phase = 'over';
+      document.getElementById('victoryText').textContent = 'รวมแผ่นดินจีนและเอเชียเป็นหนึ่ง! จักรวรรดิอันยิ่งใหญ่!';
+      document.getElementById('modalVictory').style.display = 'flex';
+      addLog('VICTORY — รวมโลกเป็นหนึ่ง!', G.playerFaction);
+      return;
+    }
+  }
+}
+
+// --- ASIA UNLOCK ---
+
+function checkAsiaUnlock() {
+  if (G.asiaUnlocked) return;
+  const chinaKeys  = Object.keys(PROVINCES);
+  const playerOwns = chinaKeys.filter(k => G.owner[k] === 'player').length;
+  if (playerOwns >= chinaKeys.length) {
+    showAsiaModal();
+  }
+}
+
+function showAsiaModal() {
+  document.getElementById('modalAsia').style.display = 'flex';
+}
+
+function closeAsiaModal() {
+  document.getElementById('modalAsia').style.display = 'none';
+  doUnlockAsia();
+}
+
+function doUnlockAsia() {
+  G.asiaUnlocked = true;
+  asiaUnlocked   = true; // sync legacy var
+
+  // Initialize Asia provinces in G.owner as 'none'
+  Object.keys(ASIA_PROVINCES).forEach(key => {
+    G.owner[key] = 'none';
+  });
+
+  // Rebuild adjacency to include Asia tiles
+  buildAdjacency();
+
+  refreshGrid();
+  buildFactionScores();
+  addLog('ปลดล็อคดินแดนเอเชีย — ขยายอำนาจออกนอกจีน!', G.playerFaction);
+}
+
+// Legacy unlock button (now hidden; doUnlockAsia is called automatically)
+function unlockAsia() {
+  if (G.phase === 'title' || G.asiaUnlocked) return;
+  showAsiaModal();
+}
+
+// --- RESTART ---
+
+function restartGame() {
+  // Hide all modals
+  ['modalVictory', 'modalDefeat', 'modalAsia'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+
+  // Reset game state
+  G = {
+    phase: 'title', turn: 0, playerFaction: null, ai1Faction: null, ai2Faction: null,
+    difficulty: 'normal', owner: {}, attackerKey: null, managedThisTurn: new Set(),
+    transferSource: null, playerWealth: 0, asiaUnlocked: false,
+    year: 189, turnInYear: 1, season: 'spring',
+    resources: { gold: 0, salt: 0, iron: 0, rice: 0 }, ironBonus: 0,
+    generals: {}, generalTransferSource: null,
+    officials: {},
+    emperor: null, emperorYear: null,
+  };
+  titleFaction = null;
+  titleDiff    = 'normal';
+  customFaction = { name: '', leader: '', color: '#A0263A', startProvince: '' };
+  asiaUnlocked = false;
+  selectedKey  = null;
+  ADJACENCY    = {};
+
+  // Reset province data to original values
+  resetProvinceData();
+
+  // Reset UI
+  document.getElementById('titleOverlay').style.display = 'flex';
+  document.getElementById('controlBar').style.display = 'none';
+  document.getElementById('panelEmpty').style.display = 'flex';
+  document.getElementById('panelDetail').style.display = 'none';
+  document.getElementById('btnUnlock').style.display = 'none';
+  document.getElementById('headerSubtitle').textContent = 'ยุคสามก๊ก 189–280 CE — เลือกฝ่ายเพื่อเริ่มเกม';
+
+  // Reset faction button selections
+  document.querySelectorAll('.btn-faction').forEach(b => b.classList.remove('selected'));
+  document.getElementById('btnStart').disabled = true;
+  // Hide custom faction form
+  const cfForm = document.getElementById('customFactionForm');
+  if (cfForm) cfForm.style.display = 'none';
+  document.querySelectorAll('.btn-diff').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.btn-diff').forEach(b => {
+    if (b.textContent.includes('ปกติ')) b.classList.add('selected');
+  });
+
+  // Clear event log
+  const log = document.getElementById('eventLog');
+  log.innerHTML = '<div class="event-entry"><span class="event-time">[ระบบ]</span> เริ่มต้นเกมใหม่ — ยุคสามก๊ก 189 CE</div>';
+
+  buildGrid();
+  buildFactionScores();
+}
+
+// Reset all province troop/wealth to original values
+const PROVINCES_ORIGINAL = JSON.parse(JSON.stringify(
+  Object.fromEntries(Object.entries(PROVINCES).map(([k,v]) => [k, {troops: v.troops, wealth: v.wealth}]))
+));
+const ASIA_ORIGINAL = JSON.parse(JSON.stringify(
+  Object.fromEntries(Object.entries(ASIA_PROVINCES).map(([k,v]) => [k, {troops: v.troops, wealth: v.wealth}]))
+));
+
+function resetProvinceData() {
+  Object.entries(PROVINCES_ORIGINAL).forEach(([k,v]) => {
+    PROVINCES[k].troops = v.troops;
+    PROVINCES[k].wealth = v.wealth;
+  });
+  Object.entries(ASIA_ORIGINAL).forEach(([k,v]) => {
+    ASIA_PROVINCES[k].troops = v.troops;
+    ASIA_PROVINCES[k].wealth = v.wealth;
+  });
+}
+
+// --- UTILITY ---
+
+function diffLabel(d) {
+  if (d === 'easy')  return 'ง่าย';
+  if (d === 'hard')  return 'ยาก';
+  return 'ปกติ';
+}
+
+// ===================================================================
+// ==================== NEW SYSTEMS ===================================
+// ===================================================================
+
+// --- CUSTOM FACTION ---
+
+function selectFaction(faction) {
+  titleFaction = faction;
+  document.querySelectorAll('.btn-faction').forEach(btn => btn.classList.remove('selected'));
+  // Highlight clicked button
+  if (faction === 'custom') {
+    document.getElementById('btnCustomFaction').classList.add('selected');
+    // Show custom form, populate province select
+    const form = document.getElementById('customFactionForm');
+    form.style.display = 'block';
+    populateCustomProvinceSelect();
+    document.getElementById('btnStart').disabled = !(customFaction.name && customFaction.leader && customFaction.startProvince);
+  } else {
+    const btn = document.querySelector(`.btn-faction.${faction}`);
+    if (btn) btn.classList.add('selected');
+    document.getElementById('customFactionForm').style.display = 'none';
+    document.getElementById('btnStart').disabled = false;
+  }
+}
+
+function populateCustomProvinceSelect() {
+  const sel = document.getElementById('cfStartProvince');
+  sel.innerHTML = '<option value="">-- เลือกมณฑล --</option>';
+  Object.entries(PROVINCES).forEach(([key, prov]) => {
+    if (prov.faction === 'independent') {
+      const { zh, th } = splitName(prov.name);
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = `${zh} ${th}`;
+      sel.appendChild(opt);
+    }
+  });
+  // Restore previously selected
+  if (customFaction.startProvince) sel.value = customFaction.startProvince;
+}
+
+function updateCustomFaction() {
+  customFaction.name   = document.getElementById('cfName').value.trim();
+  customFaction.leader = document.getElementById('cfLeader').value.trim();
+  customFaction.startProvince = document.getElementById('cfStartProvince').value;
+  document.getElementById('btnStart').disabled = !(customFaction.name && customFaction.leader && customFaction.startProvince);
+}
+
+function pickSwatchColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  customFaction.color = el.dataset.color;
+}
+
+// Override the old selectFaction to support custom (redefine above inline version here — already done above)
+
+// --- GENERAL TRANSFER ---
+
+function startGeneralTransfer(fromKey) {
+  const gen = getGeneralInProvince(fromKey);
+  if (!gen) { addLog('ไม่มีขุนพลในมณฑลนี้', null); return; }
+  G.generalTransferSource = fromKey;
+  // Highlight adjacent player provinces
+  const adj = (ADJACENCY[fromKey] || []).filter(k => G.owner[k] === 'player' && PROVINCES[k]);
+  adj.forEach(k => {
+    const t = document.getElementById(`tile-${k}`);
+    if (t) t.classList.add('general-transfer-target');
+  });
+  const { zh, th } = splitName(PROVINCES[fromKey].name);
+  addLog(`ย้ายขุนพล: ${gen.shortName} จาก ${zh} ${th} — คลิกมณฑลปลายทาง`, null);
+}
+
+function cancelGeneralTransfer() {
+  if (G.generalTransferSource) {
+    const adj = (ADJACENCY[G.generalTransferSource] || []);
+    adj.forEach(k => {
+      const t = document.getElementById(`tile-${k}`);
+      if (t) t.classList.remove('general-transfer-target');
+    });
+  }
+  G.generalTransferSource = null;
+}
+
+function doMoveGeneral(fromKey, toKey) {
+  const gen = getGeneralInProvince(fromKey);
+  if (!gen) { cancelGeneralTransfer(); return; }
+  G.generals[gen.key] = toKey;
+  cancelGeneralTransfer();
+  const { zh: fzh, th: fth } = splitName(PROVINCES[fromKey].name);
+  const { zh: tzh, th: tth } = splitName(PROVINCES[toKey].name);
+  refreshGrid();
+  addLog(`⚔ ย้าย ${gen.shortName}: ${fzh} ${fth} → ${tzh} ${tth}`, G.playerFaction);
+  showProvinceInfo(toKey);
+}
+
+// --- EMPEROR ---
+
+function declareEmperor() {
+  const chinaOwned = Object.keys(PROVINCES).filter(k => G.owner[k] === 'player').length;
+  if (chinaOwned < 15 || G.emperor !== null) return;
+  G.emperor = 'player';
+  G.emperorYear = G.year;
+  const fName = FACTIONS[G.playerFaction] ? FACTIONS[G.playerFaction].name : (customFaction.name || 'ฝ่ายคุณ');
+  addLog(`⚜ ${fName} ประกาศตนเป็นฮ่องเต้แห่งราชวงศ์ใหม่! ปีที่ ${G.year} CE — ศัตรูรวมพลต้านทาน!`, G.playerFaction);
+  updateControlBar();
+  refreshGrid();
+}
+
+// ===================================================================
+// ==================== END GAME SYSTEM ==============================
+// ===================================================================
+
+</script>
+</body>
+</html>
