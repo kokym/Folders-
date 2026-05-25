@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KOKYM HISTORY | บทความวิเคราะห์</title>
+    <style>
+        /* --- ธีมหลัก ดำ-ทอง-แดงสไตล์หอจดหมายเหตุโบราณ --- */
+        body {
+            background-color: #0d0d0d;
+            color: #d1c4a9;
+            font-family: 'Segoe UI', Sarabun, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- แถบด้านบนสุด (Navbar + ระบบ Login) --- */
+        .top-nav {
+            background-color: #111;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .nav-left a {
+            color: #b8860b;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* กล่องฟอร์มล็อกอินมุมขวาบน */
+        .login-box {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .login-box input {
+            background: #1f1f1f;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .login-box input:focus {
+            border-color: #d4af37;
+        }
+
+        .btn-login {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .btn-login:hover { background: #b22222; }
+
+        /* ส่วนหัวข้อหลัก */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(to bottom, #111, #0d0d0d);
+        }
+
+        header h1 {
+            color: #d4af37;
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 2px;
+        }
+
+        /* --- ส่วนของแอดมิน (จะซ่อนไว้ก่อน ล็อกอินถูกถึงจะโผล่) --- */
+        .admin-section {
+            display: none; /* ซ่อนไว้เบื้องต้น */
+            max-width: 900px;
+            margin: 20px auto;
+            background: #1a1111;
+            border: 1px dashed #8b0000;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .btn-add {
+            background: #d4af37;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* --- ระบบ Grid แสดงธัมเนลบทความ --- */
+        .articles-grid {
+            max-width: 1000px;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 35px;
+            padding: 0 20px;
+        }
+
+        /* การ์ดบทความ */
+        .article-card {
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 8px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+            border-color: #8b0000;
+            box-shadow: 0 5px 15px rgba(139, 0, 0, 0.2);
+        }
+
+        /* รูปธัมเนล */
+        .thumbnail {
+            width: 100%;
+            height: 180px;
+            background-color: #222;
+            overflow: hidden;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+        .article-card:hover .thumbnail img {
+            transform: scale(1.05);
+        }
+
+        /* เนื้อหาในการ์ด */
+        .card-body {
+            padding: 15px;
+        }
+
+        .card-body h3 {
+            margin: 0 0 10px 0;
+            color: #d4af37;
+            font-size: 1.15rem;
+        }
+
+        .card-body p {
+            margin: 0;
+            color: #888;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #222;
+            font-size: 0.75rem;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <div class="nav-left">
+            <a href="history.html">← กลับหน้าคลังประวัติศาสตร์</a>
+        </div>
+        
+        <div class="login-box" id="loginForm">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn-login" onclick="checkLogin()">Login</button>
+        </div>
+        
+        <div id="adminWelcome" style="display: none; color: #d4af37; font-size: 0.9rem;">
+            <span>สวัสดี, แอดมินเดฟ 👑</span>
+            <button class="btn-login" style="margin-left:10px; background:#444;" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <header>
+        <h1>บทความวิเคราะห์ประวัติศาสตร์</h1>
+        <p style="color: #635b4b;">เจาะลึกพงศาวดาร การเมือง และกลยุทธ์สงคราม</p>
+    </header>
+
+    <div class="admin-section" id="adminArea">
+        <h3 style="color: #fff; margin-top: 0;">⚙️ แผงควบคุมแอดมิน</h3>
+        <button class="btn-add" onclick="alert('ระบบกำลังเชื่อมต่อฐานข้อมูล... ใน GitHub Pages เวอร์ชันฟรี จะเน้นอ่านไฟล์นิ่งๆ เป็นหลัก หากต้องการเพิ่มบทความจริง ให้สร้างไฟล์ .html ใหม่แล้วนำลิงก์มาแปะเพิ่มในโค้ดนี้ได้เลยครับ!')">
+            ➕ เพิ่มบทความใหม่
+        </button>
+    </div>
+
+    <div class="articles-grid">
+
+        <a href="article-han-decline.html" class="article-card">
+            <div class="thumbnail">
+                <img src="https://images.unsplash.com/photo-1599408162172-ef090f707f1d?q=80&w=600&auto=format&fit=crop" alt="วิเคราะห์จุดเสื่อมราชวงศ์ฮั่น">
+            </div>
+            <div class="card-body">
+                <h3>วิเคราะห์จุดเสื่อมของราชวงศ์ฮั่น</h3>
+                <p>เจาะลึกชนวนเหตุทางการเมืองภายในราชสำนัก เหล่าขันที และกบฏโพกผ้าเหลืองที่นำไปสู่ตารางอำนาจยุคสามก๊ก...</p>
+            </div>
+            <div class="card-footer">
+                <span>📅 25 พฤษภาคม 2026</span>
+                <span>By Admin</span>
+            </div>
+        </a>
+
+        <a href="article-zhuge-strategy.html" class="article-card">
+            <div class="thumbnail">
+                <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600&auto=format&fit=crop" alt="กลยุทธ์ขงเบ้ง">
+            </div>
+            <div class="card-body">
+                <h3>กลยุทธ์การทูตและจิตวิทยาของขงเบ้ง</h3>
+                <p>ถอดรหัสความคิดของจูกัดเหลียงในการทูตเชื่อมสัมพันธ์กับง่อก๊ก และการใช้จิตวิทยาพิชิตใจผู้คนในศึกใหญ่...</p>
+            </div>
+            <div class="card-footer">
+                <span>📅 20 พฤษภาคม 2026</span>
+                <span>By Admin</span>
+            </div>
+        </a>
+
+    </div>
+
+    <script>
+        function checkLogin() {
+            var user = document.getElementById("username").value;
+            var pass = document.getElementById("password").value;
+
+            // ตรวจสอบรหัสตามที่กำหนดไว้
+            if (user === "admin" && pass === "donttell") {
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("adminWelcome").style.display = "block";
+                document.getElementById("adminArea").style.display = "block"; // เปิดแผงแอดมิน
+                alert("ยินดีต้อนรับครับแอดมิน!");
+            } else {
+                alert("รหัสผ่านไม่ถูกต้อง ลองใหม่อีกครั้งครับ");
+            }
+        }
+
+        function logout() {
+            document.getElementById("loginForm").style.display = "flex";
+            document.getElementById("adminWelcome").style.display = "none";
+            document.getElementById("adminArea").style.display = "none"; // ซ่อนแผงแอดมิน
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+        }
+    </script>
+
+</body>
+</html>
