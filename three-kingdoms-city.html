@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>มุมมองบริหารเมือง | 三國志</title>
+    <style>
+        :root {
+            --bg-dark: #0d0d0d;
+            --panel-bg: #1a110b;
+            --ink: #3a2010;
+            --gold: #c8952a;
+            --gold-light: #f0c040;
+            --parchment: #f5e6c8;
+            --crimson: #8b0000;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--parchment);
+            font-family: 'Segoe UI', Sarabun, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-bar {
+            background-color: #111;
+            padding: 15px 30px;
+            border-bottom: 2px solid var(--crimson);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-back {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        .btn-back:hover { color: var(--gold-light); }
+
+        .management-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .city-sidebar {
+            background: var(--panel-bg);
+            border: 2px solid var(--ink);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        .city-name-zh { font-size: 2.5rem; color: var(--gold); text-align: center; margin: 0; }
+        .city-name-th { font-size: 1.5rem; text-align: center; margin-top: 5px; color: #aaa; }
+
+        .stat-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            border-left: 4px solid var(--crimson);
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-box span.val { font-weight: bold; color: #fff; }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .panel-section {
+            background: #161616;
+            border: 1px solid #2d2d2d;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .section-title {
+            color: var(--gold);
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            background: var(--ink);
+            color: var(--parchment);
+            border: 1px solid var(--gold);
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+        .btn-action:hover {
+            background: var(--crimson);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .officer-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .officer-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .officer-name { color: var(--gold-light); font-weight: bold; font-size: 1.1rem; }
+        .officer-job { font-size: 0.85rem; color: #888; background: #222; padding: 2px 6px; border-radius: 4px; width: max-content; }
+
+        .log-box {
+            background: #000;
+            border: 1px solid #333;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 15px;
+            border-radius: 6px;
+            height: 100px;
+            overflow-y: auto;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="three-kingdoms-map.html" class="btn-back">⛺ กลับสู่หน้าแผนที่ยุทธศาสตร์ขุนศึก 190</a>
+        <div style="color: var(--gold-light); font-weight: bold;">📜 โหมดจัดการท้องถิ่น</div>
+    </div>
+
+    <div class="management-container">
+        
+        <div class="city-sidebar">
+            <h1 class="city-name-zh" id="cityNameZh">--</h1>
+            <div class="city-name-th" id="cityNameTh">กำลังโหลดเมือง...</div>
+            <hr style="border: 0; border-top: 1px solid var(--ink); margin: 20px 0;">
+
+            <div class="stat-box"><span>🌾 เสบียงประจำเมือง</span><span class="val" id="cityFood">2,500 ถัง</span></div>
+            <div class="stat-box"><span>🪙 รายได้พาณิชย์</span><span class="val" id="cityGold">450 ตำลึง</span></div>
+            <div class="stat-box"><span>🛡️ ป้องกันเมือง</span><span class="val" id="cityDef">80 / 100</span></div>
+            <div class="stat-box"><span>👨‍👩‍👦 ความภักดีราษฎร์</span><span class="val" id="cityLoyal" style="color: #00ff00;">95%</span></div>
+        </div>
+
+        <div class="main-panel">
+            
+            <div class="panel-section">
+                <h2 class="section-title">🏛️ โถงว่าราชการเมือง</h2>
+                <div class="action-grid">
+                    <button class="btn-action" onclick="orderCity('แต่งตั้งเจ้าเมืองคนใหม่')">👑 แต่งตั้งเจ้าเมือง</button>
+                    <button class="btn-action" onclick="orderCity('ประกาศรับสมัครปราชญ์/ขุนพลท้องถิ่น')">🔍 รับสมัครขุนนาง</button>
+                    <button class="btn-action" onclick="orderCity('เกณฑ์แรงงานซ่อมแซมกำแพงเมือง')">🛡️ ซ่อมแซมกำแพง</button>
+                    <button class="btn-action" onclick="orderCity('เปิดคลังแจกจ่ายเสบียงลดความตึงเครียด')">🌾 พัฒนาเกษตร</button>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h2 class="section-title">⚔️ ขุนพลและขุนนางที่ประจำการอยู่</h2>
+                <div class="officer-list" id="officerArea"></div>
+            </div>
+
+            <div class="panel-section">
+                <h2 class="section-title">📢 รายงานจากอาลักษณ์เมือง</h2>
+                <div class="log-box" id="cityLog">[ระบบ]: เลือกคำสั่งบริหารเพื่อดำเนินการ...</div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ข้อมูลผูกมณฑลหลักแบบอ้างอิงประวัติศาสตร์ ค.ศ. 190 (ตั๋งโต๊ะและฮ่องเต้)
+        const PROVINCE_DATA = {
+            'P01': { zh: '洛陽', th: 'ลกเอี๋ยง (Luoyang)', food: 5000, gold: 1200, def: 95, officers: ['พระเจ้าเหี้ยนเต้ (ฮ่องเต้)', 'ตั๋งโต๊ะ (ทรชน)'] },
+            'P02': { zh: '長安', th: 'เตียงอัน (Chang\'an)', food: 4500, gold: 1000, def: 90, officers: ['ลิโป้'] },
+            'P03': { zh: '許昌', th: 'ฮูโต๋ (Xuchang)', food: 4000, gold: 900, def: 85, officers: ['แฮหัวตุ้น', 'ซุนฮก'] },
+            'P04': { zh: '建業', th: 'เกี๋ยนเงียบ (Jianye)', food: 4200, gold: 1100, def: 88, officers: ['เทียเภา'] },
+            'P05': { zh: '成都', th: 'เฉิงตู (Chengdu)', food: 4800, gold: 850, def: 92, officers: ['กวนอู', 'เตียวหุย'] },
+            'P06': { zh: '襄陽', th: 'เซียงหยาง (Xiangyang)', food: 3500, gold: 750, def: 80, officers: ['เล่าเปียว'] },
+            'P07': { zh: '下邳', th: 'แห้ฝือ (Xiapi)', food: 3000, gold: 600, def: 75, officers: ['ตันก๋ง'] },
+            'P08': { zh: '鄴城', th: 'เย่เฉิง (Ye City)', food: 4600, gold: 950, def: 85, officers: ['งันเหลียง', 'บุนทิว'] },
+            'P09': { zh: '北平', th: 'ปักเป๋ง (Beiping)', food: 2800, gold: 500, def: 70, officers: ['กงซุนจ้าน'] },
+            'P10': { zh: '壽春', th: 'โซ่วชุน (Shouchun)', food: 3200, gold: 700, def: 65, officers: ['อ้วนสุด'] }
+        };
+
+        function getProvinceFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('province') || 'P01';
+        }
+
+        function initCityManagement() {
+            const provId = getProvinceFromURL();
+            const city = PROVINCE_DATA[provId] || { zh: '未知', th: 'หัวเมืองอิสระภายนอก', food: 2000, gold: 400, def: 50, officers: ['ขุนนางท้องถิ่น'] };
+
+            // หากมีระบบเซฟแชร์ ให้ดึงข้อมูลมาแทนค่าดิบเพื่อความต่อเนื่อง
+            if(localStorage.getItem('TG_SAVE_EXISTS') === 'true') {
+                const saveTroops = JSON.parse(localStorage.getItem('TG_troops'));
+                const saveWealth = JSON.parse(localStorage.getItem('TG_wealth'));
+                if(saveTroops && saveTroops[provId]) city.food = saveTroops[provId] * 80; // แปลงกำลังพลเป็นปริมาณเสบียงจำลอง
+                if(saveWealth && saveWealth[provId]) city.gold = saveWealth[provId] * 20; // ดึงระดับความมั่งคั่งมาคำนวณทอง
+            }
+
+            document.getElementById('cityNameZh').innerText = city.zh;
+            document.getElementById('cityNameTh').innerText = city.th;
+            document.getElementById('cityFood').innerText = city.food.toLocaleString() + " ถัง";
+            document.getElementById('cityGold').innerText = city.gold.toLocaleString() + " ตำลึง";
+            document.getElementById('cityDef').innerText = city.def + " / 100";
+
+            const officerArea = document.getElementById('officerArea');
+            officerArea.innerHTML = '';
+            
+            city.officers.forEach(name => {
+                let role = "ขุนพลกองทัพ";
+                if(name.includes("ฮ่องเต้")) role = "ประมุขแผ่นดินฮั่น";
+                if(name.includes("ตั๋งโต๊ะ")) role = "อัครมหาเสนาบดี (ผู้กุมอำนาจ)";
+
+                officerArea.innerHTML += `
+                    <div class="officer-card">
+                        <div class="officer-name">👤 ${name}</div>
+                        <div class="officer-job">${role}</div>
+                        <div style="font-size:0.8rem; color:#aaa;">ความภักดี: 99 | สถานะ: ประจำการยุค 190</div>
+                    </div>
+                `;
+            });
+        }
+
+        function orderCity(actionName) {
+            const log = document.getElementById('cityLog');
+            log.innerText += `\n[คำสั่ง]: บัญชาการทำปฏิบัติการ -> "${actionName}" สำเร็จ!`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        window.onload = initCityManagement;
+    </script>
+</body>
+</html>
