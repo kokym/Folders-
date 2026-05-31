@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOKYM ARCHIVE | แผงควบคุมแอดมิน</title>
+    <title>KOKYM HISTORY | บทความวิเคราะห์</title>
     <style>
-        /* --- ธีมหลัก ดำ-แดง-ทอง คุมโทนระบบทั้งหมด --- */
+        /* --- ธีมหลัก ดำ-ทอง-แดงสไตล์หอจดหมายเหตุโบราณ --- */
         body {
             background-color: #0d0d0d;
             color: #d1c4a9;
@@ -14,114 +14,108 @@
             padding: 0;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        header {
-            border-bottom: 2px solid #8b0000;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+        /* --- แถบด้านบนสุด (Navbar + ระบบ Login) --- */
+        .top-nav {
+            background-color: #111;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .nav-left a {
+            color: #b8860b;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .login-box {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .login-box input {
+            background: #1f1f1f;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .login-box input:focus { border-color: #d4af37; }
+
+        .btn-login {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .btn-login:hover { background: #b22222; }
+
+        /* ส่วนหัวข้อหลัก */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(to bottom, #111, #0d0d0d);
         }
 
         header h1 {
             color: #d4af37;
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 2rem;
+            letter-spacing: 2px;
         }
 
-        .btn-back {
-            color: #888;
-            text-decoration: none;
-            font-size: 0.9rem;
+        /* --- ⚙️ แผงเพิ่มลิงก์ WordPress (จะโผล่มาเมื่อแอดมินล็อกอิน) --- */
+        .admin-section {
+            display: none; /* ซ่อนไว้เบื้องต้น */
+            max-width: 600px;
+            margin: 20px auto;
+            background: #161111;
+            border: 1px dashed #8b0000;
+            padding: 20px;
+            border-radius: 8px;
         }
-        .btn-back:hover { color: #d4af37; }
 
-        /* --- สไตล์ของฟอร์มกรอกข้อมูล --- */
+        .admin-section h3 {
+            margin-top: 0;
+            color: #fff;
+            text-align: center;
+        }
+
         .form-group {
-            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
-            display: block;
+            font-size: 0.9rem;
             color: #d4af37;
-            margin-bottom: 8px;
             font-weight: bold;
-            font-size: 0.95rem;
         }
 
-        .form-group input[type="text"],
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            background: #161616;
-            border: 1px solid #333;
-            border-radius: 6px;
+        .form-group input, .form-group textarea {
+            background: #1f1f1f;
+            border: 1px solid #444;
             color: #fff;
-            font-size: 1rem;
-            box-sizing: border-box;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: inherit;
             outline: none;
         }
+        .form-group input:focus, .form-group textarea:focus { border-color: #d4af37; }
 
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: #8b0000;
-            box-shadow: 0 0 8px rgba(139, 0, 0, 0.4);
-        }
-
-        .btn-submit {
-            background: #8b0000;
-            color: #fff;
-            border: none;
-            padding: 12px 24px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-        }
-        .btn-submit:hover { background: #b22222; }
-
-        /* --- กล่องแสดงผลลัพธ์โค้ดที่สร้างขึ้นมา --- */
-        .result-box {
-            margin-top: 40px;
-            background: #111;
-            border: 1px solid #d4af37;
-            padding: 20px;
-            border-radius: 6px;
-            display: none; /* ซ่อนไว้ก่อน พอกดปุ่มค่อยโผล่ */
-        }
-
-        .result-box h3 {
-            color: #d4af37;
-            margin-top: 0;
-        }
-
-        textarea.code-output {
-            width: 100%;
-            height: 250px;
-            background: #000;
-            color: #00ff00; /* ฟีลแบบ Hacker/Developer */
-            font-family: monospace;
-            padding: 15px;
-            border-radius: 4px;
-            border: 1px solid #222;
-            font-size: 0.85rem;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-copy {
+        .btn-add {
             background: #d4af37;
             color: #000;
             border: none;
@@ -129,155 +123,279 @@
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
         }
-        .btn-copy:hover { background: #f0c040; }
+        .btn-add:hover { background: #f0c040; }
 
-        .btn-download {
-            background: #2e7d32;
+        /* --- ระบบ Grid แสดงธัมเนลบทความ --- */
+        .articles-grid {
+            max-width: 1000px;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 35px;
+            padding: 0 20px;
+        }
+
+        /* การ์ดบทความ */
+        .article-card {
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 8px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-card:hover {
+            transform: translateY(-5px);
+            border-color: #8b0000;
+            box-shadow: 0 5px 15px rgba(139, 0, 0, 0.2);
+        }
+
+        /* ปุ่มลบบทความ (เฉพาะแอดมินเห็น) */
+        .btn-delete {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(139, 0, 0, 0.9);
             color: #fff;
             border: none;
-            padding: 10px 20px;
-            font-weight: bold;
+            padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 0.8rem;
+            z-index: 10;
         }
-        .btn-download:hover { background: #4caf50; }
+        .btn-delete:hover { background: red; }
+
+        /* รูปธัมเนล */
+        .thumbnail {
+            width: 100%;
+            height: 180px;
+            background-color: #222;
+            overflow: hidden;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+        .article-card:hover .thumbnail img {
+            transform: scale(1.05);
+        }
+
+        /* เนื้อหาในการ์ด */
+        .card-body {
+            padding: 15px;
+            flex-grow: 1;
+        }
+
+        .card-body h3 {
+            margin: 0 0 10px 0;
+            color: #d4af37;
+            font-size: 1.15rem;
+        }
+
+        .card-body p {
+            margin: 0;
+            color: #888;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #222;
+            font-size: 0.75rem;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>⚙️ ระบบเขียนบทความ (Admin Panel)</h1>
-            <a href="articles.html" class="btn-back">← กลับหน้าบทความ</a>
-        </header>
-
-        <div class="form-group">
-            <label for="artTitle">หัวข้อบทความ:</label>
-            <input type="text" id="artTitle" placeholder="เช่น วิเคราะห์พงศาวลี เล่าเปียน ย้อนเวลาสู่สามก๊ก">
+    <div class="top-nav">
+        <div class="nav-left">
+            <a href="history.html">← กลับหน้าคลังประวัติศาสตร์</a>
         </div>
-
-        <div class="form-group">
-            <label for="artFileName">ตั้งชื่อไฟล์สำหรับดาวน์โหลด (อักษรภาษาอังกฤษ คั่นด้วยขีดกลาง เช่น han-decline):</label>
-            <input type="text" id="artFileName" placeholder="เช่น article-lou-bian">
+        
+        <div class="login-box" id="loginForm">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn-login" onclick="checkLogin()">Login</button>
         </div>
-
-        <div class="form-group">
-            <label for="artImg">ลิงก์รูปภาพธัมเนล (URL รูปภาพ):</label>
-            <input type="text" id="artImg" placeholder="วางลิงก์รูปภาพของคุณที่นี่">
-        </div>
-
-        <div class="form-group">
-            <label for="artContent">เนื้อหาบทความทั้งหมด:</label>
-            <textarea id="artContent" rows="12" placeholder="พิมพ์หรือวางเนื้อหาบทความแบบจัดเต็มที่นี่... (สามารถกด Enter เว้นย่อหน้าได้ตามใจชอบ)"></textarea>
-        </div>
-
-        <button class="btn-submit" onclick="generateArticleCode()">⚔️ สร้างโค้ดหน้าบทความสำเร็จรูป</button>
-
-        <div class="result-box" id="resultBox">
-            <h3>✨ สร้างโค้ดสำเร็จ!</h3>
-            <p style="font-size: 0.85rem; color: #888;">ท่านสามารถกดปุ่มสีเขียวเพื่อดาวน์โหลดไฟล์ไปใช้งานได้ทันที หรือก๊อบปี้โค้ดไปวางในหน้าจัดการไฟล์ของ GitHub ได้ครับ</p>
-            <textarea class="code-output" id="codeOutput" readonly></textarea>
-            
-            <div class="action-btns">
-                <button class="btn-copy" onclick="copyCode()">📋 ก๊อปปี้โค้ดทั้งหมด</button>
-                <button class="btn-download" onclick="downloadArticleFile()">📥 ดาวน์โหลดไฟล์ .html ทันที</button>
-            </div>
+        
+        <div id="adminWelcome" style="display: none; color: #d4af37; font-size: 0.9rem;">
+            <span>สวัสดี, แอดมินเดฟ 👑</span>
+            <button class="btn-login" style="margin-left:10px; background:#444;" onclick="logout()">Logout</button>
         </div>
     </div>
 
-    <script>
-        function generateArticleCode() {
-            var title = document.getElementById("artTitle").value.trim();
-            var img = document.getElementById("artImg").value.trim() || "https://images.unsplash.com/photo-1599408162172-ef090f707f1d?q=80&w=600&auto=format&fit=crop";
-            var content = document.getElementById("artContent").value;
-            var date = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    <header>
+        <h1>บทความวิเคราะห์ประวัติศาสตร์</h1>
+        <p style="color: #635b4b;">เจาะลึกพงศาวดาร การเมือง และกลยุทธ์สงคราม</p>
+    </header>
 
-            if (!title || !content) {
-                alert("กรุณากรอกหัวข้อและเนื้อหาบทความก่อนครับพี่เดฟ!");
+    <div class="admin-section" id="adminArea">
+        <h3>🔗 ระบบเพิ่มลิงก์บทความใหม่</h3>
+        
+        <div class="form-group">
+            <label>ชื่อเรื่องบทความ:</label>
+            <input type="text" id="wpTitle" placeholder="เช่น บันทึกรักหลิวหงกับรู่หลาน ตอนที่ 1">
+        </div>
+
+        <div class="form-group">
+            <label>ลิงก์บทความ (URL จาก WordPress):</label>
+            <input type="text" id="wpUrl" placeholder="https://myblog.wordpress.com/story-1">
+        </div>
+
+        <div class="form-group">
+            <label>ลิงก์รูปภาพ Thumbnail (ถ้าไม่ใส่จะใช้รูปเริ่มต้นให้ครับ):</label>
+            <input type="text" id="wpImg" placeholder="วางลิงก์รูปภาพประกอบ">
+        </div>
+
+        <div class="form-group">
+            <label>เนื้อหาเกริ่นนำสั้นๆ (แสดงบนหน้าบอร์ด):</label>
+            <textarea id="wpDesc" rows="3" placeholder="พิมพ์เนื้อหาเกริ่นนำให้น่าติดตาม..."></textarea>
+        </div>
+
+        <button class="btn-add" onclick="addNewWordPressLink()">➕ เพิ่มลิงก์บทความลงหน้าหลัก</button>
+    </div>
+
+    <div class="articles-grid" id="articlesGrid">
+        </div>
+
+    <script>
+        // บันทึกข้อมูลง่ายๆ ในเครื่อง (ถ้าไม่มีข้อมูลเก่า ระบบจะตั้งบทความเริ่มต้นให้พี่ 2 อัน)
+        const defaultArticles = [
+            {
+                id: 1,
+                title: "วิเคราะห์จุดเสื่อมของราชวงศ์ฮั่น",
+                url: "article-han-decline.html",
+                img: "https://images.unsplash.com/photo-1599408162172-ef090f707f1d?q=80&w=600",
+                desc: "เจาะลึกชนวนเหตุทางการเมืองภายในราชสำนัก เหล่าขันที และกบฏโพกผ้าเหลืองที่นำไปสู่ตารางอำนาจยุคสามก๊ก..."
+            },
+            {
+                id: 2,
+                title: "กลยุทธ์การทูตและจิตวิทยาของขงเบ้ง",
+                url: "article-zhuge-strategy.html",
+                img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=600",
+                desc: "ถอดรหัสความคิดของจูกัดเหลียงในการทูตเชื่อมสัมพันธ์กับง่อก๊ก และการใช้จิตวิทยาพิชิตใจผู้คนในศึกใหญ่..."
+            }
+        ];
+
+        let articles = JSON.parse(localStorage.getItem('kokym_articles')) || defaultArticles;
+        let isAdmin = false;
+
+        // ฟังก์ชันวาดการ์ดบทความขึ้นจอ
+        function renderArticles() {
+            const grid = document.getElementById("articlesGrid");
+            grid.innerHTML = "";
+
+            articles.forEach(art => {
+                const deleteStyle = isAdmin ? "display: block;" : "display: none;";
+                const cardHTML = `
+                    <div class="article-card" style="cursor: pointer;" onclick="window.open('${art.url}', '_blank')">
+                        <button class="btn-delete" style="${deleteStyle}" onclick="event.stopPropagation(); deleteArticle(${art.id})">🗑️ ลบ</button>
+                        <div class="thumbnail">
+                            <img src="${art.img || 'https://images.unsplash.com/photo-1599408162172-ef090f707f1d?q=80&w=600'}" alt="Thumbnail">
+                        </div>
+                        <div class="card-body">
+                            <h3>${art.title}</h3>
+                            <p>${art.desc}</p>
+                        </div>
+                        <div class="card-footer">
+                            <span>📅 บันทึกแล้ว</span>
+                            <span>By Admin</span>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+        }
+
+        // ฟังก์ชันกดปุ่ม "เพิ่มลิงก์บทความ"
+        function addNewWordPressLink() {
+            const title = document.getElementById("wpTitle").value.trim();
+            const url = document.getElementById("wpUrl").value.trim();
+            const img = document.getElementById("wpImg").value.trim();
+            const desc = document.getElementById("wpDesc").value.trim();
+
+            if (!title || !url || !desc) {
+                alert("กรุณากรอก ชื่อเรื่อง, ลิงก์ WordPress และเนื้อหาเกริ่นนำก่อนนะครับพี่!");
                 return;
             }
 
-            // จัดการเปลี่ยนการกดขึ้นบรรทัดใหม่ให้กลายเป็นแท็กย่อหน้าเพื่อความสวยงามใน HTML
-            var formattedContent = content
-                .split('\n\n')
-                .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
-                .join('\n        ');
+            // สร้างก้อนข้อมูลใหม่
+            const newArt = {
+                id: Date.now(), // ใช้เวลาปัจจุบันตั้งเป็น ID ไม่ให้ซ้ำกัน
+                title: title,
+                url: url,
+                img: img,
+                desc: desc
+            };
 
-            // โครงสร้างหน้าเพจอ่านบทความสำเร็จรูป ธีม หอจดหมายเหตุสามก๊กโบราณ
-            var generatedHTML = `<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${title}</title>
-    <style>
-        body { background-color: #0d0d0d; color: #d1c4a9; font-family: 'Segoe UI', Sarabun, sans-serif; margin:0; padding:0; line-height: 1.8; }
-        .nav { background: #111; padding: 15px; border-bottom: 1px solid #222; }
-        .nav a { color: #d4af37; text-decoration: none; font-size: 0.9rem; }
-        .article-container { max-width: 700px; margin: 40px auto; padding: 0 20px; }
-        h1 { color: #d4af37; line-height: 1.4; margin-bottom: 10px; font-size: 2rem; }
-        .meta { color: #666; font-size: 0.85rem; margin-bottom: 30px; border-bottom: 1px solid #222; padding-bottom: 15px; }
-        .main-img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 30px; border: 1px solid #222; }
-        .content { color: #b5a991; font-size: 1.1rem; text-indent: 30px; }
-        .content p { margin-bottom: 20px; text-align: justify; }
-    </style>
-</head>
-<body>
-    <div class="nav"><div style="max-width:700px; margin:0 auto;"><a href="articles.html">← กลับไปหน้าบทความทั้งหมด</a></div></div>
-    <div class="article-container">
-        <h1>${title}</h1>
-        <div class="meta">📅 อัปเดตเมื่อ: ${date} | เขียนโดย: Admin</div>
-        <img class="main-img" src="${img}" alt="Thumbnail">
-        <div class="content">
-        ${formattedContent}
-        </div>
-    </div>
-</body>
-</html>`;
+            articles.push(newArt);
+            localStorage.setItem('kokym_articles', JSON.stringify(articles)); // เซฟลงเครื่อง
+            renderArticles(); // อัปเดตหน้าจอทันที
 
-            document.getElementById("codeOutput").value = generatedHTML;
-            document.getElementById("resultBox").style.display = "block";
-            
-            // สกรอลล์หน้าจอลงมาที่กล่องผลลัพธ์อย่างนุ่มนวล
-            document.getElementById("resultBox").scrollIntoView({ behavior: 'smooth' });
+            // ล้างค่าในช่องกรอกข้อมูล
+            document.getElementById("wpTitle").value = "";
+            document.getElementById("wpUrl").value = "";
+            document.getElementById("wpImg").value = "";
+            document.getElementById("wpDesc").value = "";
+            alert("🎉 เพิ่มลิงก์บทความสำเร็จแล้วครับพี่เดฟ!");
         }
 
-        // 📋 ฟังก์ชันก๊อปปี้โค้ดที่อัปเกรดให้เสถียรขึ้น
-        function copyCode() {
-            var copyText = document.getElementById("codeOutput");
-            copyText.select();
-            copyText.setSelectionRange(0, 99999); 
-            
-            try {
-                navigator.clipboard.writeText(copyText.value);
-                alert("ก๊อปปี้โค้ดสำเร็จแล้ว!");
-            } catch (err) {
-                // รองรับเบราว์เซอร์เก่า
-                document.execCommand("copy");
-                alert("ก๊อปปี้โค้ดสำเร็จแล้ว! (Legacy Mode)");
+        // ฟังก์ชันลบบทความ
+        function deleteArticle(id) {
+            if (confirm("ต้องการลบลิงก์บทความนี้ใช่ไหมครับพี่?")) {
+                articles = articles.filter(art => art.id !== id);
+                localStorage.setItem('kokym_articles', JSON.stringify(articles));
+                renderArticles();
             }
         }
 
-        // 📥 ฟังก์ชันใหม่: ดาวน์โหลดโค้ดออกมาเป็นไฟล์เว็บ (.html) ทันทีในคลิกเดียว
-        function downloadArticleFile() {
-            var code = document.getElementById("codeOutput").value;
-            var fileName = document.getElementById("artFileName").value.trim() || "new-article";
-            
-            if (!code) return;
-            
-            // ล้างนามสกุลไฟล์เผื่อพิมพ์ติดมา
-            fileName = fileName.replace(".html", "") + ".html";
+        // ระบบล็อกอินแอดมิน
+        function checkLogin() {
+            var user = document.getElementById("username").value;
+            var pass = document.getElementById("password").value;
 
-            var blob = new Blob([code], { type: "text/html;charset=utf-8" });
-            var link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = fileName;
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            if (user === "admin" && pass === "donttell") {
+                isAdmin = true;
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("adminWelcome").style.display = "block";
+                document.getElementById("adminArea").style.display = "block"; // เปิดแผงกรอกลิงก์
+                renderArticles(); // วาดจอใหม่เพื่อให้ปุ่มลบโผล่ขึ้นมา
+                alert("ยินดีต้อนรับครับแอดมิน!");
+            } else {
+                alert("รหัสผ่านไม่ถูกต้อง ลองใหม่อีกครั้งครับ");
+            }
         }
+
+        function logout() {
+            isAdmin = false;
+            document.getElementById("loginForm").style.display = "flex";
+            document.getElementById("adminWelcome").style.display = "none";
+            document.getElementById("adminArea").style.display = "none"; // ซ่อนแผงกรอกลิงก์
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+            renderArticles(); // วาดจอใหม่เพื่อซ่อนปุ่มลบ
+        }
+
+        // รันคำสั่งให้แสดงผลครั้งแรกตอนเปิดหน้าเว็บ
+        renderArticles();
     </script>
 
 </body>
