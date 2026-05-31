@@ -1,218 +1,253 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOKYM | Project Portfolio</title>
-    <style>
-        /* กำหนดธีมสีพื้นหลังและฟอนต์ (มู้ดคลาสสิก ย้อนยุค) */
-        body {
-            background-color: #1a1a1a;
-            color: #e0d5c1;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow Phase 影变 — แหล่งรวมงานเขียน</title>
+<script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="sp-app.css">
+<style>
+/* ---- Home hero ---- */
+.hero { position: relative; padding: clamp(70px,11vw,140px) 0 clamp(56px,8vw,96px); overflow: hidden; }
+.hero .ink-splash {
+  position: absolute; top: 8%; right: -6%; width: min(46vw, 560px); aspect-ratio: 1; pointer-events: none;
+  background: radial-gradient(circle at 38% 42%, var(--crimson) 0%, transparent 60%);
+  opacity: .07; filter: blur(8px);
+}
+.hero .wrap { position: relative; }
+.hero .eyebrow { margin-bottom: 30px; }
+.quote-mark { font-family: var(--font-display); font-size: clamp(5rem,12vw,9rem); line-height: .6; color: var(--crimson); opacity: .9; height: .5em; display: block; }
+.hero blockquote {
+  margin: 0; font-family: var(--font-head); font-weight: 400;
+  font-size: clamp(1.9rem, 4.4vw, 3.5rem); line-height: 1.28; letter-spacing: .01em;
+  max-width: 20ch; text-wrap: balance;
+}
+.hero blockquote em { font-style: italic; color: var(--crimson); }
+.hero .attrib { margin-top: 34px; display: flex; align-items: center; gap: 16px; color: var(--ink-faint); }
+.hero .attrib .ln { width: 44px; height: 1px; background: var(--ink-faint); }
+.hero .attrib .cn { font-family: var(--font-cn); color: var(--crimson); font-size: 1.05rem; }
 
-        /* ส่วนหัวของเว็บไซต์ */
-        header {
-            background: linear-gradient(135deg, #2c1a1a 0%, #0f0f0f 100%);
-            border-bottom: 3px solid #8b0000;
-            padding: 60px 20px;
-            text-align: center;
-        }
+/* ---- Featured ---- */
+.featured-wrap { padding-top: 18px; }
+.feat-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(36px,5vw,72px); align-items: start; }
+.feat-main { border-top: 2px solid var(--crimson); padding-top: 28px; cursor: pointer; }
+.feat-main .cat-tag { display: block; margin-bottom: 16px; }
+.feat-main h2 { font-size: clamp(2rem,3.6vw,2.9rem); margin: 0 0 14px; font-weight: 500; transition: color .25s var(--ease); }
+.feat-main:hover h2 { color: var(--crimson); }
+.feat-main .cn-sub { font-family: var(--font-cn); color: var(--ink-faint); font-size: 1.2rem; letter-spacing: .2em; margin-bottom: 18px; }
+.feat-main .excerpt { color: var(--ink-soft); font-size: 1.05rem; line-height: 1.85; max-width: 46ch; margin-bottom: 22px; }
+.feat-side { display: flex; flex-direction: column; }
+.feat-side .card:first-child { border-top: 1px solid var(--rule); padding-top: 0; }
+.feat-side .card { padding: 22px 0; }
+.feat-side .card h3 { font-size: 1.2rem; }
 
-        header h1 {
-            color: #d4af37; /* สีทอง */
-            margin: 0;
-            font-size: 2.5rem;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-        }
+/* ---- Categories ---- */
+.cats { padding-top: 96px; }
+.cat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
+.cat-cell {
+  position: relative; padding: 30px 26px 26px; border: 1px solid var(--rule);
+  background: var(--paper-card); min-height: 188px; display: flex; flex-direction: column;
+  justify-content: space-between; cursor: pointer; overflow: hidden;
+  transition: border-color .3s var(--ease), transform .3s var(--ease), background-color .5s var(--ease);
+}
+.cat-cell:hover { border-color: var(--crimson); transform: translateY(-3px); }
+.cat-cell .cn-big {
+  position: absolute; right: -8px; bottom: -22px; font-family: var(--font-cn);
+  font-size: 5.2rem; color: var(--crimson); opacity: .08; line-height: 1; user-select: none;
+  transition: opacity .3s var(--ease);
+}
+.cat-cell:hover .cn-big { opacity: .16; }
+.cat-cell .num { font-family: var(--font-display); font-size: .85rem; color: var(--ink-faint); letter-spacing: .1em; }
+.cat-cell h3 { font-size: 1.32rem; margin: 0; font-weight: 500; position: relative; }
+.cat-cell .count { font-size: .82rem; color: var(--ink-faint); position: relative; }
 
-        header p {
-            color: #b0a48e;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 15px auto 25px auto;
-        }
-
-        .social-links a {
-            color: #ff4500;
-            text-decoration: none;
-            margin: 0 10px;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
-
-        .social-links a:hover {
-            color: #d4af37;
-        }
-
-        /* ส่วนเนื้อหาหลัก */
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .section-title {
-            color: #d4af37;
-            border-bottom: 1px solid #444;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-
-        /* โครงสร้างกล่องผลงาน (Grid) */
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-
-        /* ดีไซน์กล่องการ์ดผลงาน */
-        .project-card {
-            background-color: #242424;
-            border: 1px solid #3a3a3a;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s, border-color 0.3s;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            border-color: #8b0000; /* ขอบเปลี่ยนเป็นสีแดงเข้มเวลามีคนชี้ */
-        }
-
-        .card-content {
-            padding: 25px;
-            flex-grow: 1;
-        }
-
-        .card-content h3 {
-            color: #e0d5c1;
-            margin-top: 0;
-            font-size: 1.4rem;
-        }
-
-        .card-content p {
-            color: #9c9280;
-            font-size: 0.95rem;
-        }
-
-        /* ดีไซน์ปุ่มกด */
-        .btn {
-            display: inline-block;
-            background-color: #8b0000;
-            color: #fff;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            text-align: center;
-            font-weight: bold;
-            transition: background-color 0.3s;
-            margin-top: 15px;
-        }
-
-        .btn:hover {
-            background-color: #b22222;
-        }
-
-        /* ส่วนพิเศษ: กระดานสเตตัสแบบเกมจำลอง (Sandbox) */
-        .status-board {
-            background-color: #1f1414;
-            border: 2px dashed #8b0000;
-            padding: 25px;
-            border-radius: 6px;
-            margin-top: 40px;
-        }
-
-        .status-board h3 {
-            color: #d4af37;
-            margin-top: 0;
-        }
-
-        .status-list {
-            list-style: none;
-            padding: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .status-item {
-            background-color: #111;
-            padding: 10px 15px;
-            border-left: 4px solid #d4af37;
-            font-family: monospace;
-        }
-
-        /* ส่วนท้ายเว็บ */
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            font-size: 0.85rem;
-            border-top: 1px solid #222;
-            margin-top: 60px;
-        }
-    </style>
+@media (max-width: 900px) {
+  .feat-grid { grid-template-columns: 1fr; }
+  .cat-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 540px) {
+  .cat-grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
+<script src="theme.js"></script>
 
-    <header>
-        <h1>KOKYM ARCHIVE</h1>
-        <p>ยินดีต้อนรับสู่คลังรวบรวมโปรเจกต์ นิยายฟิคชั่นอิงประวัติศาสตร์ และโปรเจกต์พัฒนาเกมแนว Sandbox</p>
-        <div class="social-links">
-            <a href="https://www.youtube.com" target="_blank">🎬 YouTube Channel</a>
-            <a href="https://github.com/kokym" target="_blank">💻 GitHub Profile</a>
-        </div>
-    </header>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
+      <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
+      <span class="lock">
+        <span class="name">SHADOW PHASE</span>
+        <span class="sub">影变</span>
+      </span>
+    </a>
+    <nav class="nav">
+      <a href="index.html" aria-current="page">หน้าแรก</a>
+      <a href="Articles.html">บทความ</a>
+      <a href="Articles.html#cats">หมวดหมู่</a>
+      <a href="#about">เกี่ยวกับ</a>
+    </nav>
+    <button class="theme-btn" data-theme-toggle aria-label="สลับโหมดสว่าง/มืด">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg>
+    </button>
+  </div>
+</header>
 
-    <div class="container">
-        
-        <h2 class="section-title">📂 ผลงานและโปรเจกต์ทั้งหมด</h2>
-        
-        <div class="project-grid">
-            
-            <div class="project-card">
-                <div class="card-content">
-                    <h3>🎮 Sandbox Game Project</h3>
-                    <p>โปรเจกต์พัฒนาเกมแนวจำลองสถานการณ์/Sandbox ที่มีระบบสมาร์ตโฟนตรวจสอบสเตตัส ลิงก์นี้จะพาเข้าสู่หน้าทดสอบตัวเกมเวอร์ชันเว็บ</p>
-                    <a href="game.html" class="btn">เข้าสู่ระบบเกม</a>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="card-content">
-                    <h3>📜 Three Kingdoms Fiction</h3>
-                    <p>เรื่องราวประวัติศาสตร์ยุคสามก๊ก ราชวงศ์ฮั่น และราชวงศ์ฉิน ที่ถูกนำมาตีความใหม่ในรูปแบบฟิคชั่น และพงศาวลีวิเคราะห์ตัวละครฉบับเจาะลึก</p>
-                    <a href="history.html" class="btn">อ่านเนื้อหาทั้งหมด</a>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="status-board">
-            <h3>📊 Server & Project Status</h3>
-            <p style="font-size: 0.9rem; color: #9c9280;">ข้อมูลสถานะการอัปเดตระบบในปัจจุบัน</p>
-            <ul class="status-list">
-                <li class="status-item">📌 Engine: GitHub Pages</li>
-                <li class="status-item">⚔️ Timeline: ยุคสามก๊ก (190 AD)</li>
-                <li class="status-item">🚀 Web Version: 1.0.0 (Live)</li>
-                <li class="status-item">🔋 Progress: กำลังพัฒนาเนื้อหา</li>
-            </ul>
-        </div>
-
+<main>
+  <!-- HERO / opening quote -->
+  <section class="hero">
+    <div class="ink-splash"></div>
+    <div class="wrap">
+      <span class="eyebrow">บันทึก เงา และกาลเวลา <span class="cn">影变</span></span>
+      <span class="quote-mark">“</span>
+      <blockquote>
+        ประวัติศาสตร์ไม่ได้ <em>ซ้ำรอย</em> หากแต่มัน<em>คล้องจอง</em> กันเหมือนบทกวี
+      </blockquote>
+      <div class="attrib">
+        <span class="ln"></span>
+        <span>แหล่งรวมงานเขียนแนวประวัติศาสตร์ราชวงศ์จีน และข้อคิด</span>
+        <span class="cn">辭</span>
+      </div>
     </div>
+  </section>
 
-    <footer>
-        <p>© 2026 KOKYM. Powered by GitHub Pages.</p>
-    </footer>
+  <!-- FEATURED -->
+  <section class="featured-wrap">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">งานเขียนล่าสุด <span class="cn">近作</span></span>
+        </div>
+        <a class="link-arrow" href="Articles.html">ดูทั้งหมด <span class="ar">→</span></a>
+      </div>
+      <div class="feat-grid">
+        <article class="feat-main" id="featMain"></article>
+        <div class="feat-side" id="featSide"></div>
+      </div>
+    </div>
+  </section>
 
+  <!-- CATEGORIES -->
+  <section class="cats" id="about">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">เลือกอ่านตามหมวด <span class="cn">分類</span></span>
+          <h2>สี่สายธารของงานเขียน</h2>
+        </div>
+      </div>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+  </section>
+
+  <!-- LINKS / references (admin-managed) -->
+  <section class="links-sec" id="linksSec" style="display:none">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow">แหล่งอ้างอิง &amp; ลิงก์ <span class="cn">參考</span></span>
+          <h2>คลังลิงก์คัดสรร</h2>
+        </div>
+      </div>
+      <div class="links-grid" id="linksGrid"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
+        <p>Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา ทุกบทความเขียนและประทับตราด้วยมือ</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>สำรวจ</h4>
+          <a href="index.html">หน้าแรก</a>
+          <a href="Articles.html">บทความทั้งหมด</a>
+          <a href="Articles.html#cats">หมวดหมู่</a>
+        </div>
+        <div class="foot-col" id="footCats"></div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Shadow Phase 影变</span>
+      <span class="cn">影者，光之所遺也</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data.js"></script>
+<script src="sp-store.js"></script>
+<script src="sp-auth-ui.js"></script>
+<script>
+(async function () {
+  var cats = window.SP_CATEGORIES;
+  await SP.ready;
+  var arts = await SP.listArticles();
+  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+  function go(slug){return function(){location.href='Article.html?a='+slug;};}
+
+  var sorted = arts.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var main = sorted[0];
+  var side = sorted.slice(1,4);
+
+  // featured main
+  var fm = document.getElementById('featMain');
+  fm.innerHTML = '<span class="cat-tag">'+cats[main.cat].th+'</span>'+
+    '<h2>'+main.title+'</h2>'+
+    '<div class="cn-sub">'+main.cn+'</div>'+
+    '<p class="excerpt">'+main.excerpt+'</p>'+
+    '<span class="link-arrow">อ่านบทความ <span class="ar">→</span></span>';
+  fm.onclick = go(main.slug);
+
+  // featured side
+  var fs = document.getElementById('featSide');
+  fs.innerHTML = side.map(function(a){
+    return '<article class="card" data-slug="'+a.slug+'">'+
+      '<div class="meta-row"><span class="cat-tag">'+cats[a.cat].th+'</span><span class="dot"></span><span class="when">'+fmtDate(a.date)+'</span></div>'+
+      '<h3>'+a.title+'</h3>'+
+      '<p class="excerpt">'+a.excerpt+'</p></article>';
+  }).join('');
+  fs.querySelectorAll('.card').forEach(function(c){ c.onclick = go(c.dataset.slug); });
+
+  // categories
+  var order = ['history','reflection','fiction','review'];
+  var grid = document.getElementById('catGrid');
+  grid.innerHTML = order.map(function(key,i){
+    var n = arts.filter(function(a){return a.cat===key;}).length;
+    return '<div class="cat-cell" data-cat="'+key+'">'+
+      '<span class="num">0'+(i+1)+'</span>'+
+      '<span class="cn-big">'+cats[key].cn+'</span>'+
+      '<div><h3>'+cats[key].th+'</h3><span class="count">'+n+' บทความ</span></div></div>';
+  }).join('');
+  grid.querySelectorAll('.cat-cell').forEach(function(c){ c.onclick=function(){location.href='Articles.html?cat='+c.dataset.cat+'#cats';}; });
+
+  // footer cats
+  document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
+    order.map(function(k){return '<a href="Articles.html?cat='+k+'#cats">'+cats[k].th+'</a>';}).join('');
+
+  // admin-managed links
+  var links = await SP.listLinks();
+  if (links.length) {
+    document.getElementById('linksSec').style.display = '';
+    document.getElementById('linksGrid').innerHTML = links.map(function(l){
+      var safe = String(l.url||'').replace(/"/g,'&quot;');
+      return '<a class="link-card" href="'+safe+'" target="_blank" rel="noopener">'+
+        '<div class="lk-top"><h3>'+l.title+'</h3><span class="lk-arrow">↗</span></div>'+
+        (l.desc?'<p>'+l.desc+'</p>':'')+
+        '<span class="lk-url">'+safe.replace(/^https?:\/\//,'')+'</span></a>';
+    }).join('');
+  }
+})();
+</script>
 </body>
 </html>

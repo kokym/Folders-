@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บทความทั้งหมด — Shadow Phase 影变</title>
+<script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="sp-app.css">
+<style>
+.page-head { padding: clamp(54px,7vw,90px) 0 clamp(30px,4vw,48px); }
+.page-head .eyebrow { margin-bottom: 22px; }
+.page-head h1 { font-size: clamp(2.4rem,5vw,3.8rem); margin: 0 0 16px; font-weight: 500; }
+.page-head p { color: var(--ink-soft); max-width: 52ch; font-size: 1.05rem; margin: 0; }
+
+.filters { display: flex; gap: 10px; flex-wrap: wrap; padding: 8px 0 4px; border-bottom: 1px solid var(--rule-soft); position: sticky; top: 76px; background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(10px); z-index: 20; }
+.filters .chip {
+  font-family: var(--font-body); font-weight: 500; font-size: .9rem; cursor: pointer;
+  padding: 9px 18px; border: 1px solid var(--rule); background: transparent; color: var(--ink-soft);
+  border-radius: 100px; transition: all .25s var(--ease); display: inline-flex; align-items: center; gap: .5em;
+}
+.filters .chip .cn { font-size: .8rem; opacity: .65; }
+.filters .chip:hover { border-color: var(--crimson); color: var(--crimson); }
+.filters .chip.active { background: var(--crimson); border-color: var(--crimson); color: var(--paper); }
+html[data-theme="dark"] .filters .chip.active { color: #16130f; }
+.filters .chip.active .cn { opacity: .85; }
+
+.list { padding: 8px 0 0; }
+.list .card { border-top: 1px solid var(--rule); display: grid; grid-template-columns: 92px 1fr; gap: 30px; align-items: start; padding: 34px 0; }
+.list .card .idx { font-family: var(--font-display); font-size: 1.3rem; color: var(--ink-faint); padding-top: 4px; }
+.list .card .body { display: flex; flex-direction: column; gap: 11px; }
+.list .card .cn-sub { font-family: var(--font-cn); color: var(--ink-faint); letter-spacing: .18em; font-size: 1rem; }
+.list .card h3 { font-size: clamp(1.4rem,2.4vw,1.85rem); margin: 0; }
+.list .card .excerpt { font-size: 1rem; max-width: 64ch; }
+.list .card .meta-row { margin-top: 4px; }
+.list .empty { padding: 60px 0; color: var(--ink-faint); text-align: center; }
+@media (max-width:640px){ .list .card { grid-template-columns: 1fr; gap: 10px; } .list .card .idx { display:none; } }
+</style>
+</head>
+<body>
+<script src="theme.js"></script>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
+      <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
+      <span class="lock"><span class="name">SHADOW PHASE</span><span class="sub">影变</span></span>
+    </a>
+    <nav class="nav">
+      <a href="index.html">หน้าแรก</a>
+      <a href="Articles.html" aria-current="page">บทความ</a>
+      <a href="Articles.html#cats">หมวดหมู่</a>
+      <a href="index.html#about">เกี่ยวกับ</a>
+    </nav>
+    <button class="theme-btn" data-theme-toggle aria-label="สลับโหมดสว่าง/มืด">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="page-head" id="cats">
+    <div class="wrap">
+      <span class="eyebrow">คลังงานเขียน <span class="cn">文集</span></span>
+      <h1>บทความทั้งหมด</h1>
+      <p>รวมงานเขียนแนวประวัติศาสตร์ราชวงศ์จีน ข้อคิด เรื่องสั้น และบทวิเคราะห์ คัดเลือกและเรียบเรียงด้วยมือ</p>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="filters" id="filters"></div>
+    <div class="list" id="list"></div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
+        <p>Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>สำรวจ</h4>
+          <a href="index.html">หน้าแรก</a>
+          <a href="Articles.html">บทความทั้งหมด</a>
+        </div>
+        <div class="foot-col" id="footCats"></div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Shadow Phase 影变</span>
+      <span class="cn">影者，光之所遺也</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data.js"></script>
+<script src="sp-store.js"></script>
+<script src="sp-auth-ui.js"></script>
+<script>
+(async function () {
+  var cats = window.SP_CATEGORIES;
+  await SP.ready;
+  var arts = await SP.listArticles();
+  var order = ['history','reflection','fiction','review'];
+  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+
+  var params = new URLSearchParams(location.search);
+  var active = params.get('cat') || 'all';
+
+  // filter chips
+  var fEl = document.getElementById('filters');
+  var chips = [{k:'all',th:'ทั้งหมด',cn:'全部'}].concat(order.map(function(k){return {k:k,th:cats[k].th,cn:cats[k].cn};}));
+  fEl.innerHTML = chips.map(function(c){
+    return '<button class="chip'+(c.k===active?' active':'')+'" data-k="'+c.k+'">'+c.th+' <span class="cn">'+c.cn+'</span></button>';
+  }).join('');
+
+  var listEl = document.getElementById('list');
+  function render(key){
+    var sorted = arts.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+    var items = key==='all' ? sorted : sorted.filter(function(a){return a.cat===key;});
+    if(!items.length){ listEl.innerHTML='<div class="empty">ยังไม่มีบทความในหมวดนี้</div>'; return; }
+    listEl.innerHTML = items.map(function(a,i){
+      var n = (i+1)<10 ? '0'+(i+1) : ''+(i+1);
+      return '<article class="card" data-slug="'+a.slug+'">'+
+        '<span class="idx">'+n+'</span>'+
+        '<div class="body">'+
+          '<div class="meta-row"><span class="cat-tag">'+cats[a.cat].th+'</span><span class="dot"></span><span class="when">'+fmtDate(a.date)+'</span><span class="dot"></span><span class="when">อ่าน '+a.read+' นาที</span></div>'+
+          '<h3>'+a.title+'</h3>'+
+          '<div class="cn-sub">'+a.cn+'</div>'+
+          '<p class="excerpt">'+a.excerpt+'</p>'+
+          '<span class="link-arrow">อ่านต่อ <span class="ar">→</span></span>'+
+        '</div></article>';
+    }).join('');
+    listEl.querySelectorAll('.card').forEach(function(c){ c.onclick=function(){location.href='Article.html?a='+c.dataset.slug;}; });
+  }
+  render(active);
+
+  fEl.querySelectorAll('.chip').forEach(function(ch){
+    ch.onclick=function(){
+      fEl.querySelectorAll('.chip').forEach(function(x){x.classList.remove('active');});
+      ch.classList.add('active');
+      var k=ch.dataset.k;
+      render(k);
+      history.replaceState(null,'', k==='all'?'Articles.html#cats':'Articles.html?cat='+k+'#cats');
+    };
+  });
+
+  document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
+    order.map(function(k){return '<a href="Articles.html?cat='+k+'#cats">'+cats[k].th+'</a>';}).join('');
+})();
+</script>
+</body>
+</html>

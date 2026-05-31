@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แผงควบคุมแอดมิน — Shadow Phase 影变</title>
+<script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="sp-app.css">
+</head>
+<body>
+<script src="theme.js"></script>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
+      <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
+      <span class="lock"><span class="name">SHADOW PHASE</span><span class="sub">影变</span></span>
+    </a>
+    <nav class="nav">
+      <a href="index.html">หน้าแรก</a>
+      <a href="Articles.html">บทความ</a>
+      <a href="admin.html" aria-current="page">แอดมิน</a>
+    </nav>
+    <button class="theme-btn" data-theme-toggle aria-label="สลับโหมดสว่าง/มืด">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- gate for non-admins -->
+  <div class="wrap" id="gate" style="display:none">
+    <div class="admin-gate">
+      <img class="seal-img" src="assets/seal-sp.png" alt="" style="width:72px;height:72px;margin:0 auto">
+      <h1>เฉพาะผู้ดูแลระบบ</h1>
+      <p>หน้านี้สงวนไว้สำหรับแอดมินเท่านั้น กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน</p>
+      <button class="btn btn-primary" id="gateLogin" type="button">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <!-- admin console -->
+  <div id="console" style="display:none">
+    <section class="admin-head">
+      <div class="wrap">
+        <span class="eyebrow">แผงควบคุม <span class="cn">管理</span></span>
+        <h1>คลังจัดการเนื้อหา</h1>
+        <p>เพิ่มบทความใหม่ จัดการลิงก์อ้างอิง และดูแลความคิดเห็นของสมาชิก</p>
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-panel="article" type="button">เพิ่มบทความ</button>
+          <button class="admin-tab" data-panel="links" type="button">ลิงก์ &amp; อ้างอิง <span class="n" id="nLinks"></span></button>
+          <button class="admin-tab" data-panel="comments" type="button">ความคิดเห็น <span class="n" id="nComments"></span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: article -->
+    <section class="admin-panel active" data-panel="article">
+      <div class="wrap">
+        <div class="admin-flash" id="flashArticle"></div>
+        <div class="admin-grid">
+          <form class="admin-form" id="artForm">
+            <div class="sp-field"><label>ชื่อบทความ</label><input class="sp-input" name="title" required placeholder="เช่น อาณัติแห่งสวรรค์..."></div>
+            <div class="row2">
+              <div class="sp-field"><label>อักษรจีนกำกับ</label><input class="sp-input" name="cn" placeholder="天命"></div>
+              <div class="sp-field"><label>หมวดหมู่</label><select class="sp-select" name="cat" id="catSelect"></select></div>
+            </div>
+            <div class="sp-field"><label>เกริ่นนำ (excerpt)</label><textarea class="sp-textarea" name="excerpt" style="min-height:80px" required placeholder="สรุปสั้น ๆ ที่จะปรากฏในหน้ารวมบทความ"></textarea></div>
+            <div class="sp-field"><label>เนื้อหา</label><textarea class="sp-textarea" name="body" style="min-height:300px" required placeholder="พิมพ์เนื้อหาบทความที่นี่..."></textarea></div>
+            <div class="admin-syntax">
+              รูปแบบการเขียน — เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่ · ขึ้นต้นด้วย <code>## </code> เพื่อทำหัวข้อ · ขึ้นต้นด้วย <code>&gt; </code> เพื่อทำคำคม · ครอบคำด้วย <code>&lt;em&gt;…&lt;/em&gt;</code> เพื่อเน้นสีแดง
+            </div>
+            <button class="btn btn-primary sp-btn-full" type="submit">เผยแพร่บทความ</button>
+          </form>
+          <div class="admin-side">
+            <h3>บทความที่เพิ่มเอง</h3>
+            <p class="sub">บทความที่คุณเพิ่มผ่านแผงนี้ (บทความตั้งต้นของเว็บไม่แสดงที่นี่)</p>
+            <div id="customList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: links -->
+    <section class="admin-panel" data-panel="links">
+      <div class="wrap">
+        <div class="admin-flash" id="flashLink"></div>
+        <div class="admin-grid">
+          <form class="admin-form" id="linkForm">
+            <div class="sp-field"><label>ชื่อลิงก์</label><input class="sp-input" name="title" required placeholder="เช่น พจนานุกรมประวัติศาสตร์จีน"></div>
+            <div class="sp-field"><label>URL</label><input class="sp-input" name="url" type="url" required placeholder="https://..."></div>
+            <div class="sp-field"><label>คำอธิบาย (ไม่บังคับ)</label><textarea class="sp-textarea" name="desc" style="min-height:80px" placeholder="อธิบายสั้น ๆ ว่าลิงก์นี้คืออะไร"></textarea></div>
+            <button class="btn btn-primary sp-btn-full" type="submit">เพิ่มลิงก์</button>
+          </form>
+          <div class="admin-side">
+            <h3>ลิงก์ทั้งหมด</h3>
+            <p class="sub">ลิงก์เหล่านี้จะปรากฏในส่วน “คลังลิงก์คัดสรร” บนหน้าแรก</p>
+            <div id="linkList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: comments -->
+    <section class="admin-panel" data-panel="comments">
+      <div class="wrap">
+        <div class="admin-flash" id="flashComment"></div>
+        <h3 style="font-family:var(--font-head);font-weight:500;font-size:1.4rem;margin:0 0 4px">ดูแลความคิดเห็น</h3>
+        <p class="sub" style="color:var(--ink-faint);margin:0 0 26px">ความคิดเห็นทั้งหมดจากสมาชิก เรียงจากใหม่ไปเก่า — ลบรายการที่ไม่เหมาะสมได้</p>
+        <div id="commentList"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-bottom" style="margin-top:0;border-top:none;padding-top:0">
+      <span>© 2026 Shadow Phase 影变 · แผงควบคุมแอดมิน</span>
+      <span class="cn">影者，光之所遺也</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data.js"></script>
+<script src="sp-store.js"></script>
+<script src="sp-auth-ui.js"></script>
+<script>
+(function () {
+  var SP = window.SP, cats = window.SP_CATEGORIES;
+  var order = ['history','reflection','fiction','review'];
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+  function flash(id,msg){var f=document.getElementById(id);f.textContent=msg;f.classList.add('show');setTimeout(function(){f.classList.remove('show');},2600);}
+
+  // ---- gate ----
+  function gate(){
+    var admin = SP.isAdmin();
+    document.getElementById('gate').style.display = admin ? 'none' : '';
+    document.getElementById('console').style.display = admin ? '' : 'none';
+    if (admin) boot();
+  }
+  document.getElementById('gateLogin').onclick = function(){ SP.openAuth(); };
+
+  var booted = false;
+  function boot(){
+    if (booted) return; booted = true;
+
+    // tabs
+    document.querySelectorAll('.admin-tab').forEach(function(t){
+      t.onclick = function(){
+        document.querySelectorAll('.admin-tab').forEach(function(x){x.classList.remove('active');});
+        document.querySelectorAll('.admin-panel').forEach(function(p){p.classList.remove('active');});
+        t.classList.add('active');
+        document.querySelector('.admin-panel[data-panel="'+t.dataset.panel+'"]').classList.add('active');
+      };
+    });
+
+    // category select
+    document.getElementById('catSelect').innerHTML = order.map(function(k){
+      return '<option value="'+k+'">'+cats[k].th+'</option>';
+    }).join('');
+
+    // ===== add article =====
+    var artForm = document.getElementById('artForm');
+    artForm.onsubmit = function(e){
+      e.preventDefault();
+      var title = artForm.title.value.trim();
+      var body = SP.parseBody(artForm.body.value);
+      var words = artForm.body.value.replace(/\s+/g,' ').length;
+      var obj = {
+        slug: SP.makeSlug(title),
+        cat: artForm.cat.value,
+        title: title,
+        cn: artForm.cn.value.trim() || cats[artForm.cat.value].cn,
+        date: new Date().toISOString(),
+        read: Math.max(2, Math.round(words/900)),
+        featured: false,
+        excerpt: artForm.excerpt.value.trim(),
+        body: body
+      };
+      SP.addArticle(obj);
+      artForm.reset();
+      flash('flashArticle','เผยแพร่ “'+title+'” เรียบร้อยแล้ว');
+      renderCustom();
+    };
+
+    async function renderCustom(){
+      var custom = await SP.customArticles();
+      var el = document.getElementById('customList');
+      if (!custom.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีบทความที่เพิ่มเอง</div>'; return; }
+      el.innerHTML = custom.map(function(a){
+        return '<div class="admin-row"><div class="ar-body">'+
+          '<div class="ar-title">'+esc(a.title)+'</div>'+
+          '<div class="ar-meta"><span class="cat-tag">'+cats[a.cat].th+'</span> · '+fmtDate(a.date)+'</div>'+
+          '</div>'+
+          '<a class="ar-del" href="Article.html?a='+a.slug+'" target="_blank" style="text-decoration:none">ดู</a>'+
+          '<button class="ar-del" data-slug="'+a.slug+'" type="button">ลบ</button></div>';
+      }).join('');
+      el.querySelectorAll('button.ar-del').forEach(function(b){
+        b.onclick = function(){ if(confirm('ลบบทความนี้?')){ Promise.resolve(SP.deleteArticle(b.dataset.slug)).then(renderCustom); } };
+      });
+    }
+
+    // ===== links =====
+    var linkForm = document.getElementById('linkForm');
+    linkForm.onsubmit = function(e){
+      e.preventDefault();
+      SP.addLink({ title: linkForm.title.value.trim(), url: linkForm.url.value.trim(), desc: linkForm.desc.value.trim() });
+      linkForm.reset();
+      flash('flashLink','เพิ่มลิงก์เรียบร้อยแล้ว');
+      renderLinks();
+    };
+    async function renderLinks(){
+      var links = await SP.listLinks();
+      document.getElementById('nLinks').textContent = links.length ? links.length : '';
+      var el = document.getElementById('linkList');
+      if (!links.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีลิงก์</div>'; return; }
+      el.innerHTML = links.map(function(l){
+        return '<div class="admin-row"><div class="ar-body">'+
+          '<div class="ar-title">'+esc(l.title)+'</div>'+
+          '<div class="ar-meta">'+esc((l.url||'').replace(/^https?:\/\//,''))+'</div>'+
+          '</div><button class="ar-del" data-id="'+l.id+'" type="button">ลบ</button></div>';
+      }).join('');
+      el.querySelectorAll('.ar-del').forEach(function(b){
+        b.onclick = function(){ Promise.resolve(SP.deleteLink(b.dataset.id)).then(renderLinks); };
+      });
+    }
+
+    // ===== comments =====
+    async function renderComments(){
+      var all = await SP.allComments();
+      var arts = await SP.listArticles();
+      var titleBySlug = {}; arts.forEach(function(a){ titleBySlug[a.slug] = a.title; });
+      document.getElementById('nComments').textContent = all.length ? all.length : '';
+      var el = document.getElementById('commentList');
+      if (!all.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีความคิดเห็น</div>'; return; }
+      el.innerHTML = all.map(function(c){
+        var d = new Date(c.date);
+        var when = fmtDate(c.date)+' · '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+        return '<div class="admin-row"><div class="ar-body">'+
+          '<div class="ar-title">'+esc(c.name||'ผู้ใช้')+' <span style="color:var(--ink-faint);font-weight:400;font-size:.85rem">· '+when+'</span></div>'+
+          '<div class="ar-meta" style="margin:4px 0 8px">ใต้บทความ: '+esc(titleBySlug[c.slug]||c.slug)+'</div>'+
+          '<div style="color:var(--ink-soft);font-size:.98rem;line-height:1.7">'+esc(c.text).replace(/\n/g,'<br>')+'</div>'+
+          '</div><button class="ar-del" data-id="'+c.id+'" type="button">ลบ</button></div>';
+      }).join('');
+      el.querySelectorAll('.ar-del').forEach(function(b){
+        b.onclick = function(){ if(confirm('ลบความคิดเห็นนี้?')){ Promise.resolve(SP.deleteComment(b.dataset.id)).then(renderComments); } };
+      });
+    }
+
+    renderCustom(); renderLinks(); renderComments();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ SP.onAuth(gate); });
+  else SP.onAuth(gate);
+})();
+</script>
+</body>
+</html>
