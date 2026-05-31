@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // helper: is the signed-in user an admin?
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ---- user profiles ----
+    // a user may create/read/update only their OWN profile.
+    // role is locked to "member" on create so nobody can self-promote.
+    // (to make an admin: edit that user's doc in the Firebase console and set role: "admin")
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.role == 'member';
+      allow update: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.role == resource.data.role; // can't change own role
+      allow delete: if isAdmin();
+    }
+
+    // ---- articles ---- public read, admin write
+    match /articles/{slug} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- links ---- public read, admin write
+    match /links/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---- comments ----
+    // anyone may read; signed-in members may post as themselves;
+    // an admin may delete any comment, a member may delete their own;
+    // any signed-in user may toggle a like (only the "likes" field may change).
+    match /comments/{id} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAdmin()
+                    || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow update: if request.auth != null
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+    }
+  }
+}

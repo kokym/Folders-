@@ -61,21 +61,34 @@
         <div class="admin-flash" id="flashArticle"></div>
         <div class="admin-grid">
           <form class="admin-form" id="artForm">
+            <div class="art-mode-bar" id="artModeBar" style="display:none">
+              <span>✎ กำลังแก้ไขบทความเดิม</span>
+              <button type="button" id="artCancel">+ เขียนบทความใหม่</button>
+            </div>
+            <input type="hidden" name="slug" id="artSlug">
             <div class="sp-field"><label>ชื่อบทความ</label><input class="sp-input" name="title" required placeholder="เช่น อาณัติแห่งสวรรค์..."></div>
             <div class="row2">
               <div class="sp-field"><label>อักษรจีนกำกับ</label><input class="sp-input" name="cn" placeholder="天命"></div>
               <div class="sp-field"><label>หมวดหมู่</label><select class="sp-select" name="cat" id="catSelect"></select></div>
             </div>
+            <div class="sp-field">
+              <label>รูปปก (ไม่บังคับ)</label>
+              <div class="cover-input">
+                <input class="sp-input" name="cover" id="artCover" placeholder="วาง URL รูป หรืออัปโหลดไฟล์ →">
+                <label class="cover-up"><input type="file" accept="image/*" id="artCoverFile" hidden><span id="artCoverBtn">อัปโหลด</span></label>
+              </div>
+              <div class="cover-preview" id="artCoverPrev" style="display:none"><img alt=""><button type="button" id="artCoverClear" aria-label="ลบรูปปก">×</button></div>
+            </div>
             <div class="sp-field"><label>เกริ่นนำ (excerpt)</label><textarea class="sp-textarea" name="excerpt" style="min-height:80px" required placeholder="สรุปสั้น ๆ ที่จะปรากฏในหน้ารวมบทความ"></textarea></div>
             <div class="sp-field"><label>เนื้อหา</label><textarea class="sp-textarea" name="body" style="min-height:300px" required placeholder="พิมพ์เนื้อหาบทความที่นี่..."></textarea></div>
             <div class="admin-syntax">
-              รูปแบบการเขียน — เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่ · ขึ้นต้นด้วย <code>## </code> เพื่อทำหัวข้อ · ขึ้นต้นด้วย <code>&gt; </code> เพื่อทำคำคม · ครอบคำด้วย <code>&lt;em&gt;…&lt;/em&gt;</code> เพื่อเน้นสีแดง
+              รูปแบบการเขียน — เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่ · ขึ้นต้นด้วย <code>## </code> หัวข้อ · <code>&gt; </code> คำคม · <code>&lt;em&gt;…&lt;/em&gt;</code> เน้นสีแดง · แทรกรูป <code>![คำบรรยาย](URL)</code> เป็นบรรทัดเดี่ยว
             </div>
-            <button class="btn btn-primary sp-btn-full" type="submit">เผยแพร่บทความ</button>
+            <button class="btn btn-primary sp-btn-full" type="submit" id="artSubmit">เผยแพร่บทความ</button>
           </form>
           <div class="admin-side">
-            <h3>บทความที่เพิ่มเอง</h3>
-            <p class="sub">บทความที่คุณเพิ่มผ่านแผงนี้ (บทความตั้งต้นของเว็บไม่แสดงที่นี่)</p>
+            <h3>บทความทั้งหมด</h3>
+            <p class="sub">กด “แก้ไข” เพื่อปรับเนื้อหา (รวมบทความตั้งต้น) · ลบได้เฉพาะบทความที่เพิ่ม/แก้ไขเอง</p>
             <div id="customList"></div>
           </div>
         </div>
@@ -126,6 +139,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="data.js"></script>
 <script src="sp-store.js"></script>
@@ -166,44 +180,100 @@
       return '<option value="'+k+'">'+cats[k].th+'</option>';
     }).join('');
 
-    // ===== add article =====
+    // ===== article create / edit =====
     var artForm = document.getElementById('artForm');
+    var coverUrl = '';
+
+    function setCover(url){
+      coverUrl = url || '';
+      var prev = document.getElementById('artCoverPrev');
+      if (coverUrl){ prev.style.display=''; prev.querySelector('img').src = coverUrl; }
+      else { prev.style.display='none'; prev.querySelector('img').removeAttribute('src'); }
+    }
+    document.getElementById('artCover').oninput = function(){ setCover(this.value.trim()); };
+    document.getElementById('artCoverClear').onclick = function(){ document.getElementById('artCover').value=''; setCover(''); };
+    document.getElementById('artCoverFile').onchange = function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      var btn = document.getElementById('artCoverBtn'); var t = btn.textContent; btn.textContent='กำลังอัปโหลด…';
+      var self = this;
+      Promise.resolve(SP.uploadImage(f)).then(function(url){
+        document.getElementById('artCover').value = url; setCover(url); btn.textContent = t; self.value='';
+      }).catch(function(){ btn.textContent = t; alert('อัปโหลดรูปไม่สำเร็จ'); });
+    };
+
+    function resetForm(){
+      artForm.reset(); setCover('');
+      delete artForm.dataset.date;
+      document.getElementById('artSlug').value='';
+      document.getElementById('artModeBar').style.display='none';
+      document.getElementById('artSubmit').textContent='เผยแพร่บทความ';
+    }
+    document.getElementById('artCancel').onclick = resetForm;
+
+    function loadForEdit(a){
+      artForm.title.value = a.title || '';
+      artForm.cn.value = a.cn || '';
+      artForm.cat.value = a.cat || 'history';
+      artForm.excerpt.value = a.excerpt || '';
+      artForm.body.value = SP.bodyToText(a.body);
+      document.getElementById('artCover').value = a.cover || ''; setCover(a.cover||'');
+      document.getElementById('artSlug').value = a.slug;
+      artForm.dataset.date = a.date || '';
+      document.getElementById('artModeBar').style.display='';
+      document.getElementById('artSubmit').textContent='บันทึกการแก้ไข';
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
     artForm.onsubmit = function(e){
       e.preventDefault();
       var title = artForm.title.value.trim();
+      var editing = document.getElementById('artSlug').value;
       var body = SP.parseBody(artForm.body.value);
       var words = artForm.body.value.replace(/\s+/g,' ').length;
       var obj = {
-        slug: SP.makeSlug(title),
+        slug: editing || SP.makeSlug(title),
         cat: artForm.cat.value,
         title: title,
         cn: artForm.cn.value.trim() || cats[artForm.cat.value].cn,
-        date: new Date().toISOString(),
+        cover: coverUrl || '',
+        date: editing ? (artForm.dataset.date || new Date().toISOString()) : new Date().toISOString(),
         read: Math.max(2, Math.round(words/900)),
         featured: false,
         excerpt: artForm.excerpt.value.trim(),
         body: body
       };
-      SP.addArticle(obj);
-      artForm.reset();
-      flash('flashArticle','เผยแพร่ “'+title+'” เรียบร้อยแล้ว');
-      renderCustom();
+      var btn = document.getElementById('artSubmit'); btn.disabled = true;
+      Promise.resolve(SP.addArticle(obj)).then(function(){
+        btn.disabled = false;
+        flash('flashArticle', (editing?'บันทึกการแก้ไข “':'เผยแพร่ “')+title+'” เรียบร้อยแล้ว');
+        resetForm();
+        renderArticles();
+      });
     };
 
-    async function renderCustom(){
+    async function renderArticles(){
+      var all = await SP.listArticles();
       var custom = await SP.customArticles();
+      var stored = {}; custom.forEach(function(a){ stored[a.slug]=1; });
       var el = document.getElementById('customList');
-      if (!custom.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีบทความที่เพิ่มเอง</div>'; return; }
-      el.innerHTML = custom.map(function(a){
-        return '<div class="admin-row"><div class="ar-body">'+
-          '<div class="ar-title">'+esc(a.title)+'</div>'+
+      if (!all.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีบทความ</div>'; return; }
+      el.innerHTML = all.map(function(a){
+        var isStored = stored[a.slug];
+        return '<div class="admin-row">'+
+          (a.cover?'<img class="ar-thumb" src="'+esc(a.cover)+'" alt="">':'')+
+          '<div class="ar-body">'+
+          '<div class="ar-title">'+esc(a.title)+(isStored?'':' <span class="ar-base">ตั้งต้น</span>')+'</div>'+
           '<div class="ar-meta"><span class="cat-tag">'+cats[a.cat].th+'</span> · '+fmtDate(a.date)+'</div>'+
           '</div>'+
-          '<a class="ar-del" href="Article.html?a='+a.slug+'" target="_blank" style="text-decoration:none">ดู</a>'+
-          '<button class="ar-del" data-slug="'+a.slug+'" type="button">ลบ</button></div>';
+          '<button class="ar-del ar-edit" data-slug="'+a.slug+'" type="button">แก้ไข</button>'+
+          (isStored?'<button class="ar-del" data-del="'+a.slug+'" type="button">ลบ</button>':'')+
+          '</div>';
       }).join('');
-      el.querySelectorAll('button.ar-del').forEach(function(b){
-        b.onclick = function(){ if(confirm('ลบบทความนี้?')){ Promise.resolve(SP.deleteArticle(b.dataset.slug)).then(renderCustom); } };
+      el.querySelectorAll('.ar-edit').forEach(function(b){
+        b.onclick = function(){ loadForEdit(all.find(function(x){return x.slug===b.dataset.slug;})); };
+      });
+      el.querySelectorAll('[data-del]').forEach(function(b){
+        b.onclick = function(){ if(confirm('ลบบทความนี้? (ถ้าเป็นบทความตั้งต้นที่เคยแก้ไข จะกลับไปใช้ฉบับเดิม)')){ Promise.resolve(SP.deleteArticle(b.dataset.del)).then(renderArticles); } };
       });
     }
 
@@ -254,7 +324,7 @@
       });
     }
 
-    renderCustom(); renderLinks(); renderComments();
+    renderArticles(); renderLinks(); renderComments();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ SP.onAuth(gate); });

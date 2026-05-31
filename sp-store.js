@@ -34,12 +34,26 @@
     var blocks = [];
     (text || '').split(/\n{2,}/).forEach(function (chunk) {
       chunk = chunk.trim(); if (!chunk) return;
+      var img = chunk.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
       if (chunk.indexOf('## ') === 0) blocks.push(['h2', chunk.slice(3).trim()]);
       else if (chunk.indexOf('> ') === 0) blocks.push(['quote', chunk.slice(2).trim()]);
+      else if (img) blocks.push(['img', img[2].trim(), img[1].trim()]);
       else blocks.push(['p', chunk]);
     });
     return blocks;
   };
+  // block format → editor text (for the edit form)
+  SP.bodyToText = function (blocks) {
+    return (blocks || []).map(function (b) {
+      if (b[0] === 'h2') return '## ' + b[1];
+      if (b[0] === 'quote') return '> ' + b[1] + (b[2] ? '' : '');
+      if (b[0] === 'img') return '![' + (b[2] || '') + '](' + b[1] + ')';
+      return b[1];
+    }).join('\n\n');
+  };
+  function fileToDataURL(file) {
+    return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(file); });
+  }
   SP.makeSlug = function (title) {
     var base = (title || 'post').toLowerCase().replace(/[^\w\u0e00-\u0e7f]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
     return (base || 'post') + '-' + Date.now().toString(36);
@@ -53,6 +67,7 @@
     firebase.initializeApp(CFG);
     var auth = firebase.auth();
     var db = firebase.firestore();
+    var storage = (firebase.storage) ? firebase.storage() : null;
 
     SP.ready = new Promise(function (resolve) {
       auth.onAuthStateChanged(function (user) {
@@ -116,10 +131,22 @@
       if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
       text = (text || '').trim(); if (!text) return Promise.resolve({ ok: false, msg: 'พิมพ์ข้อความก่อนส่ง' });
       return db.collection('comments').add({
-        slug: slug, uid: _session.uid, name: _session.name, role: _session.role, text: text, date: new Date().toISOString()
+        slug: slug, uid: _session.uid, name: _session.name, role: _session.role, text: text, likes: [], date: new Date().toISOString()
       }).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
     };
     SP.deleteComment = function (id) { return db.collection('comments').doc(id).delete(); };
+    SP.toggleLike = function (id, liked) {
+      if (!_session) return Promise.resolve({ ok: false });
+      var op = liked ? firebase.firestore.FieldValue.arrayRemove(_session.uid) : firebase.firestore.FieldValue.arrayUnion(_session.uid);
+      return db.collection('comments').doc(id).update({ likes: op }).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
+    SP.uploadImage = function (file) {
+      if (storage) {
+        var ref = storage.ref('uploads/' + Date.now() + '-' + (file.name || 'img').replace(/[^\w.\-]/g, '_'));
+        return ref.put(file).then(function (snap) { return snap.ref.getDownloadURL(); });
+      }
+      return fileToDataURL(file);
+    };
 
     SP.listLinks = function () {
       return db.collection('links').orderBy('date', 'desc').get().then(function (snap) {
@@ -144,7 +171,7 @@
   // ============================================================
   //  LOCAL DEMO MODE (localStorage)
   // ============================================================
-  var LS = { users: 'sp-users', session: 'sp-session', arts: 'sp-articles-custom', comments: 'sp-comments-flat', links: 'sp-links' };
+  var LS = { users: 'sp-users-v2', session: 'sp-session-v2', arts: 'sp-articles-v2', comments: 'sp-comments-v2', links: 'sp-links-v2' };
   function read(k, def) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? def : v; } catch (e) { return def; } }
   function write(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
@@ -187,7 +214,12 @@
   SP.customArticles = function () { return Promise.resolve(read(LS.arts, [])); };
   SP.listArticles = function () { return Promise.resolve(mergeArticles(read(LS.arts, []))); };
   SP.getArticle = function (slug) { return SP.listArticles().then(function (l) { return l.find(function (a) { return a.slug === slug; }); }); };
-  SP.addArticle = function (obj) { var c = read(LS.arts, []); c.unshift(obj); write(LS.arts, c); return Promise.resolve(); };
+  SP.addArticle = function (obj) {
+    var c = read(LS.arts, []);
+    var i = c.findIndex(function (a) { return a.slug === obj.slug; });
+    if (i > -1) c[i] = obj; else c.unshift(obj);
+    write(LS.arts, c); return Promise.resolve();
+  };
   SP.deleteArticle = function (slug) { write(LS.arts, read(LS.arts, []).filter(function (a) { return a.slug !== slug; })); return Promise.resolve(); };
 
   SP.listComments = function (slug) {
@@ -201,11 +233,19 @@
     if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
     text = (text || '').trim(); if (!text) return Promise.resolve({ ok: false, msg: 'พิมพ์ข้อความก่อนส่ง' });
     var all = read(LS.comments, []);
-    all.push({ id: uid('c'), slug: slug, uid: _session.uid, name: _session.name, role: _session.role, text: text, date: new Date().toISOString() });
+    all.push({ id: uid('c'), slug: slug, uid: _session.uid, name: _session.name, role: _session.role, text: text, likes: [], date: new Date().toISOString() });
     write(LS.comments, all);
     return Promise.resolve({ ok: true });
   };
   SP.deleteComment = function (id) { write(LS.comments, read(LS.comments, []).filter(function (c) { return c.id !== id; })); return Promise.resolve(); };
+  SP.toggleLike = function (id, liked) {
+    if (!_session) return Promise.resolve({ ok: false });
+    var all = read(LS.comments, []);
+    var c = all.find(function (x) { return x.id === id; });
+    if (c) { c.likes = c.likes || []; var k = c.likes.indexOf(_session.uid); if (k > -1) c.likes.splice(k, 1); else c.likes.push(_session.uid); write(LS.comments, all); }
+    return Promise.resolve({ ok: true });
+  };
+  SP.uploadImage = function (file) { return fileToDataURL(file); };
 
   SP.listLinks = function () { return Promise.resolve(read(LS.links, [])); };
   SP.addLink = function (obj) { var l = read(LS.links, []); l.unshift(Object.assign({ id: uid('l'), date: new Date().toISOString() }, obj)); write(LS.links, l); return Promise.resolve(); };

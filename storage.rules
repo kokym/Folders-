@@ -1,0 +1,18 @@
+rules_version = '2';
+// Firebase Storage rules — for article cover/inline image uploads.
+// Anyone can view images; only signed-in ADMINS can upload (max 5 MB, images only).
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    match /uploads/{file} {
+      allow read: if true;
+      allow write: if isAdmin()
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
