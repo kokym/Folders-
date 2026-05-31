@@ -115,16 +115,33 @@
             font-size: 0.85rem;
         }
 
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
         .btn-copy {
             background: #d4af37;
             color: #000;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 20px;
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 10px;
         }
+        .btn-copy:hover { background: #f0c040; }
+
+        .btn-download {
+            background: #2e7d32;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-download:hover { background: #4caf50; }
     </style>
 </head>
 <body>
@@ -137,7 +154,12 @@
 
         <div class="form-group">
             <label for="artTitle">หัวข้อบทความ:</label>
-            <input type="text" id="artTitle" placeholder="เช่น วิเคราะห์พงศาวลี เล่าเปียน ย้อนเวลาสูู่สามก๊ก">
+            <input type="text" id="artTitle" placeholder="เช่น วิเคราะห์พงศาวลี เล่าเปียน ย้อนเวลาสู่สามก๊ก">
+        </div>
+
+        <div class="form-group">
+            <label for="artFileName">ตั้งชื่อไฟล์สำหรับดาวน์โหลด (อักษรภาษาอังกฤษ คั่นด้วยขีดกลาง เช่น han-decline):</label>
+            <input type="text" id="artFileName" placeholder="เช่น article-lou-bian">
         </div>
 
         <div class="form-group">
@@ -147,56 +169,69 @@
 
         <div class="form-group">
             <label for="artContent">เนื้อหาบทความทั้งหมด:</label>
-            <textarea id="artContent" rows="10" placeholder="พิมพ์หรือวางเนื้อหาบทความแบบจัดเต็มที่นี่..."></textarea>
+            <textarea id="artContent" rows="12" placeholder="พิมพ์หรือวางเนื้อหาบทความแบบจัดเต็มที่นี่... (สามารถกด Enter เว้นย่อหน้าได้ตามใจชอบ)"></textarea>
         </div>
 
         <button class="btn-submit" onclick="generateArticleCode()">⚔️ สร้างโค้ดหน้าบทความสำเร็จรูป</button>
 
         <div class="result-box" id="resultBox">
             <h3>✨ สร้างโค้ดสำเร็จ!</h3>
-            <p style="font-size: 0.85rem; color: #888;">ก๊อปปี้โค้ดสีเขียวด้านล่างนี้ ไปสร้างไฟล์ใหม่บน GitHub (เช่น ชื่อ <code>my-new-article.html</code>) ได้เลยครับ</p>
+            <p style="font-size: 0.85rem; color: #888;">ท่านสามารถกดปุ่มสีเขียวเพื่อดาวน์โหลดไฟล์ไปใช้งานได้ทันที หรือก๊อบปี้โค้ดไปวางในหน้าจัดการไฟล์ของ GitHub ได้ครับ</p>
             <textarea class="code-output" id="codeOutput" readonly></textarea>
-            <button class="btn-copy" onclick="copyCode()">📋 ก๊อปปี้โค้ดทั้งหมด</button>
+            
+            <div class="action-btns">
+                <button class="btn-copy" onclick="copyCode()">📋 ก๊อปปี้โค้ดทั้งหมด</button>
+                <button class="btn-download" onclick="downloadArticleFile()">📥 ดาวน์โหลดไฟล์ .html ทันที</button>
+            </div>
         </div>
     </div>
 
     <script>
         function generateArticleCode() {
-            var title = document.getElementById("artTitle").value;
-            var img = document.getElementById("artImg").value || "https://images.unsplash.com/photo-1599408162172-ef090f707f1d?q=80&w=600&auto=format&fit=crop";
+            var title = document.getElementById("artTitle").value.trim();
+            var img = document.getElementById("artImg").value.trim() || "https://images.unsplash.com/photo-1599408162172-ef090f707f1d?q=80&w=600&auto=format&fit=crop";
             var content = document.getElementById("artContent").value;
             var date = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
 
             if (!title || !content) {
-                alert("กรุณากรอกหัวข้อและเนื้อหาบทความก่อนครับ!");
+                alert("กรุณากรอกหัวข้อและเนื้อหาบทความก่อนครับพี่เดฟ!");
                 return;
             }
 
-            // โครงสร้างหน้าเพจอ่านบทความแบบสำเร็จรูป
+            // จัดการเปลี่ยนการกดขึ้นบรรทัดใหม่ให้กลายเป็นแท็กย่อหน้าเพื่อความสวยงามใน HTML
+            var formattedContent = content
+                .split('\n\n')
+                .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+                .join('\n        ');
+
+            // โครงสร้างหน้าเพจอ่านบทความสำเร็จรูป ธีม หอจดหมายเหตุสามก๊กโบราณ
             var generatedHTML = `<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>\${title}</title>
+    <title>${title}</title>
     <style>
         body { background-color: #0d0d0d; color: #d1c4a9; font-family: 'Segoe UI', Sarabun, sans-serif; margin:0; padding:0; line-height: 1.8; }
         .nav { background: #111; padding: 15px; border-bottom: 1px solid #222; }
         .nav a { color: #d4af37; text-decoration: none; font-size: 0.9rem; }
         .article-container { max-width: 700px; margin: 40px auto; padding: 0 20px; }
-        h1 { color: #d4af37; line-height: 1.4; margin-bottom: 10px; }
-        .meta { color: #555; font-size: 0.85rem; margin-bottom: 30px; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        h1 { color: #d4af37; line-height: 1.4; margin-bottom: 10px; font-size: 2rem; }
+        .meta { color: #666; font-size: 0.85rem; margin-bottom: 30px; border-bottom: 1px solid #222; padding-bottom: 15px; }
         .main-img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 30px; border: 1px solid #222; }
-        .content { white-space: pre-line; color: #b5a991; font-size: 1.05rem; }
+        .content { color: #b5a991; font-size: 1.1rem; text-indent: 30px; }
+        .content p { margin-bottom: 20px; text-align: justify; }
     </style>
 </head>
 <body>
     <div class="nav"><div style="max-width:700px; margin:0 auto;"><a href="articles.html">← กลับไปหน้าบทความทั้งหมด</a></div></div>
     <div class="article-container">
-        <h1>\${title}</h1>
-        <div class="meta">📅 อัปเดตเมื่อ: \${date} | เขียนโดย: Admin</div>
-        <img class="main-img" src="\${img}" alt="Thumbnail">
-        <div class="content">\${content}</div>
+        <h1>${title}</h1>
+        <div class="meta">📅 อัปเดตเมื่อ: ${date} | เขียนโดย: Admin</div>
+        <img class="main-img" src="${img}" alt="Thumbnail">
+        <div class="content">
+        ${formattedContent}
+        </div>
     </div>
 </body>
 </html>`;
@@ -204,16 +239,44 @@
             document.getElementById("codeOutput").value = generatedHTML;
             document.getElementById("resultBox").style.display = "block";
             
-            // เลื่อนจอลงมาให้เห็นกล่องผลลัพธ์
+            // สกรอลล์หน้าจอลงมาที่กล่องผลลัพธ์อย่างนุ่มนวล
             document.getElementById("resultBox").scrollIntoView({ behavior: 'smooth' });
         }
 
+        // 📋 ฟังก์ชันก๊อปปี้โค้ดที่อัปเกรดให้เสถียรขึ้น
         function copyCode() {
             var copyText = document.getElementById("codeOutput");
             copyText.select();
-            copyText.setSelectionRange(0, 99999); // สำหรับมือถือ
-            navigator.clipboard.writeText(copyText.value);
-            alert("ก๊อปปี้โค้ดสำเร็จแล้ว!");
+            copyText.setSelectionRange(0, 99999); 
+            
+            try {
+                navigator.clipboard.writeText(copyText.value);
+                alert("ก๊อปปี้โค้ดสำเร็จแล้ว!");
+            } catch (err) {
+                // รองรับเบราว์เซอร์เก่า
+                document.execCommand("copy");
+                alert("ก๊อปปี้โค้ดสำเร็จแล้ว! (Legacy Mode)");
+            }
+        }
+
+        // 📥 ฟังก์ชันใหม่: ดาวน์โหลดโค้ดออกมาเป็นไฟล์เว็บ (.html) ทันทีในคลิกเดียว
+        function downloadArticleFile() {
+            var code = document.getElementById("codeOutput").value;
+            var fileName = document.getElementById("artFileName").value.trim() || "new-article";
+            
+            if (!code) return;
+            
+            // ล้างนามสกุลไฟล์เผื่อพิมพ์ติดมา
+            fileName = fileName.replace(".html", "") + ".html";
+
+            var blob = new Blob([code], { type: "text/html;charset=utf-8" });
+            var link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 
