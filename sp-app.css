@@ -204,6 +204,20 @@ html[data-theme="dark"] .sp-ava { color: #16130f; }
   padding: 6px 12px; font-size: .8rem; transition: all .2s var(--ease); white-space: nowrap; flex-shrink: 0;
 }
 .admin-row .ar-del:hover { border-color: var(--crimson); color: var(--crimson); }
+
+/* novel admin: chapter manager */
+.chap-acts { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; }
+.chap-acts .ar-del { padding: 6px 10px; }
+.chap-acts .ar-del[disabled] { opacity: .3; pointer-events: none; }
+.chap-acts .ar-edit { color: var(--crimson); border-color: color-mix(in srgb, var(--crimson) 40%, transparent); }
+.admin-row .ar-title .chap-n { color: var(--ink-faint); font-family: var(--font-display); margin-right: 4px; }
+.chap-sep {
+  display: flex; align-items: center; gap: 14px; margin: 34px 0 4px;
+  font-family: var(--font-body); font-size: .74rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--crimson);
+}
+.chap-sep::before, .chap-sep::after { content: ''; height: 1px; background: var(--rule); flex: 1; }
+.chap-sep span { white-space: nowrap; }
 .admin-empty { color: var(--ink-faint); padding: 30px 0; }
 .admin-gate { text-align: center; padding: clamp(80px,16vh,180px) 0; }
 .admin-gate h1 { font-family: var(--font-head); font-size: 2rem; font-weight: 500; margin: 18px 0 10px; }

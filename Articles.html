@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>บทความทั้งหมด — Shadow Phase 影变</title>
+<link rel="icon" type="image/png" href="assets/seal-sp.png">
 <script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="sp-app.css">
@@ -116,6 +117,8 @@ html[data-theme="dark"] .filters .chip.active { color: #16130f; }
 
   var params = new URLSearchParams(location.search);
   var active = params.get('cat') || 'all';
+  // "เรื่องสั้น & นิยาย" lives on its own page now — send fiction there
+  if (active === 'fiction') { location.replace('Novels.html'); return; }
 
   // filter chips
   var fEl = document.getElementById('filters');
@@ -147,16 +150,20 @@ html[data-theme="dark"] .filters .chip.active { color: #16130f; }
 
   fEl.querySelectorAll('.chip').forEach(function(ch){
     ch.onclick=function(){
+      var k=ch.dataset.k;
+      if (k==='fiction') { location.href='Novels.html'; return; }
       fEl.querySelectorAll('.chip').forEach(function(x){x.classList.remove('active');});
       ch.classList.add('active');
-      var k=ch.dataset.k;
       render(k);
       history.replaceState(null,'', k==='all'?'Articles.html#cats':'Articles.html?cat='+k+'#cats');
     };
   });
 
   document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
-    order.map(function(k){return '<a href="Articles.html?cat='+k+'#cats">'+cats[k].th+'</a>';}).join('');
+    order.map(function(k){
+      var href = k==='fiction' ? 'Novels.html' : 'Articles.html?cat='+k+'#cats';
+      return '<a href="'+href+'">'+cats[k].th+'</a>';
+    }).join('');
 })();
 </script>
 </body>

@@ -36,6 +36,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ---- novels (นิยายแบบแบ่งตอน) ---- public read, admin write
+    match /novels/{slug} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // ---- site content (editable page text) ---- public read, admin write
     match /settings/{doc} {
       allow read: if true;

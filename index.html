@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shadow Phase 影变 — แหล่งรวมงานเขียน</title>
+<link rel="icon" type="image/png" href="assets/seal-sp.png">
 <script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="sp-app.css">
@@ -199,6 +200,7 @@
   function go(slug){return function(){location.href='Article.html?a='+slug;};}
 
   var sorted = arts.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var novels = await SP.listNovels();
   var main = sorted[0];
   var side = sorted.slice(1,4);
 
@@ -221,21 +223,24 @@
   }).join('');
   fs.querySelectorAll('.card').forEach(function(c){ c.onclick = go(c.dataset.slug); });
 
-  // categories
+  // categories — "เรื่องสั้น & นิยาย" (fiction) routes to the novels hub
   var order = ['history','reflection','fiction','review'];
+  function catHref(key){ return key==='fiction' ? 'Novels.html' : 'Articles.html?cat='+key+'#cats'; }
   var grid = document.getElementById('catGrid');
   grid.innerHTML = order.map(function(key,i){
-    var n = arts.filter(function(a){return a.cat===key;}).length;
+    var isFiction = key==='fiction';
+    var n = isFiction ? novels.length : arts.filter(function(a){return a.cat===key;}).length;
+    var label = isFiction ? (n+' เรื่อง') : (n+' บทความ');
     return '<div class="cat-cell" data-cat="'+key+'">'+
       '<span class="num">0'+(i+1)+'</span>'+
       '<span class="cn-big">'+cats[key].cn+'</span>'+
-      '<div><h3>'+cats[key].th+'</h3><span class="count">'+n+' บทความ</span></div></div>';
+      '<div><h3>'+cats[key].th+'</h3><span class="count">'+label+'</span></div></div>';
   }).join('');
-  grid.querySelectorAll('.cat-cell').forEach(function(c){ c.onclick=function(){location.href='Articles.html?cat='+c.dataset.cat+'#cats';}; });
+  grid.querySelectorAll('.cat-cell').forEach(function(c){ c.onclick=function(){location.href=catHref(c.dataset.cat);}; });
 
   // footer cats
   document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
-    order.map(function(k){return '<a href="Articles.html?cat='+k+'#cats">'+cats[k].th+'</a>';}).join('');
+    order.map(function(k){return '<a href="'+catHref(k)+'">'+cats[k].th+'</a>';}).join('');
 
   // admin-managed links
   var links = await SP.listLinks();

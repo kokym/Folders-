@@ -37,6 +37,15 @@
     return out.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
   }
 
+  // ---- novels (separate system; merged base + custom by slug, newest update first) ----
+  function baseNovels() { return (window.SP_NOVELS || []).slice(); }
+  function mergeNovels(custom) {
+    var have = {}, out = [];
+    custom.forEach(function (n) { if (!have[n.slug]) { have[n.slug] = 1; out.push(n); } });
+    baseNovels().forEach(function (n) { if (!have[n.slug]) { have[n.slug] = 1; out.push(n); } });
+    return out.sort(function (a, b) { return new Date(b.updated || b.date) - new Date(a.updated || a.date); });
+  }
+
   // body editor → block format
   SP.parseBody = function (text) {
     var blocks = [];
@@ -174,6 +183,21 @@
     SP.addLink = function (obj) { return db.collection('links').add(Object.assign({ date: new Date().toISOString() }, obj)); };
     SP.deleteLink = function (id) { return db.collection('links').doc(id).delete(); };
 
+    SP.listNovels = function () {
+      return guard(db.collection('novels').get().then(function (snap) {
+        var custom = []; snap.forEach(function (d) { custom.push(d.data()); });
+        return mergeNovels(custom);
+      }), mergeNovels([]));
+    };
+    SP.customNovels = function () {
+      return guard(db.collection('novels').get().then(function (snap) {
+        var a = []; snap.forEach(function (d) { a.push(d.data()); }); return a;
+      }), []);
+    };
+    SP.getNovel = function (slug) { return SP.listNovels().then(function (l) { return l.find(function (n) { return n.slug === slug; }); }); };
+    SP.saveNovel = function (obj) { return db.collection('novels').doc(obj.slug).set(obj).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
+    SP.deleteNovel = function (slug) { return db.collection('novels').doc(slug).delete(); };
+
     SP.getSite = function () {
       return guard(db.collection('settings').doc('site').get().then(function (doc) {
         return mergeSite(doc.exists ? doc.data() : null);
@@ -200,7 +224,7 @@
   // ============================================================
   //  LOCAL DEMO MODE (localStorage)
   // ============================================================
-  var LS = { users: 'sp-users-v2', session: 'sp-session-v2', arts: 'sp-articles-v2', comments: 'sp-comments-v2', links: 'sp-links-v2', site: 'sp-site-v2' };
+  var LS = { users: 'sp-users-v2', session: 'sp-session-v2', arts: 'sp-articles-v2', comments: 'sp-comments-v2', links: 'sp-links-v2', site: 'sp-site-v2', novels: 'sp-novels-v2' };
   function read(k, def) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? def : v; } catch (e) { return def; } }
   function write(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
@@ -282,4 +306,15 @@
 
   SP.getSite = function () { return Promise.resolve(mergeSite(read(LS.site, null))); };
   SP.saveSite = function (obj) { write(LS.site, Object.assign(read(LS.site, {}) || {}, obj)); return Promise.resolve({ ok: true }); };
+
+  SP.customNovels = function () { return Promise.resolve(read(LS.novels, [])); };
+  SP.listNovels = function () { return Promise.resolve(mergeNovels(read(LS.novels, []))); };
+  SP.getNovel = function (slug) { return SP.listNovels().then(function (l) { return l.find(function (n) { return n.slug === slug; }); }); };
+  SP.saveNovel = function (obj) {
+    var c = read(LS.novels, []);
+    var i = c.findIndex(function (n) { return n.slug === obj.slug; });
+    if (i > -1) c[i] = obj; else c.unshift(obj);
+    write(LS.novels, c); return Promise.resolve({ ok: true });
+  };
+  SP.deleteNovel = function (slug) { write(LS.novels, read(LS.novels, []).filter(function (n) { return n.slug !== slug; })); return Promise.resolve(); };
 })();
