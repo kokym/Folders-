@@ -15,7 +15,7 @@
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
       <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-      <span class="lock"><span class="name">SHADOW PHASE</span><span class="sub">影变</span></span>
+      <span class="lock"><span class="name" data-site="brandName">SHADOW PHASE</span><span class="sub" data-site="brandCn">影变</span></span>
     </a>
     <nav class="nav">
       <a href="index.html">หน้าแรก</a>
@@ -49,6 +49,7 @@
         <p>เพิ่มบทความใหม่ จัดการลิงก์อ้างอิง และดูแลความคิดเห็นของสมาชิก</p>
         <div class="admin-tabs">
           <button class="admin-tab active" data-panel="article" type="button">เพิ่มบทความ</button>
+          <button class="admin-tab" data-panel="site" type="button">เนื้อหาหน้าเว็บ <span class="cn" style="opacity:.6">页面</span></button>
           <button class="admin-tab" data-panel="links" type="button">ลิงก์ &amp; อ้างอิง <span class="n" id="nLinks"></span></button>
           <button class="admin-tab" data-panel="comments" type="button">ความคิดเห็น <span class="n" id="nComments"></span></button>
         </div>
@@ -90,6 +91,66 @@
             <h3>บทความทั้งหมด</h3>
             <p class="sub">กด “แก้ไข” เพื่อปรับเนื้อหา (รวมบทความตั้งต้น) · ลบได้เฉพาะบทความที่เพิ่ม/แก้ไขเอง</p>
             <div id="customList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: site content -->
+    <section class="admin-panel" data-panel="site">
+      <div class="wrap">
+        <div class="admin-flash" id="flashSite"></div>
+        <div class="admin-grid">
+          <form class="admin-form" id="siteForm">
+            <h3 style="font-family:var(--font-head);font-weight:500;font-size:1.3rem;margin:0 0 4px">ข้อความบนหน้าเว็บ</h3>
+            <p class="sub" style="color:var(--ink-faint);margin:0 0 22px">แก้ข้อความหลักของเว็บได้ทุกส่วน — ชื่อแบรนด์ คำคมหน้าแรก หัวข้อหมวด และส่วนท้าย เปลี่ยนแล้วมีผลทุกหน้าทันที</p>
+
+            <div class="site-group">หัวเว็บ &amp; แบรนด์</div>
+            <div class="row2">
+              <div class="sp-field"><label>ชื่อแบรนด์ (อังกฤษ)</label><input class="sp-input" name="brandName" placeholder="SHADOW PHASE"></div>
+              <div class="sp-field"><label>อักษรจีนแบรนด์</label><input class="sp-input" name="brandCn" placeholder="影变"></div>
+            </div>
+
+            <div class="site-group">ส่วนเปิดหน้าแรก (Hero)</div>
+            <div class="row2">
+              <div class="sp-field"><label>ป้ายกำกับด้านบน</label><input class="sp-input" name="heroEyebrow" placeholder="บันทึก เงา และกาลเวลา"></div>
+              <div class="sp-field"><label>อักษรจีนกำกับ</label><input class="sp-input" name="heroEyebrowCn" placeholder="影变"></div>
+            </div>
+            <div class="sp-field">
+              <label>คำคมหลัก (ใช้ <code>&lt;em&gt;…&lt;/em&gt;</code> เพื่อเน้นสีแดงได้)</label>
+              <textarea class="sp-textarea" name="heroQuote" style="min-height:90px" placeholder="ประวัติศาสตร์ไม่ได้ <em>ซ้ำรอย</em>..."></textarea>
+            </div>
+            <div class="row2">
+              <div class="sp-field"><label>คำบรรยายใต้คำคม</label><input class="sp-input" name="heroTagline" placeholder="แหล่งรวมงานเขียน..."></div>
+              <div class="sp-field"><label>อักษรจีนท้ายบรรทัด</label><input class="sp-input" name="heroTaglineCn" placeholder="辭"></div>
+            </div>
+
+            <div class="site-group">ส่วนหมวดหมู่</div>
+            <div class="row2">
+              <div class="sp-field"><label>ป้ายกำกับหมวด</label><input class="sp-input" name="catsEyebrow" placeholder="เลือกอ่านตามหมวด"></div>
+              <div class="sp-field"><label>หัวข้อหมวด</label><input class="sp-input" name="catsHeading" placeholder="สี่สายธารของงานเขียน"></div>
+            </div>
+
+            <div class="site-group">ส่วนท้ายเว็บ (Footer)</div>
+            <div class="sp-field"><label>ข้อความแนะนำเว็บ</label><textarea class="sp-textarea" name="footerAbout" style="min-height:90px"></textarea></div>
+            <div class="row2">
+              <div class="sp-field"><label>บรรทัดลิขสิทธิ์</label><input class="sp-input" name="footerCopyright" placeholder="© 2026 Shadow Phase 影变"></div>
+              <div class="sp-field"><label>คำคมจีนท้ายเว็บ</label><input class="sp-input" name="footerMotto" placeholder="影者，光之所遺也"></div>
+            </div>
+
+            <div class="site-actions">
+              <button class="btn btn-primary" type="submit" id="siteSubmit">บันทึกเนื้อหาเว็บ</button>
+              <button class="btn btn-ghost" type="button" id="siteReset">คืนค่าเริ่มต้น</button>
+            </div>
+          </form>
+          <div class="admin-side">
+            <h3>ตัวอย่างหน้าแรก</h3>
+            <p class="sub">หน้าตาคร่าว ๆ ของส่วนเปิด — กดบันทึกแล้วเปิด <a href="index.html" target="_blank" style="color:var(--crimson)">หน้าแรก</a> เพื่อดูจริง</p>
+            <div class="site-prev" id="sitePrev">
+              <span class="sp-eyebrow" id="pvEyebrow"></span>
+              <div class="sp-quote" id="pvQuote"></div>
+              <div class="sp-tag" id="pvTag"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -143,6 +204,7 @@
 <script src="firebase-config.js"></script>
 <script src="data.js"></script>
 <script src="sp-store.js"></script>
+<script src="sp-content.js"></script>
 <script src="sp-auth-ui.js"></script>
 <script>
 (function () {
@@ -323,6 +385,41 @@
         b.onclick = function(){ if(confirm('ลบความคิดเห็นนี้?')){ Promise.resolve(SP.deleteComment(b.dataset.id)).then(renderComments); } };
       });
     }
+
+    // ===== site content =====
+    var siteForm = document.getElementById('siteForm');
+    var siteFields = ['brandName','brandCn','heroEyebrow','heroEyebrowCn','heroQuote','heroTagline','heroTaglineCn','catsEyebrow','catsHeading','footerAbout','footerCopyright','footerMotto'];
+
+    function sitePreview(){
+      var v = function(n){ return siteForm[n] ? siteForm[n].value : ''; };
+      document.getElementById('pvEyebrow').innerHTML = esc(v('heroEyebrow'))+' <span style="color:var(--crimson)">'+esc(v('heroEyebrowCn'))+'</span>';
+      document.getElementById('pvQuote').innerHTML = v('heroQuote');   // trusted admin HTML
+      document.getElementById('pvTag').textContent = v('heroTagline');
+    }
+    function fillSite(site){
+      siteFields.forEach(function(n){ if (siteForm[n]) siteForm[n].value = site[n] != null ? site[n] : ''; });
+      sitePreview();
+    }
+    siteForm.addEventListener('input', sitePreview);
+
+    Promise.resolve(SP.getSite()).then(fillSite);
+
+    siteForm.onsubmit = function(e){
+      e.preventDefault();
+      var obj = {};
+      siteFields.forEach(function(n){ if (siteForm[n]) obj[n] = siteForm[n].value.trim(); });
+      var btn = document.getElementById('siteSubmit'); btn.disabled = true;
+      Promise.resolve(SP.saveSite(obj)).then(function(r){
+        btn.disabled = false;
+        if (r && r.ok === false){ flash('flashSite', r.msg || 'บันทึกไม่สำเร็จ'); return; }
+        flash('flashSite','บันทึกเนื้อหาเว็บเรียบร้อยแล้ว');
+        SP.applySite(Object.assign({}, window.SP_SITE_DEFAULTS, obj)); // refresh this page’s header live
+      });
+    };
+    document.getElementById('siteReset').onclick = function(){
+      if (!confirm('คืนค่าข้อความทั้งหมดกลับเป็นค่าเริ่มต้น?')) return;
+      fillSite(Object.assign({}, window.SP_SITE_DEFAULTS));
+    };
 
     renderArticles(); renderLinks(); renderComments();
   }

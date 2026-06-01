@@ -20,6 +20,14 @@
   SP.onAuth   = function (cb) { _authCbs.push(cb); if (_authResolved) cb(_session); };
   function setSession(s) { _session = s; _authResolved = true; _authCbs.forEach(function (cb) { try { cb(s); } catch (e) {} }); }
 
+  // ---- site content (editable page text: hero, headings, footer, brand) ----
+  function siteDefaults() { return Object.assign({}, window.SP_SITE_DEFAULTS || {}); }
+  function mergeSite(stored) {
+    var out = siteDefaults();
+    if (stored) Object.keys(stored).forEach(function (k) { if (stored[k] != null) out[k] = stored[k]; });
+    return out;
+  }
+
   // ---- base articles (always present, from data.js) ----
   function baseArticles() { return (window.SP_ARTICLES || []).slice(); }
   function mergeArticles(custom) {
@@ -69,6 +77,16 @@
     var db = firebase.firestore();
     var storage = (firebase.storage) ? firebase.storage() : null;
 
+    // Resilience: if Firestore is slow or not yet set up (DB not created /
+    // rules not published), don't hang the page — fall back after a few seconds
+    // so the public site still renders its built-in articles & default text.
+    function guard(promise, fallback, ms) {
+      return Promise.race([
+        Promise.resolve(promise).catch(function () { return fallback; }),
+        new Promise(function (resolve) { setTimeout(function () { resolve(fallback); }, ms || 6000); })
+      ]);
+    }
+
     SP.ready = new Promise(function (resolve) {
       auth.onAuthStateChanged(function (user) {
         if (!user) { setSession(null); resolve(); return; }
@@ -102,30 +120,30 @@
     SP.logout = function () { return auth.signOut(); };
 
     SP.listArticles = function () {
-      return db.collection('articles').get().then(function (snap) {
+      return guard(db.collection('articles').get().then(function (snap) {
         var custom = []; snap.forEach(function (d) { custom.push(d.data()); });
         return mergeArticles(custom);
-      });
+      }), mergeArticles([]));
     };
     SP.customArticles = function () {
-      return db.collection('articles').orderBy('date', 'desc').get().then(function (snap) {
+      return guard(db.collection('articles').orderBy('date', 'desc').get().then(function (snap) {
         var a = []; snap.forEach(function (d) { a.push(d.data()); }); return a;
-      });
+      }), []);
     };
     SP.getArticle = function (slug) { return SP.listArticles().then(function (l) { return l.find(function (a) { return a.slug === slug; }); }); };
     SP.addArticle = function (obj) { return db.collection('articles').doc(obj.slug).set(obj); };
     SP.deleteArticle = function (slug) { return db.collection('articles').doc(slug).delete(); };
 
     SP.listComments = function (slug) {
-      return db.collection('comments').where('slug', '==', slug).get().then(function (snap) {
+      return guard(db.collection('comments').where('slug', '==', slug).get().then(function (snap) {
         var c = []; snap.forEach(function (d) { c.push(Object.assign({ id: d.id }, d.data())); });
         return c.sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
-      });
+      }), []);
     };
     SP.allComments = function () {
-      return db.collection('comments').orderBy('date', 'desc').get().then(function (snap) {
+      return guard(db.collection('comments').orderBy('date', 'desc').get().then(function (snap) {
         var c = []; snap.forEach(function (d) { c.push(Object.assign({ id: d.id }, d.data())); }); return c;
-      });
+      }), []);
     };
     SP.addComment = function (slug, text) {
       if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
@@ -149,12 +167,23 @@
     };
 
     SP.listLinks = function () {
-      return db.collection('links').orderBy('date', 'desc').get().then(function (snap) {
+      return guard(db.collection('links').orderBy('date', 'desc').get().then(function (snap) {
         var l = []; snap.forEach(function (d) { l.push(Object.assign({ id: d.id }, d.data())); }); return l;
-      });
+      }), []);
     };
     SP.addLink = function (obj) { return db.collection('links').add(Object.assign({ date: new Date().toISOString() }, obj)); };
     SP.deleteLink = function (id) { return db.collection('links').doc(id).delete(); };
+
+    SP.getSite = function () {
+      return guard(db.collection('settings').doc('site').get().then(function (doc) {
+        return mergeSite(doc.exists ? doc.data() : null);
+      }), siteDefaults());
+    };
+    SP.saveSite = function (obj) {
+      return db.collection('settings').doc('site').set(obj, { merge: true })
+        .then(function () { return { ok: true }; })
+        .catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
 
     function fbErr(e) {
       var c = e && e.code || '';
@@ -171,7 +200,7 @@
   // ============================================================
   //  LOCAL DEMO MODE (localStorage)
   // ============================================================
-  var LS = { users: 'sp-users-v2', session: 'sp-session-v2', arts: 'sp-articles-v2', comments: 'sp-comments-v2', links: 'sp-links-v2' };
+  var LS = { users: 'sp-users-v2', session: 'sp-session-v2', arts: 'sp-articles-v2', comments: 'sp-comments-v2', links: 'sp-links-v2', site: 'sp-site-v2' };
   function read(k, def) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? def : v; } catch (e) { return def; } }
   function write(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
@@ -250,4 +279,7 @@
   SP.listLinks = function () { return Promise.resolve(read(LS.links, [])); };
   SP.addLink = function (obj) { var l = read(LS.links, []); l.unshift(Object.assign({ id: uid('l'), date: new Date().toISOString() }, obj)); write(LS.links, l); return Promise.resolve(); };
   SP.deleteLink = function (id) { write(LS.links, read(LS.links, []).filter(function (x) { return x.id !== id; })); return Promise.resolve(); };
+
+  SP.getSite = function () { return Promise.resolve(mergeSite(read(LS.site, null))); };
+  SP.saveSite = function (obj) { write(LS.site, Object.assign(read(LS.site, {}) || {}, obj)); return Promise.resolve({ ok: true }); };
 })();

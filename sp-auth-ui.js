@@ -75,10 +75,9 @@
           '</form>' +
         '</div>';
       document.body.appendChild(ov);
-      // demo hint only in local mode
+      // demo credential hint removed — hidden in all modes
       var hint = ov.querySelector('#spDemoHint');
-      if (SP.mode === 'local') hint.innerHTML = 'โหมดสาธิต — บัญชีแอดมิน <code>admin@shadowphase.local</code> / <code>admin1234</code>';
-      else hint.style.display = 'none';
+      if (hint) hint.style.display = 'none';
       wireModal(ov);
     }
     renderAcct();

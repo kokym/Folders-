@@ -44,7 +44,7 @@ html[data-theme="dark"] .filters .chip.active { color: #16130f; }
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
       <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-      <span class="lock"><span class="name">SHADOW PHASE</span><span class="sub">影变</span></span>
+      <span class="lock"><span class="name" data-site="brandName">SHADOW PHASE</span><span class="sub" data-site="brandCn">影变</span></span>
     </a>
     <nav class="nav">
       <a href="index.html">หน้าแรก</a>
@@ -79,7 +79,7 @@ html[data-theme="dark"] .filters .chip.active { color: #16130f; }
     <div class="foot-grid">
       <div class="foot-brand">
         <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-        <p>Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา</p>
+        <p data-site="footerAbout">Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา</p>
       </div>
       <div class="foot-cols">
         <div class="foot-col">
@@ -91,8 +91,8 @@ html[data-theme="dark"] .filters .chip.active { color: #16130f; }
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Shadow Phase 影变</span>
-      <span class="cn">影者，光之所遺也</span>
+      <span data-site="footerCopyright">© 2026 Shadow Phase 影变</span>
+      <span class="cn" data-site="footerMotto">影者，光之所遺也</span>
     </div>
   </div>
 </footer>
@@ -104,6 +104,7 @@ html[data-theme="dark"] .filters .chip.active { color: #16130f; }
 <script src="firebase-config.js"></script>
 <script src="data.js"></script>
 <script src="sp-store.js"></script>
+<script src="sp-content.js"></script>
 <script src="sp-auth-ui.js"></script>
 <script>
 (async function () {

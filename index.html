@@ -79,8 +79,8 @@
     <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
       <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
       <span class="lock">
-        <span class="name">SHADOW PHASE</span>
-        <span class="sub">影变</span>
+        <span class="name" data-site="brandName">SHADOW PHASE</span>
+        <span class="sub" data-site="brandCn">影变</span>
       </span>
     </a>
     <nav class="nav">
@@ -101,15 +101,15 @@
   <section class="hero">
     <div class="ink-splash"></div>
     <div class="wrap">
-      <span class="eyebrow">บันทึกร่องรอยความคิดข้อเขียนอันเพ้อเจ้อเหลวไหล <span class="cn">影变</span></span>
+      <span class="eyebrow"><span data-site="heroEyebrow">บันทึก เงา และกาลเวลา</span> <span class="cn" data-site="heroEyebrowCn">影变</span></span>
       <span class="quote-mark">“</span>
-      <blockquote>
-        ประวัติศาสตร์ไม่ได้ <em>ซ้ำรอย</em> หากแต่มัน<em>คือธรรมชาติเดิมแท้</em> ของสรรพชีวิต
+      <blockquote data-site="heroQuote">
+        ประวัติศาสตร์ไม่ได้ <em>ซ้ำรอย</em> หากแต่มัน<em>คล้องจอง</em> กันเหมือนบทกวี
       </blockquote>
       <div class="attrib">
         <span class="ln"></span>
-        <span>แหล่งรวมงานเขียนแนวประวัติศาสตร์ราชวงศ์จีน และข้อคิด</span>
-        <span class="cn">辭</span>
+        <span data-site="heroTagline">แหล่งรวมงานเขียนแนวประวัติศาสตร์ราชวงศ์จีน และข้อคิด</span>
+        <span class="cn" data-site="heroTaglineCn">辭</span>
       </div>
     </div>
   </section>
@@ -135,8 +135,8 @@
     <div class="wrap">
       <div class="sec-head">
         <div>
-          <span class="eyebrow">เลือกอ่านตามหมวด <span class="cn">分類</span></span>
-          <h2>สี่สายธารของงานเขียน</h2>
+          <span class="eyebrow"><span data-site="catsEyebrow">เลือกอ่านตามหมวด</span> <span class="cn">分類</span></span>
+          <h2 data-site="catsHeading">สี่สายธารของงานเขียน</h2>
         </div>
       </div>
       <div class="cat-grid" id="catGrid"></div>
@@ -162,7 +162,7 @@
     <div class="foot-grid">
       <div class="foot-brand">
         <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-        <p>Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา </p>
+        <p data-site="footerAbout">Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา ทุกบทความเขียนและประทับตราด้วยมือ</p>
       </div>
       <div class="foot-cols">
         <div class="foot-col">
@@ -175,8 +175,8 @@
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Shadow Phase 影变</span>
-      <span class="cn">影者，光之所遺也</span>
+      <span data-site="footerCopyright">© 2026 Shadow Phase 影变</span>
+      <span class="cn" data-site="footerMotto">影者，光之所遺也</span>
     </div>
   </div>
 </footer>
@@ -188,6 +188,7 @@
 <script src="firebase-config.js"></script>
 <script src="data.js"></script>
 <script src="sp-store.js"></script>
+<script src="sp-content.js"></script>
 <script src="sp-auth-ui.js"></script>
 <script>
 (async function () {

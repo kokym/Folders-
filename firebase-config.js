@@ -10,10 +10,11 @@
 // (เก็บข้อมูลในเครื่องผู้ใช้) — พอใส่ค่าจริงจะสลับไปใช้ Firebase อัตโนมัติ
 // ============================================================
 window.SP_FIREBASE_CONFIG = {
-  apiKey:            "PASTE_YOUR_API_KEY",
-  authDomain:        "PASTE_YOUR_PROJECT.firebaseapp.com",
-  projectId:         "PASTE_YOUR_PROJECT_ID",
-  storageBucket:     "PASTE_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "PASTE_YOUR_SENDER_ID",
-  appId:             "PASTE_YOUR_APP_ID"
+  apiKey:            "AIzaSyCdTun1hDL9-2_JHSw_O7WcJgfFPh8bqiE",
+  authDomain:        "shadowphase.firebaseapp.com",
+  projectId:         "shadowphase",
+  storageBucket:     "shadowphase.firebasestorage.app",
+  messagingSenderId: "764405059903",
+  appId:             "1:764405059903:web:391b6b7f6649cb4983c38a",
+  measurementId:     "G-FNSEZJEPVB"
 };

@@ -1,3 +1,22 @@
+// Shadow Phase — editable site content (hero, headings, footer, brand)
+// These are the DEFAULTS. Whatever an admin saves in the “เนื้อหาเว็บ” tab
+// overrides these (stored in Firestore settings/site, or localStorage in demo mode).
+// Fields may contain simple HTML — only admins can edit them.
+window.SP_SITE_DEFAULTS = {
+  brandName:      'SHADOW PHASE',
+  brandCn:        '影变',
+  heroEyebrow:    'บันทึก เงา และกาลเวลา',
+  heroEyebrowCn:  '影变',
+  heroQuote:      'ประวัติศาสตร์ไม่ได้ <em>ซ้ำรอย</em> หากแต่มัน<em>คล้องจอง</em> กันเหมือนบทกวี',
+  heroTagline:    'แหล่งรวมงานเขียนแนวประวัติศาสตร์ราชวงศ์จีน และข้อคิด',
+  heroTaglineCn:  '辭',
+  catsEyebrow:    'เลือกอ่านตามหมวด',
+  catsHeading:    'สี่สายธารของงานเขียน',
+  footerAbout:    'Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา ทุกบทความเขียนและประทับตราด้วยมือ',
+  footerCopyright:'© 2026 Shadow Phase 影变',
+  footerMotto:    '影者，光之所遺也'
+};
+
 // Shadow Phase — article data (shared by listing + reader)
 window.SP_CATEGORIES = {
   history:    { th: 'ประวัติศาสตร์ราชวงศ์จีน', cn: '王朝史' },
