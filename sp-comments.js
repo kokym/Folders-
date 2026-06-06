@@ -1,87 +1,143 @@
 // ============================================================
-// SHADOW PHASE 影变 — shared comments widget
-// Mounts the comment thread (compose box + list + likes) into any element.
-// Used by the novel chapter reader; identical UX to the article reader.
-//   SP.mountComments(containerEl, threadKey)
-// threadKey is the value stored in each comment's `slug` field, so different
-// threads (articles, novel chapters) never collide.
+// SHADOW PHASE 影变 — auth UI: header account control + modal
+// Reactive: re-renders on SP auth-state changes (works for both backends).
 // ============================================================
 (function () {
   var SP = window.SP;
   if (!SP) return;
 
-  var THAI = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  function fmtDate(s){ var d=new Date(s); return d.getDate()+' '+THAI[d.getMonth()]+' '+(d.getFullYear()+543); }
-  function cEsc(s){ return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-  function cWhen(iso){ var d=new Date(iso); return fmtDate(iso)+' · '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  SP.mountComments = function (cEl, threadKey) {
-    if (!cEl) return;
+  function renderAcct() {
+    var wrap = document.getElementById('spAcct');
+    if (!wrap) return;
+    var s = SP.session();
+    if (!s) {
+      wrap.innerHTML = '<button class="sp-login-btn" type="button">เข้าสู่ระบบ</button>';
+      wrap.querySelector('button').onclick = function () { SP.openAuth(); };
+      return;
+    }
+    var admin = s.role === 'admin';
+    wrap.innerHTML =
+      '<div class="sp-chip" role="button" tabindex="0" aria-haspopup="true">' +
+        '<span class="sp-ava">' + esc((s.name || s.email).slice(0, 1)) + '</span>' +
+        '<span class="sp-chip-name">' + esc(s.name || s.email) + '</span>' +
+        (admin ? '<span class="sp-role">แอดมิน</span>' : '') +
+      '</div>' +
+      '<div class="sp-menu">' +
+        (admin ? '<a href="admin.html">แผงควบคุมแอดมิน</a><div class="sp-divider"></div>' : '') +
+        '<button type="button" class="sp-logout">ออกจากระบบ</button>' +
+      '</div>';
+    var chip = wrap.querySelector('.sp-chip'), menu = wrap.querySelector('.sp-menu');
+    chip.onclick = function (e) { e.stopPropagation(); menu.classList.toggle('open'); };
+    chip.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); menu.classList.toggle('open'); } };
+    document.addEventListener('click', function () { menu.classList.remove('open'); });
+    wrap.querySelector('.sp-logout').onclick = function () { SP.logout().then(function () { /* onAuth re-renders */ }); };
+  }
 
-    async function render(){
-      var list = await SP.listComments(threadKey), s = SP.session(), admin = SP.isAdmin();
-      var html = '<div class="c-head"><h2>ความคิดเห็น</h2><span class="c-count">'+list.length+'</span><span class="cn">评论</span></div>';
-      if (s) {
-        html += '<div class="c-compose">'+
-          '<span class="sp-ava">'+cEsc((s.name||s.email).slice(0,1))+'</span>'+
-          '<div class="c-box">'+
-            '<textarea class="sp-textarea" id="cInput" placeholder="ร่วมแลกเปลี่ยนความคิดเห็น..."></textarea>'+
-            '<div class="c-row"><span class="c-as">แสดงความคิดเห็นในชื่อ <b>'+cEsc(s.name||s.email)+'</b></span>'+
-            '<button class="btn btn-primary" id="cSend" type="button">ส่งความคิดเห็น</button></div>'+
-          '</div></div>';
-      } else {
-        html += '<div class="c-locked"><p>เข้าสู่ระบบเป็นสมาชิกเพื่อร่วมแสดงความคิดเห็นใต้ตอนนี้</p>'+
-          '<button class="btn btn-primary" id="cLogin" type="button">เข้าสู่ระบบ / สมัคร</button></div>';
-      }
-      if (list.length) {
-        html += '<div class="c-list">'+list.map(function(c){
-          var isAdmin = c.role==='admin';
-          var canDel = admin || (s && c.uid===s.uid);
-          var likes = c.likes || [];
-          var liked = !!(s && likes.indexOf(s.uid)>-1);
-          var cnt = likes.length;
-          return '<div class="c-item">'+
-            '<span class="sp-ava"'+(isAdmin?' style="background:var(--crimson)"':'')+'>'+cEsc((c.name||'?').slice(0,1))+'</span>'+
-            '<div class="c-body"><div class="c-by"><span class="nm">'+cEsc(c.name||'ผู้ใช้')+'</span>'+
-              (isAdmin?'<span class="badge">แอดมิน</span>':'')+
-              (s && c.uid===s.uid && !isAdmin?'<span class="badge mine">คุณ</span>':'')+
-              '<span class="when">'+cWhen(c.date)+'</span>'+
-              (canDel?'<button class="c-del" data-id="'+c.id+'" type="button">ลบ</button>':'')+
-            '</div><div class="c-text">'+cEsc(c.text).replace(/\n/g,'<br>')+'</div>'+
-            '<div class="c-foot"><button class="c-like'+(liked?' liked':'')+'" data-id="'+c.id+'" data-liked="'+(liked?'1':'')+'" type="button" aria-pressed="'+liked+'">'+
-              '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-1.3-1.2C6 14.9 3 12.2 3 8.9 3 6.3 5 4.3 7.6 4.3c1.5 0 2.9.7 3.8 1.8.9-1.1 2.3-1.8 3.8-1.8C17.8 4.3 19.8 6.3 19.8 8.9c0 3.3-3 6-6.7 10.4z"/></svg>'+
-              '<span class="c-like-n">'+(cnt||'')+'</span></button></div>'+
-            '</div></div>';
-        }).join('')+'</div>';
-      } else {
-        html += '<div class="c-empty">ยังไม่มีความคิดเห็น — มาเป็นคนแรกที่ร่วมแลกเปลี่ยน</div>';
-      }
-      cEl.innerHTML = html;
+  function inject() {
+    var bar = document.querySelector('.site-head .wrap');
+    if (bar && !document.getElementById('spAcct')) {
+      var slot = document.createElement('div');
+      slot.id = 'spAcct'; slot.className = 'sp-acct';
+      var themeBtn = bar.querySelector('.theme-btn');
+      bar.insertBefore(slot, themeBtn || null);
+    }
+    if (!document.getElementById('spOverlay')) {
+      var ov = document.createElement('div');
+      ov.id = 'spOverlay'; ov.className = 'sp-overlay';
+      ov.innerHTML =
+        '<div class="sp-modal" role="dialog" aria-modal="true">' +
+          '<button class="sp-x" type="button" aria-label="ปิด">&times;</button>' +
+          '<div class="sp-modal-head">' +
+            '<img class="seal-img" src="assets/seal-sp.png" alt="">' +
+            '<h2 id="spAuthTitle">เข้าสู่ระบบ</h2>' +
+            '<span class="cn">影变</span>' +
+          '</div>' +
+          '<div class="sp-tabs">' +
+            '<button class="sp-tab active" data-tab="login" type="button">เข้าสู่ระบบ</button>' +
+            '<button class="sp-tab" data-tab="register" type="button">สมัครสมาชิก</button>' +
+          '</div>' +
+          '<form class="sp-form" id="spLoginForm">' +
+            '<div class="sp-field"><label>อีเมล</label><input class="sp-input" name="email" type="email" autocomplete="username" required></div>' +
+            '<div class="sp-field"><label>รหัสผ่าน</label><input class="sp-input" name="p" type="password" autocomplete="current-password" required></div>' +
+            '<div class="sp-msg" id="spLoginMsg"></div>' +
+            '<button class="btn btn-primary sp-btn-full" type="submit">เข้าสู่ระบบ</button>' +
+            '<p class="sp-hint" id="spDemoHint"></p>' +
+          '</form>' +
+          '<form class="sp-form" id="spRegForm" style="display:none">' +
+            '<div class="sp-field"><label>ชื่อที่แสดง</label><input class="sp-input" name="name" autocomplete="name" placeholder="เช่น ผู้อ่านนิรนาม"></div>' +
+            '<div class="sp-field"><label>อีเมล</label><input class="sp-input" name="email" type="email" autocomplete="username" required></div>' +
+            '<div class="sp-field"><label>รหัสผ่าน</label><input class="sp-input" name="p" type="password" autocomplete="new-password" required></div>' +
+            '<div class="sp-msg" id="spRegMsg"></div>' +
+            '<button class="btn btn-primary sp-btn-full" type="submit">สมัครสมาชิก</button>' +
+            '<p class="sp-hint">สมัครเป็นสมาชิกเพื่อร่วมแสดงความคิดเห็นใต้บทความ</p>' +
+          '</form>' +
+        '</div>';
+      document.body.appendChild(ov);
+      // demo credential hint removed — hidden in all modes
+      var hint = ov.querySelector('#spDemoHint');
+      if (hint) hint.style.display = 'none';
+      wireModal(ov);
+    }
+    renderAcct();
+  }
 
-      var send = document.getElementById('cSend');
-      if (send) send.onclick = function(){
-        var inp = document.getElementById('cInput');
-        send.disabled = true;
-        Promise.resolve(SP.addComment(threadKey, inp.value)).then(function(r){
-          send.disabled = false;
-          if (r.ok) render(); else alert(r.msg);
-        });
+  function wireModal(ov) {
+    var close = function () { ov.classList.remove('open'); };
+    ov.querySelector('.sp-x').onclick = close;
+    ov.onclick = function (e) { if (e.target === ov) close(); };
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+
+    var loginForm = ov.querySelector('#spLoginForm'), regForm = ov.querySelector('#spRegForm');
+    var title = ov.querySelector('#spAuthTitle');
+    ov.querySelectorAll('.sp-tab').forEach(function (t) {
+      t.onclick = function () {
+        ov.querySelectorAll('.sp-tab').forEach(function (x) { x.classList.remove('active'); });
+        t.classList.add('active');
+        var login = t.dataset.tab === 'login';
+        loginForm.style.display = login ? 'flex' : 'none';
+        regForm.style.display = login ? 'none' : 'flex';
+        title.textContent = login ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
       };
-      var lg = document.getElementById('cLogin');
-      if (lg) lg.onclick = function(){ SP.openAuth(); };
-      cEl.querySelectorAll('.c-del').forEach(function(b){
-        b.onclick = function(){ if(confirm('ลบความคิดเห็นนี้?')){ Promise.resolve(SP.deleteComment(b.dataset.id)).then(render); } };
-      });
-      cEl.querySelectorAll('.c-like').forEach(function(b){
-        b.onclick = function(){
-          if(!SP.session()){ SP.openAuth(); return; }
-          b.disabled = true;
-          Promise.resolve(SP.toggleLike(b.dataset.id, b.dataset.liked==='1')).then(render);
-        };
-      });
+    });
+
+    function busy(form, on) {
+      var b = form.querySelector('button[type=submit]');
+      b.disabled = on; b.style.opacity = on ? '.6' : '';
+      b.textContent = on ? 'กำลังดำเนินการ…' : (form === loginForm ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก');
     }
 
-    SP.onAuth(function(){ render(); });
-    render();
+    loginForm.onsubmit = function (e) {
+      e.preventDefault();
+      ov.querySelector('#spLoginMsg').textContent = ''; busy(loginForm, true);
+      Promise.resolve(SP.login(loginForm.email.value, loginForm.p.value)).then(function (r) {
+        busy(loginForm, false);
+        if (r.ok) { close(); } else { ov.querySelector('#spLoginMsg').textContent = r.msg; }
+      });
+    };
+    regForm.onsubmit = function (e) {
+      e.preventDefault();
+      ov.querySelector('#spRegMsg').textContent = ''; busy(regForm, true);
+      Promise.resolve(SP.register(regForm.email.value, regForm.p.value, regForm.name.value)).then(function (r) {
+        busy(regForm, false);
+        if (r.ok) { close(); } else { ov.querySelector('#spRegMsg').textContent = r.msg; }
+      });
+    };
+  }
+
+  SP.openAuth = function (tab) {
+    var ov = document.getElementById('spOverlay'); if (!ov) return;
+    var t = ov.querySelector('.sp-tab[data-tab="' + (tab || 'login') + '"]');
+    if (t) t.click();
+    ov.querySelectorAll('.sp-msg').forEach(function (m) { m.textContent = ''; });
+    ov.classList.add('open');
+    var first = ov.querySelector((tab === 'register' ? '#spRegForm' : '#spLoginForm') + ' input');
+    if (first) setTimeout(function () { first.focus(); }, 60);
   };
+  SP.renderAcct = renderAcct;
+
+  function start() { inject(); SP.onAuth(function () { renderAcct(); }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();

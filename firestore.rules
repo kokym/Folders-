@@ -1,65 +1,20 @@
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // helper: is the signed-in user an admin?
-    function isAdmin() {
-      return request.auth != null
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // ---- user profiles ----
-    // a user may create/read/update only their OWN profile.
-    // role is locked to "member" on create so nobody can self-promote.
-    // (to make an admin: edit that user's doc in the Firebase console and set role: "admin")
-    match /users/{uid} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-                    && request.auth.uid == uid
-                    && request.resource.data.role == 'member';
-      allow update: if request.auth != null
-                    && request.auth.uid == uid
-                    && request.resource.data.role == resource.data.role; // can't change own role
-      allow delete: if isAdmin();
-    }
-
-    // ---- articles ---- public read, admin write
-    match /articles/{slug} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // ---- links ---- public read, admin write
-    match /links/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // ---- novels (นิยายแบบแบ่งตอน) ---- public read, admin write
-    match /novels/{slug} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // ---- site content (editable page text) ---- public read, admin write
-    match /settings/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // ---- comments ----
-    // anyone may read; signed-in members may post as themselves;
-    // an admin may delete any comment, a member may delete their own;
-    // any signed-in user may toggle a like (only the "likes" field may change).
-    match /comments/{id} {
-      allow read: if true;
-      allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid;
-      allow delete: if isAdmin()
-                    || (request.auth != null && resource.data.uid == request.auth.uid);
-      allow update: if request.auth != null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
-    }
-  }
-}
+// ============================================================
+// SHADOW PHASE 影变 — Firebase configuration
+// ------------------------------------------------------------
+// วิธีใช้:
+//   1. สร้างโปรเจกต์ที่ https://console.firebase.google.com
+//   2. ไปที่ Project settings (⚙️) › ส่วน "Your apps" › Web app (</>)
+//   3. คัดลอกค่าจาก firebaseConfig มาวางทับด้านล่างนี้
+//
+// ตราบใดที่ apiKey ยังเป็น "PASTE_..." เว็บจะรันในโหมดสาธิต
+// (เก็บข้อมูลในเครื่องผู้ใช้) — พอใส่ค่าจริงจะสลับไปใช้ Firebase อัตโนมัติ
+// ============================================================
+window.SP_FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCdTun1hDL9-2_JHSw_O7WcJgfFPh8bqiE",
+  authDomain:        "shadowphase.firebaseapp.com",
+  projectId:         "shadowphase",
+  storageBucket:     "shadowphase.firebasestorage.app",
+  messagingSenderId: "764405059903",
+  appId:             "1:764405059903:web:391b6b7f6649cb4983c38a",
+  measurementId:     "G-FNSEZJEPVB"
+};

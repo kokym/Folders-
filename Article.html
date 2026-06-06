@@ -3,63 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>บทความ — Shadow Phase 影变</title>
+<title>แผงควบคุมแอดมิน — Shadow Phase 影变</title>
 <link rel="icon" type="image/png" href="assets/seal-sp.png">
 <script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="sp-app.css">
-<style>
-/* reading progress */
-.progress { position: fixed; top: 0; left: 0; height: 2.5px; background: var(--crimson); width: 0; z-index: 100; transition: width .1s linear; }
-
-.art-head { padding: clamp(48px,6vw,80px) 0 clamp(28px,3vw,40px); }
-.art-head .back { display: inline-flex; align-items: center; gap: .5em; color: var(--ink-faint); font-size: .88rem; margin-bottom: 32px; transition: color .2s var(--ease); }
-.art-head .back:hover { color: var(--crimson); }
-.art-head .cat-tag { display:block; margin-bottom: 18px; }
-.art-head h1 { font-size: clamp(2.1rem,4.4vw,3.4rem); margin: 0 0 18px; font-weight: 500; max-width: 22ch; text-wrap: balance; line-height: 1.16; }
-.art-head .cn-title { font-family: var(--font-cn); font-size: clamp(1.6rem,3vw,2.2rem); color: var(--crimson); letter-spacing: .3em; margin-bottom: 26px; }
-.art-meta { display: flex; align-items: center; gap: 14px; color: var(--ink-faint); font-size: .9rem; flex-wrap: wrap; }
-.art-meta .dot { width:3px;height:3px;border-radius:50%;background:var(--ink-faint); }
-
-.art-divider { height: 1px; background: var(--rule); margin: 0; }
-
-/* reading body */
-.reader { max-width: var(--read); margin: 0 auto; padding: clamp(40px,5vw,60px) 0 0; }
-.reader p { font-size: 1.18rem; line-height: 1.95; color: var(--ink); margin: 0 0 1.5em; letter-spacing: .003em; }
-.reader p em { font-style: normal; font-weight: 600; color: var(--crimson); }
-.reader > p:first-of-type::first-letter {
-  font-family: var(--font-display); font-weight: 600; float: left; font-size: 4.2rem;
-  line-height: .82; padding: 6px 14px 0 0; color: var(--crimson);
-}
-.reader h2 {
-  font-family: var(--font-head); font-size: clamp(1.5rem,2.6vw,2rem); font-weight: 500;
-  margin: 2em 0 .7em; padding-top: .3em; position: relative; line-height: 1.3;
-}
-.reader h2::before { content:''; position:absolute; top:0; left:0; width:38px; height:2px; background: var(--crimson); }
-.reader blockquote {
-  margin: 2.2em 0; padding: 0 0 0 30px; border-left: 2px solid var(--crimson);
-  font-family: var(--font-head); font-style: italic; font-size: clamp(1.4rem,2.6vw,1.75rem);
-  line-height: 1.5; color: var(--ink); font-weight: 400;
-}
-.reader blockquote .src { display:block; font-family: var(--font-body); font-style: normal; font-size: .92rem; color: var(--ink-faint); margin-top: 14px; letter-spacing: .01em; }
-
-/* end seal signature */
-.art-end { max-width: var(--read); margin: 60px auto 0; padding-top: 40px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
-.art-end img { width: 84px; height: 84px; }
-.art-end .cn { font-family: var(--font-cn); color: var(--ink-faint); letter-spacing: .3em; font-size: .95rem; }
-
-/* related */
-.related { padding-top: 80px; }
-.rel-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; }
-@media (max-width:640px){ .rel-grid { grid-template-columns: 1fr; } }
-.rel-card { border: 1px solid var(--rule); padding: 26px; cursor: pointer; background: var(--paper-card); transition: border-color .25s var(--ease), transform .25s var(--ease); display:flex; flex-direction:column; gap:10px; }
-.rel-card:hover { border-color: var(--crimson); transform: translateY(-3px); }
-.rel-card h3 { font-size: 1.25rem; margin: 0; font-weight: 500; }
-.rel-card .excerpt { font-size: .95rem; color: var(--ink-soft); }
-</style>
 </head>
 <body>
-<div class="progress" id="progress"></div>
 <script src="theme.js"></script>
 
 <header class="site-head">
@@ -71,8 +21,7 @@
     <nav class="nav">
       <a href="index.html">หน้าแรก</a>
       <a href="Articles.html">บทความ</a>
-      <a href="Articles.html#cats">หมวดหมู่</a>
-      <a href="index.html#about">เกี่ยวกับ</a>
+      <a href="admin.html" aria-current="page">แอดมิน</a>
     </nav>
     <button class="theme-btn" data-theme-toggle aria-label="สลับโหมดสว่าง/มืด">
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
@@ -82,60 +31,227 @@
 </header>
 
 <main>
-  <article>
-    <div class="art-head">
+  <!-- gate for non-admins -->
+  <div class="wrap" id="gate" style="display:none">
+    <div class="admin-gate">
+      <img class="seal-img" src="assets/seal-sp.png" alt="" style="width:72px;height:72px;margin:0 auto">
+      <h1>เฉพาะผู้ดูแลระบบ</h1>
+      <p>หน้านี้สงวนไว้สำหรับแอดมินเท่านั้น กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน</p>
+      <button class="btn btn-primary" id="gateLogin" type="button">เข้าสู่ระบบ</button>
+    </div>
+  </div>
+
+  <!-- admin console -->
+  <div id="console" style="display:none">
+    <section class="admin-head">
       <div class="wrap">
-        <a class="back" href="Articles.html">← กลับสู่บทความทั้งหมด</a>
-        <span class="cat-tag" id="aCat"></span>
-        <h1 id="aTitle"></h1>
-        <div class="cn-title" id="aCn"></div>
-        <div class="art-meta" id="aMeta"></div>
+        <span class="eyebrow">แผงควบคุม <span class="cn">管理</span></span>
+        <h1>คลังจัดการเนื้อหา</h1>
+        <p>เพิ่มบทความใหม่ จัดการลิงก์อ้างอิง และดูแลความคิดเห็นของสมาชิก</p>
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-panel="article" type="button">เพิ่มบทความ</button>
+          <button class="admin-tab" data-panel="novels" type="button">นิยาย <span class="cn" style="opacity:.6">小说</span></button>
+          <button class="admin-tab" data-panel="site" type="button">เนื้อหาหน้าเว็บ <span class="cn" style="opacity:.6">页面</span></button>
+          <button class="admin-tab" data-panel="links" type="button">ลิงก์ &amp; อ้างอิง <span class="n" id="nLinks"></span></button>
+          <button class="admin-tab" data-panel="comments" type="button">ความคิดเห็น <span class="n" id="nComments"></span></button>
+        </div>
       </div>
-    </div>
-    <div class="art-divider"></div>
-    <div class="wrap">
-      <figure class="art-cover" id="aCover" style="display:none"><img alt=""></figure>
-      <div class="reader" id="reader"></div>
-      <div class="art-end">
-        <img class="seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-        <span class="cn">影变 · 完</span>
-      </div>
+    </section>
 
-      <!-- COMMENTS -->
-      <section class="comments" id="comments"></section>
-    </div>
-  </article>
-
-  <section class="related">
-    <div class="wrap">
-      <div class="sec-head">
-        <div><span class="eyebrow">อ่านต่อ <span class="cn">續讀</span></span></div>
-        <a class="link-arrow" href="Articles.html">ทั้งหมด <span class="ar">→</span></a>
+    <!-- PANEL: article -->
+    <section class="admin-panel active" data-panel="article">
+      <div class="wrap">
+        <div class="admin-flash" id="flashArticle"></div>
+        <div class="admin-grid">
+          <form class="admin-form" id="artForm">
+            <div class="art-mode-bar" id="artModeBar" style="display:none">
+              <span>✎ กำลังแก้ไขบทความเดิม</span>
+              <button type="button" id="artCancel">+ เขียนบทความใหม่</button>
+            </div>
+            <input type="hidden" name="slug" id="artSlug">
+            <div class="sp-field"><label>ชื่อบทความ</label><input class="sp-input" name="title" required placeholder="เช่น อาณัติแห่งสวรรค์..."></div>
+            <div class="row2">
+              <div class="sp-field"><label>อักษรจีนกำกับ</label><input class="sp-input" name="cn" placeholder="天命"></div>
+              <div class="sp-field"><label>หมวดหมู่</label><select class="sp-select" name="cat" id="catSelect"></select></div>
+            </div>
+            <div class="sp-field">
+              <label>รูปปก (ไม่บังคับ)</label>
+              <div class="cover-input">
+                <input class="sp-input" name="cover" id="artCover" placeholder="วาง URL รูป หรืออัปโหลดไฟล์ →">
+                <label class="cover-up"><input type="file" accept="image/*" id="artCoverFile" hidden><span id="artCoverBtn">อัปโหลด</span></label>
+              </div>
+              <div class="cover-preview" id="artCoverPrev" style="display:none"><img alt=""><button type="button" id="artCoverClear" aria-label="ลบรูปปก">×</button></div>
+            </div>
+            <div class="sp-field"><label>เกริ่นนำ (excerpt)</label><textarea class="sp-textarea" name="excerpt" style="min-height:80px" required placeholder="สรุปสั้น ๆ ที่จะปรากฏในหน้ารวมบทความ"></textarea></div>
+            <div class="sp-field"><label>เนื้อหา</label><textarea class="sp-textarea" name="body" style="min-height:300px" required placeholder="พิมพ์เนื้อหาบทความที่นี่..."></textarea></div>
+            <div class="admin-syntax">
+              รูปแบบการเขียน — เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่ · ขึ้นต้นด้วย <code>## </code> หัวข้อ · <code>&gt; </code> คำคม · <code>&lt;em&gt;…&lt;/em&gt;</code> เน้นสีแดง · แทรกรูป <code>![คำบรรยาย](URL)</code> เป็นบรรทัดเดี่ยว
+            </div>
+            <button class="btn btn-primary sp-btn-full" type="submit" id="artSubmit">เผยแพร่บทความ</button>
+          </form>
+          <div class="admin-side">
+            <h3>บทความทั้งหมด</h3>
+            <p class="sub">กด “แก้ไข” เพื่อปรับเนื้อหา (รวมบทความตั้งต้น) · ลบได้เฉพาะบทความที่เพิ่ม/แก้ไขเอง</p>
+            <div id="customList"></div>
+          </div>
+        </div>
       </div>
-      <div class="rel-grid" id="related"></div>
-    </div>
-  </section>
+    </section>
+
+    <!-- PANEL: novels -->
+    <section class="admin-panel" data-panel="novels">
+      <div class="wrap">
+        <div class="admin-flash" id="flashNovel"></div>
+        <div class="admin-grid">
+          <div>
+            <form class="admin-form" id="novForm">
+              <div class="art-mode-bar" id="novModeBar" style="display:none">
+                <span>✎ กำลังแก้ไขนิยายเรื่องเดิม</span>
+                <button type="button" id="novCancel">+ สร้างนิยายเรื่องใหม่</button>
+              </div>
+              <input type="hidden" id="novSlug">
+              <div class="sp-field"><label>ชื่อนิยาย</label><input class="sp-input" name="title" required placeholder="เช่น เงาสะท้อนแห่งฉางอาน"></div>
+              <div class="row2">
+                <div class="sp-field"><label>อักษรจีนกำกับ</label><input class="sp-input" name="cn" placeholder="长安幻影"></div>
+                <div class="sp-field"><label>สถานะ</label><select class="sp-select" name="status"><option value="ongoing">กำลังเขียน</option><option value="completed">จบแล้ว</option></select></div>
+              </div>
+              <div class="sp-field">
+                <label>ปก (แนวตั้ง 3:4 — ไม่บังคับ)</label>
+                <div class="cover-input">
+                  <input class="sp-input" name="cover" id="novCover" placeholder="วาง URL รูป หรืออัปโหลดไฟล์ →">
+                  <label class="cover-up"><input type="file" accept="image/*" id="novCoverFile" hidden><span id="novCoverBtn">อัปโหลด</span></label>
+                </div>
+                <div class="cover-preview" id="novCoverPrev" style="display:none"><img alt=""><button type="button" id="novCoverClear" aria-label="ลบปก">×</button></div>
+              </div>
+              <div class="sp-field"><label>เรื่องย่อ (synopsis)</label><textarea class="sp-textarea" name="synopsis" style="min-height:110px" placeholder="สรุปเรื่องราวสั้น ๆ ที่จะปรากฏในการ์ดและหน้าสารบัญ"></textarea></div>
+              <button class="btn btn-primary sp-btn-full" type="submit" id="novSubmit">สร้างนิยาย</button>
+            </form>
+
+            <!-- chapters manager (shown only when editing an existing novel) -->
+            <div id="chapMgr" style="display:none">
+              <div class="chap-sep"><span>ตอนของเรื่องนี้</span></div>
+              <div id="chapList"></div>
+              <form class="admin-form" id="chapForm" style="margin-top:22px">
+                <div class="art-mode-bar" id="chapModeBar" style="display:none">
+                  <span>✎ กำลังแก้ไขตอนเดิม</span>
+                  <button type="button" id="chapCancel">+ เขียนตอนใหม่</button>
+                </div>
+                <input type="hidden" id="chapIdx">
+                <div class="sp-field"><label>ชื่อตอน</label><input class="sp-input" name="title" required placeholder="เช่น กระจกในตรอกร้าง"></div>
+                <div class="sp-field"><label>เนื้อหาตอน</label><textarea class="sp-textarea" name="body" style="min-height:280px" required placeholder="พิมพ์เนื้อหาของตอนที่นี่..."></textarea></div>
+                <div class="admin-syntax">
+                  รูปแบบการเขียน — เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่ · ขึ้นต้นด้วย <code>## </code> หัวข้อ · <code>&gt; </code> คำคม · <code>&lt;em&gt;…&lt;/em&gt;</code> เน้นสีแดง · แทรกรูป <code>![คำบรรยาย](URL)</code> เป็นบรรทัดเดี่ยว
+                </div>
+                <button class="btn btn-primary sp-btn-full" type="submit" id="chapSubmit">เพิ่มตอน</button>
+              </form>
+            </div>
+          </div>
+          <div class="admin-side">
+            <h3>นิยายทั้งหมด</h3>
+            <p class="sub">กด “จัดการ” เพื่อแก้ข้อมูลเรื่องและเพิ่ม/แก้ไขตอน · ลบได้เฉพาะเรื่องที่เพิ่ม/แก้ไขเอง</p>
+            <div id="novList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: site content -->
+    <section class="admin-panel" data-panel="site">
+      <div class="wrap">
+        <div class="admin-flash" id="flashSite"></div>
+        <div class="admin-grid">
+          <form class="admin-form" id="siteForm">
+            <h3 style="font-family:var(--font-head);font-weight:500;font-size:1.3rem;margin:0 0 4px">ข้อความบนหน้าเว็บ</h3>
+            <p class="sub" style="color:var(--ink-faint);margin:0 0 22px">แก้ข้อความหลักของเว็บได้ทุกส่วน — ชื่อแบรนด์ คำคมหน้าแรก หัวข้อหมวด และส่วนท้าย เปลี่ยนแล้วมีผลทุกหน้าทันที</p>
+
+            <div class="site-group">หัวเว็บ &amp; แบรนด์</div>
+            <div class="row2">
+              <div class="sp-field"><label>ชื่อแบรนด์ (อังกฤษ)</label><input class="sp-input" name="brandName" placeholder="SHADOW PHASE"></div>
+              <div class="sp-field"><label>อักษรจีนแบรนด์</label><input class="sp-input" name="brandCn" placeholder="影变"></div>
+            </div>
+
+            <div class="site-group">ส่วนเปิดหน้าแรก (Hero)</div>
+            <div class="row2">
+              <div class="sp-field"><label>ป้ายกำกับด้านบน</label><input class="sp-input" name="heroEyebrow" placeholder="บันทึก เงา และกาลเวลา"></div>
+              <div class="sp-field"><label>อักษรจีนกำกับ</label><input class="sp-input" name="heroEyebrowCn" placeholder="影变"></div>
+            </div>
+            <div class="sp-field">
+              <label>คำคมหลัก (ใช้ <code>&lt;em&gt;…&lt;/em&gt;</code> เพื่อเน้นสีแดงได้)</label>
+              <textarea class="sp-textarea" name="heroQuote" style="min-height:90px" placeholder="ประวัติศาสตร์ไม่ได้ <em>ซ้ำรอย</em>..."></textarea>
+            </div>
+            <div class="row2">
+              <div class="sp-field"><label>คำบรรยายใต้คำคม</label><input class="sp-input" name="heroTagline" placeholder="แหล่งรวมงานเขียน..."></div>
+              <div class="sp-field"><label>อักษรจีนท้ายบรรทัด</label><input class="sp-input" name="heroTaglineCn" placeholder="辭"></div>
+            </div>
+
+            <div class="site-group">ส่วนหมวดหมู่</div>
+            <div class="row2">
+              <div class="sp-field"><label>ป้ายกำกับหมวด</label><input class="sp-input" name="catsEyebrow" placeholder="เลือกอ่านตามหมวด"></div>
+              <div class="sp-field"><label>หัวข้อหมวด</label><input class="sp-input" name="catsHeading" placeholder="สี่สายธารของงานเขียน"></div>
+            </div>
+
+            <div class="site-group">ส่วนท้ายเว็บ (Footer)</div>
+            <div class="sp-field"><label>ข้อความแนะนำเว็บ</label><textarea class="sp-textarea" name="footerAbout" style="min-height:90px"></textarea></div>
+            <div class="row2">
+              <div class="sp-field"><label>บรรทัดลิขสิทธิ์</label><input class="sp-input" name="footerCopyright" placeholder="© 2026 Shadow Phase 影变"></div>
+              <div class="sp-field"><label>คำคมจีนท้ายเว็บ</label><input class="sp-input" name="footerMotto" placeholder="影者，光之所遺也"></div>
+            </div>
+
+            <div class="site-actions">
+              <button class="btn btn-primary" type="submit" id="siteSubmit">บันทึกเนื้อหาเว็บ</button>
+              <button class="btn btn-ghost" type="button" id="siteReset">คืนค่าเริ่มต้น</button>
+            </div>
+          </form>
+          <div class="admin-side">
+            <h3>ตัวอย่างหน้าแรก</h3>
+            <p class="sub">หน้าตาคร่าว ๆ ของส่วนเปิด — กดบันทึกแล้วเปิด <a href="index.html" target="_blank" style="color:var(--crimson)">หน้าแรก</a> เพื่อดูจริง</p>
+            <div class="site-prev" id="sitePrev">
+              <span class="sp-eyebrow" id="pvEyebrow"></span>
+              <div class="sp-quote" id="pvQuote"></div>
+              <div class="sp-tag" id="pvTag"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: links -->
+    <section class="admin-panel" data-panel="links">
+      <div class="wrap">
+        <div class="admin-flash" id="flashLink"></div>
+        <div class="admin-grid">
+          <form class="admin-form" id="linkForm">
+            <div class="sp-field"><label>ชื่อลิงก์</label><input class="sp-input" name="title" required placeholder="เช่น พจนานุกรมประวัติศาสตร์จีน"></div>
+            <div class="sp-field"><label>URL</label><input class="sp-input" name="url" type="url" required placeholder="https://..."></div>
+            <div class="sp-field"><label>คำอธิบาย (ไม่บังคับ)</label><textarea class="sp-textarea" name="desc" style="min-height:80px" placeholder="อธิบายสั้น ๆ ว่าลิงก์นี้คืออะไร"></textarea></div>
+            <button class="btn btn-primary sp-btn-full" type="submit">เพิ่มลิงก์</button>
+          </form>
+          <div class="admin-side">
+            <h3>ลิงก์ทั้งหมด</h3>
+            <p class="sub">ลิงก์เหล่านี้จะปรากฏในส่วน “คลังลิงก์คัดสรร” บนหน้าแรก</p>
+            <div id="linkList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: comments -->
+    <section class="admin-panel" data-panel="comments">
+      <div class="wrap">
+        <div class="admin-flash" id="flashComment"></div>
+        <h3 style="font-family:var(--font-head);font-weight:500;font-size:1.4rem;margin:0 0 4px">ดูแลความคิดเห็น</h3>
+        <p class="sub" style="color:var(--ink-faint);margin:0 0 26px">ความคิดเห็นทั้งหมดจากสมาชิก เรียงจากใหม่ไปเก่า — ลบรายการที่ไม่เหมาะสมได้</p>
+        <div id="commentList"></div>
+      </div>
+    </section>
+  </div>
 </main>
 
 <footer class="site-foot">
   <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-        <p data-site="footerAbout">Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา</p>
-      </div>
-      <div class="foot-cols">
-        <div class="foot-col">
-          <h4>สำรวจ</h4>
-          <a href="index.html">หน้าแรก</a>
-          <a href="Articles.html">บทความทั้งหมด</a>
-        </div>
-        <div class="foot-col" id="footCats"></div>
-      </div>
-    </div>
-    <div class="foot-bottom">
-      <span data-site="footerCopyright">© 2026 Shadow Phase 影变</span>
-      <span class="cn" data-site="footerMotto">影者，光之所遺也</span>
+    <div class="foot-bottom" style="margin-top:0;border-top:none;padding-top:0">
+      <span>© 2026 Shadow Phase 影变 · แผงควบคุมแอดมิน</span>
+      <span class="cn">影者，光之所遺也</span>
     </div>
   </div>
 </footer>
@@ -148,136 +264,236 @@
 <script src="data.js"></script>
 <script src="sp-store.js"></script>
 <script src="sp-content.js"></script>
+<script src="sp-admin-novels.js"></script>
 <script src="sp-auth-ui.js"></script>
 <script>
-(async function () {
-  var cats = window.SP_CATEGORIES;
-  await SP.ready;
-  var arts = await SP.listArticles();
+(function () {
+  var SP = window.SP, cats = window.SP_CATEGORIES;
   var order = ['history','reflection','fiction','review'];
-  function fmtDate(s){var d=new Date(s);var m=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+  function flash(id,msg){var f=document.getElementById(id);f.textContent=msg;f.classList.add('show');setTimeout(function(){f.classList.remove('show');},2600);}
 
-  var slug = new URLSearchParams(location.search).get('a');
-  var a = arts.find(function(x){return x.slug===slug;}) || arts[0];
+  // ---- gate ----
+  function gate(){
+    var admin = SP.isAdmin();
+    document.getElementById('gate').style.display = admin ? 'none' : '';
+    document.getElementById('console').style.display = admin ? '' : 'none';
+    if (admin) boot();
+  }
+  document.getElementById('gateLogin').onclick = function(){ SP.openAuth(); };
 
-  document.title = a.title + ' — Shadow Phase 影变';
-  document.getElementById('aCat').textContent = cats[a.cat].th;
-  document.getElementById('aTitle').textContent = a.title;
-  document.getElementById('aCn').textContent = a.cn;
-  document.getElementById('aMeta').innerHTML =
-    '<span>'+fmtDate(a.date)+'</span><span class="dot"></span>'+
-    '<span>อ่าน '+a.read+' นาที</span><span class="dot"></span>'+
-    '<span class="cn" style="color:var(--crimson)">S.P. 親筆</span>';
+  var booted = false;
+  function boot(){
+    if (booted) return; booted = true;
 
-  // cover
-  var coverEl = document.getElementById('aCover');
-  if (a.cover) { coverEl.style.display = ''; coverEl.querySelector('img').src = a.cover; }
-
-  // body
-  var r = document.getElementById('reader');
-  r.innerHTML = a.body.map(function(b){
-    if(b[0]==='h2') return '<h2>'+b[1]+'</h2>';
-    if(b[0]==='quote') return '<blockquote>'+b[1]+(b[2]?'<span class="src">'+b[2]+'</span>':'')+'</blockquote>';
-    if(b[0]==='img') return '<figure class="art-fig"><img src="'+String(b[1]).replace(/"/g,'&quot;')+'" alt="'+(b[2]||'').replace(/"/g,'&quot;')+'" loading="lazy">'+(b[2]?'<figcaption>'+b[2]+'</figcaption>':'')+'</figure>';
-    return '<p>'+b[1]+'</p>';
-  }).join('');
-
-  // related (same cat first, then others)
-  var rel = arts.filter(function(x){return x.slug!==a.slug;})
-    .sort(function(x,y){ return (y.cat===a.cat) - (x.cat===a.cat) || new Date(y.date)-new Date(x.date); })
-    .slice(0,2);
-  document.getElementById('related').innerHTML = rel.map(function(x){
-    return '<article class="rel-card" data-slug="'+x.slug+'">'+
-      '<span class="cat-tag">'+cats[x.cat].th+'</span>'+
-      '<h3>'+x.title+'</h3>'+
-      '<p class="excerpt">'+x.excerpt+'</p></article>';
-  }).join('');
-  document.querySelectorAll('.rel-card').forEach(function(c){ c.onclick=function(){location.href='Article.html?a='+c.dataset.slug;}; });
-
-  document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
-    order.map(function(k){
-      var href = k==='fiction' ? 'Novels.html' : 'Articles.html?cat='+k+'#cats';
-      return '<a href="'+href+'">'+cats[k].th+'</a>';
-    }).join('');
-
-  // ---- comments ----
-  var cEl = document.getElementById('comments');
-  function cEsc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function cWhen(iso){var d=new Date(iso);return fmtDate(iso)+' · '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
-
-  async function renderComments(){
-    var list = await SP.listComments(a.slug), s = SP.session(), admin = SP.isAdmin();
-    var html = '<div class="c-head"><h2>ความคิดเห็น</h2><span class="c-count">'+list.length+'</span><span class="cn">评论</span></div>';
-    if (s) {
-      html += '<div class="c-compose">'+
-        '<span class="sp-ava">'+cEsc((s.name||s.email).slice(0,1))+'</span>'+
-        '<div class="c-box">'+
-          '<textarea class="sp-textarea" id="cInput" placeholder="ร่วมแลกเปลี่ยนความคิดเห็น..."></textarea>'+
-          '<div class="c-row"><span class="c-as">แสดงความคิดเห็นในชื่อ <b>'+cEsc(s.name||s.email)+'</b></span>'+
-          '<button class="btn btn-primary" id="cSend" type="button">ส่งความคิดเห็น</button></div>'+
-        '</div></div>';
-    } else {
-      html += '<div class="c-locked"><p>เข้าสู่ระบบเป็นสมาชิกเพื่อร่วมแสดงความคิดเห็นใต้บทความนี้</p>'+
-        '<button class="btn btn-primary" id="cLogin" type="button">เข้าสู่ระบบ / สมัคร</button></div>';
-    }
-    if (list.length) {
-      html += '<div class="c-list">'+list.map(function(c){
-        var isAdmin = c.role==='admin';
-        var canDel = admin || (s && c.uid===s.uid);
-        var likes = c.likes || [];
-        var liked = !!(s && likes.indexOf(s.uid)>-1);
-        var cnt = likes.length;
-        return '<div class="c-item">'+
-          '<span class="sp-ava"'+(isAdmin?' style="background:var(--crimson)"':'')+'>'+cEsc((c.name||'?').slice(0,1))+'</span>'+
-          '<div class="c-body"><div class="c-by"><span class="nm">'+cEsc(c.name||'ผู้ใช้')+'</span>'+
-            (isAdmin?'<span class="badge">แอดมิน</span>':'')+
-            (s && c.uid===s.uid && !isAdmin?'<span class="badge mine">คุณ</span>':'')+
-            '<span class="when">'+cWhen(c.date)+'</span>'+
-            (canDel?'<button class="c-del" data-id="'+c.id+'" type="button">ลบ</button>':'')+
-          '</div><div class="c-text">'+cEsc(c.text).replace(/\n/g,'<br>')+'</div>'+
-          '<div class="c-foot"><button class="c-like'+(liked?' liked':'')+'" data-id="'+c.id+'" data-liked="'+(liked?'1':'')+'" type="button" aria-pressed="'+liked+'">'+
-            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-1.3-1.2C6 14.9 3 12.2 3 8.9 3 6.3 5 4.3 7.6 4.3c1.5 0 2.9.7 3.8 1.8.9-1.1 2.3-1.8 3.8-1.8C17.8 4.3 19.8 6.3 19.8 8.9c0 3.3-3 6-6.7 10.4z"/></svg>'+
-            '<span class="c-like-n">'+(cnt||'')+'</span></button></div>'+
-          '</div></div>';
-      }).join('')+'</div>';
-    } else {
-      html += '<div class="c-empty">ยังไม่มีความคิดเห็น — มาเป็นคนแรกที่ร่วมแลกเปลี่ยน</div>';
-    }
-    cEl.innerHTML = html;
-
-    var send = document.getElementById('cSend');
-    if (send) send.onclick = function(){
-      var inp = document.getElementById('cInput');
-      send.disabled = true;
-      Promise.resolve(SP.addComment(a.slug, inp.value)).then(function(r){
-        send.disabled = false;
-        if (r.ok) renderComments(); else alert(r.msg);
-      });
-    };
-    var lg = document.getElementById('cLogin');
-    if (lg) lg.onclick = function(){ SP.openAuth(); };
-    cEl.querySelectorAll('.c-del').forEach(function(b){
-      b.onclick = function(){ if(confirm('ลบความคิดเห็นนี้?')){ Promise.resolve(SP.deleteComment(b.dataset.id)).then(renderComments); } };
-    });
-    cEl.querySelectorAll('.c-like').forEach(function(b){
-      b.onclick = function(){
-        if(!SP.session()){ SP.openAuth(); return; }
-        b.disabled = true;
-        Promise.resolve(SP.toggleLike(b.dataset.id, b.dataset.liked==='1')).then(renderComments);
+    // tabs
+    document.querySelectorAll('.admin-tab').forEach(function(t){
+      t.onclick = function(){
+        document.querySelectorAll('.admin-tab').forEach(function(x){x.classList.remove('active');});
+        document.querySelectorAll('.admin-panel').forEach(function(p){p.classList.remove('active');});
+        t.classList.add('active');
+        document.querySelector('.admin-panel[data-panel="'+t.dataset.panel+'"]').classList.add('active');
       };
     });
+
+    // category select
+    document.getElementById('catSelect').innerHTML = order.map(function(k){
+      return '<option value="'+k+'">'+cats[k].th+'</option>';
+    }).join('');
+
+    // ===== article create / edit =====
+    var artForm = document.getElementById('artForm');
+    var coverUrl = '';
+
+    function setCover(url){
+      coverUrl = url || '';
+      var prev = document.getElementById('artCoverPrev');
+      if (coverUrl){ prev.style.display=''; prev.querySelector('img').src = coverUrl; }
+      else { prev.style.display='none'; prev.querySelector('img').removeAttribute('src'); }
+    }
+    document.getElementById('artCover').oninput = function(){ setCover(this.value.trim()); };
+    document.getElementById('artCoverClear').onclick = function(){ document.getElementById('artCover').value=''; setCover(''); };
+    document.getElementById('artCoverFile').onchange = function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      var btn = document.getElementById('artCoverBtn'); var t = btn.textContent; btn.textContent='กำลังอัปโหลด…';
+      var self = this;
+      Promise.resolve(SP.uploadImage(f)).then(function(url){
+        document.getElementById('artCover').value = url; setCover(url); btn.textContent = t; self.value='';
+      }).catch(function(){ btn.textContent = t; alert('อัปโหลดรูปไม่สำเร็จ'); });
+    };
+
+    function resetForm(){
+      artForm.reset(); setCover('');
+      delete artForm.dataset.date;
+      document.getElementById('artSlug').value='';
+      document.getElementById('artModeBar').style.display='none';
+      document.getElementById('artSubmit').textContent='เผยแพร่บทความ';
+    }
+    document.getElementById('artCancel').onclick = resetForm;
+
+    function loadForEdit(a){
+      artForm.title.value = a.title || '';
+      artForm.cn.value = a.cn || '';
+      artForm.cat.value = a.cat || 'history';
+      artForm.excerpt.value = a.excerpt || '';
+      artForm.body.value = SP.bodyToText(a.body);
+      document.getElementById('artCover').value = a.cover || ''; setCover(a.cover||'');
+      document.getElementById('artSlug').value = a.slug;
+      artForm.dataset.date = a.date || '';
+      document.getElementById('artModeBar').style.display='';
+      document.getElementById('artSubmit').textContent='บันทึกการแก้ไข';
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    artForm.onsubmit = function(e){
+      e.preventDefault();
+      var title = artForm.title.value.trim();
+      var editing = document.getElementById('artSlug').value;
+      var body = SP.parseBody(artForm.body.value);
+      var words = artForm.body.value.replace(/\s+/g,' ').length;
+      var obj = {
+        slug: editing || SP.makeSlug(title),
+        cat: artForm.cat.value,
+        title: title,
+        cn: artForm.cn.value.trim() || cats[artForm.cat.value].cn,
+        cover: coverUrl || '',
+        date: editing ? (artForm.dataset.date || new Date().toISOString()) : new Date().toISOString(),
+        read: Math.max(2, Math.round(words/900)),
+        featured: false,
+        excerpt: artForm.excerpt.value.trim(),
+        body: body
+      };
+      var btn = document.getElementById('artSubmit'); btn.disabled = true;
+      Promise.resolve(SP.addArticle(obj)).then(function(r){
+        btn.disabled = false;
+        if (r && r.ok === false){ flash('flashArticle', r.msg || 'บันทึกไม่สำเร็จ'); return; }
+        flash('flashArticle', (editing?'บันทึกการแก้ไข “':'เผยแพร่ “')+title+'” เรียบร้อยแล้ว');
+        resetForm();
+        renderArticles();
+      });
+    };
+
+    async function renderArticles(){
+      var all = await SP.listArticles();
+      var custom = await SP.customArticles();
+      var stored = {}; custom.forEach(function(a){ stored[a.slug]=1; });
+      var el = document.getElementById('customList');
+      if (!all.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีบทความ</div>'; return; }
+      el.innerHTML = all.map(function(a){
+        var isStored = stored[a.slug];
+        return '<div class="admin-row">'+
+          (a.cover?'<img class="ar-thumb" src="'+esc(a.cover)+'" alt="">':'')+
+          '<div class="ar-body">'+
+          '<div class="ar-title">'+esc(a.title)+(isStored?'':' <span class="ar-base">ตั้งต้น</span>')+'</div>'+
+          '<div class="ar-meta"><span class="cat-tag">'+cats[a.cat].th+'</span> · '+fmtDate(a.date)+'</div>'+
+          '</div>'+
+          '<button class="ar-del ar-edit" data-slug="'+a.slug+'" type="button">แก้ไข</button>'+
+          (isStored?'<button class="ar-del" data-del="'+a.slug+'" type="button">ลบ</button>':'')+
+          '</div>';
+      }).join('');
+      el.querySelectorAll('.ar-edit').forEach(function(b){
+        b.onclick = function(){ loadForEdit(all.find(function(x){return x.slug===b.dataset.slug;})); };
+      });
+      el.querySelectorAll('[data-del]').forEach(function(b){
+        b.onclick = function(){ if(confirm('ลบบทความนี้? (ถ้าเป็นบทความตั้งต้นที่เคยแก้ไข จะกลับไปใช้ฉบับเดิม)')){ Promise.resolve(SP.deleteArticle(b.dataset.del)).then(function(r){ if(r&&r.ok===false){ flash('flashArticle', r.msg); return; } renderArticles(); }); } };
+      });
+    }
+
+    // ===== links =====
+    var linkForm = document.getElementById('linkForm');
+    linkForm.onsubmit = function(e){
+      e.preventDefault();
+      var btn = linkForm.querySelector('button[type=submit]'); if(btn) btn.disabled = true;
+      Promise.resolve(SP.addLink({ title: linkForm.title.value.trim(), url: linkForm.url.value.trim(), desc: linkForm.desc.value.trim() })).then(function(r){
+        if(btn) btn.disabled = false;
+        if (r && r.ok === false){ flash('flashLink', r.msg || 'บันทึกไม่สำเร็จ'); return; }
+        linkForm.reset();
+        flash('flashLink','เพิ่มลิงก์เรียบร้อยแล้ว');
+        renderLinks();
+      });
+    };
+    async function renderLinks(){
+      var links = await SP.listLinks();
+      document.getElementById('nLinks').textContent = links.length ? links.length : '';
+      var el = document.getElementById('linkList');
+      if (!links.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีลิงก์</div>'; return; }
+      el.innerHTML = links.map(function(l){
+        return '<div class="admin-row"><div class="ar-body">'+
+          '<div class="ar-title">'+esc(l.title)+'</div>'+
+          '<div class="ar-meta">'+esc((l.url||'').replace(/^https?:\/\//,''))+'</div>'+
+          '</div><button class="ar-del" data-id="'+l.id+'" type="button">ลบ</button></div>';
+      }).join('');
+      el.querySelectorAll('.ar-del').forEach(function(b){
+        b.onclick = function(){ Promise.resolve(SP.deleteLink(b.dataset.id)).then(renderLinks); };
+      });
+    }
+
+    // ===== comments =====
+    async function renderComments(){
+      var all = await SP.allComments();
+      var arts = await SP.listArticles();
+      var titleBySlug = {}; arts.forEach(function(a){ titleBySlug[a.slug] = a.title; });
+      document.getElementById('nComments').textContent = all.length ? all.length : '';
+      var el = document.getElementById('commentList');
+      if (!all.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีความคิดเห็น</div>'; return; }
+      el.innerHTML = all.map(function(c){
+        var d = new Date(c.date);
+        var when = fmtDate(c.date)+' · '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+        return '<div class="admin-row"><div class="ar-body">'+
+          '<div class="ar-title">'+esc(c.name||'ผู้ใช้')+' <span style="color:var(--ink-faint);font-weight:400;font-size:.85rem">· '+when+'</span></div>'+
+          '<div class="ar-meta" style="margin:4px 0 8px">ใต้บทความ: '+esc(titleBySlug[c.slug]||c.slug)+'</div>'+
+          '<div style="color:var(--ink-soft);font-size:.98rem;line-height:1.7">'+esc(c.text).replace(/\n/g,'<br>')+'</div>'+
+          '</div><button class="ar-del" data-id="'+c.id+'" type="button">ลบ</button></div>';
+      }).join('');
+      el.querySelectorAll('.ar-del').forEach(function(b){
+        b.onclick = function(){ if(confirm('ลบความคิดเห็นนี้?')){ Promise.resolve(SP.deleteComment(b.dataset.id)).then(renderComments); } };
+      });
+    }
+
+    // ===== site content =====
+    var siteForm = document.getElementById('siteForm');
+    var siteFields = ['brandName','brandCn','heroEyebrow','heroEyebrowCn','heroQuote','heroTagline','heroTaglineCn','catsEyebrow','catsHeading','footerAbout','footerCopyright','footerMotto'];
+
+    function sitePreview(){
+      var v = function(n){ return siteForm[n] ? siteForm[n].value : ''; };
+      document.getElementById('pvEyebrow').innerHTML = esc(v('heroEyebrow'))+' <span style="color:var(--crimson)">'+esc(v('heroEyebrowCn'))+'</span>';
+      document.getElementById('pvQuote').innerHTML = v('heroQuote');   // trusted admin HTML
+      document.getElementById('pvTag').textContent = v('heroTagline');
+    }
+    function fillSite(site){
+      siteFields.forEach(function(n){ if (siteForm[n]) siteForm[n].value = site[n] != null ? site[n] : ''; });
+      sitePreview();
+    }
+    siteForm.addEventListener('input', sitePreview);
+
+    Promise.resolve(SP.getSite()).then(fillSite);
+
+    siteForm.onsubmit = function(e){
+      e.preventDefault();
+      var obj = {};
+      siteFields.forEach(function(n){ if (siteForm[n]) obj[n] = siteForm[n].value.trim(); });
+      var btn = document.getElementById('siteSubmit'); btn.disabled = true;
+      Promise.resolve(SP.saveSite(obj)).then(function(r){
+        btn.disabled = false;
+        if (r && r.ok === false){ flash('flashSite', r.msg || 'บันทึกไม่สำเร็จ'); return; }
+        flash('flashSite','บันทึกเนื้อหาเว็บเรียบร้อยแล้ว');
+        SP.applySite(Object.assign({}, window.SP_SITE_DEFAULTS, obj)); // refresh this page’s header live
+      });
+    };
+    document.getElementById('siteReset').onclick = function(){
+      if (!confirm('คืนค่าข้อความทั้งหมดกลับเป็นค่าเริ่มต้น?')) return;
+      fillSite(Object.assign({}, window.SP_SITE_DEFAULTS));
+    };
+
+    // ===== novels =====
+    if (window.initNovelAdmin) window.initNovelAdmin({ flash: flash });
+
+    renderArticles(); renderLinks(); renderComments();
   }
-  SP.onAuth(function(){ renderComments(); });
-  renderComments();
 
-  // reading progress
-  var bar = document.getElementById('progress');
-  window.addEventListener('scroll', function(){
-    var h = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = (h>0 ? (window.scrollY/h*100) : 0)+'%';
-  }, {passive:true});
-
-  window.scrollTo(0,0);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ SP.onAuth(gate); });
+  else SP.onAuth(gate);
 })();
 </script>
 </body>
