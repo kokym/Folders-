@@ -22,9 +22,10 @@
       el.innerHTML = list.map(function(t){
         var pending = (t.status||'pending')==='pending';
         return '<div class="admin-row">'+
+          (t.slip ? '<a class="ar-thumb slip-thumb" href="'+esc(t.slip)+'" target="_blank" rel="noopener" title="ดูสลิป"><img src="'+esc(t.slip)+'" alt="สลิป"></a>' : '')+
           '<div class="ar-body">'+
             '<div class="ar-title">'+esc(t.name||t.email||'ผู้ใช้')+' <span class="chap-paid">฿'+t.amount+' → '+t.coins+' เหรียญ</span></div>'+
-            '<div class="ar-meta">'+esc(t.email||'')+' · '+fmtWhen(t.date)+' · <span class="tu-st '+(t.status||'pending')+'">'+(stTh[t.status]||'รอตรวจสอบ')+'</span></div>'+
+            '<div class="ar-meta">'+esc(t.email||'')+' · '+fmtWhen(t.date)+' · <span class="tu-st '+(t.status||'pending')+'">'+(stTh[t.status]||'รอตรวจสอบ')+'</span>'+(t.slip?' · <a href="'+esc(t.slip)+'" target="_blank" rel="noopener" style="color:var(--crimson)">ดูสลิป</a>':' · <span style="color:var(--ink-faint)">ไม่มีสลิป</span>')+'</div>'+
           '</div>'+
           '<div class="chap-acts">'+
             (pending

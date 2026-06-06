@@ -44,6 +44,16 @@
   SP.chapterIsFree = function (ch) { return !!(ch && (ch.free === true || (ch.free !== false && !(ch.price > 0)))); };
   SP.chapterPrice = function (ch) { return SP.chapterIsFree(ch) ? 0 : (ch.price > 0 ? ch.price : (payDefaults().pricePerChapter || 1)); };
   SP.unlockKey = function (slug, chId) { return slug + '__' + chId; };
+  // every chapter must carry a STABLE id (used in the unlock key). Seed/legacy
+  // chapters may lack one — assign a deterministic id based on position so it
+  // stays identical across reloads (a random id would break unlocks).
+  function ensureChapterIds(slug, chapters) {
+    return (chapters || []).map(function (c, i) {
+      if (c && c.id) return c;
+      return Object.assign({}, c, { id: slug + '-c' + i, order: (c && c.order != null) ? c.order : i });
+    });
+  }
+  SP.ensureChapterIds = ensureChapterIds;
   SP.coins = function () { return (_session && _session.coins) || 0; };
   SP.isUnlocked = function (slug, chId) { return !!(_session && _session.unlocks && _session.unlocks[SP.unlockKey(slug, chId)]); };
 
@@ -102,6 +112,26 @@
   function fileToDataURL(file) {
     return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(file); });
   }
+  // downscale an image File/Blob to a small JPEG data URL (so it can live inside a
+  // Firestore document — no paid Storage needed). Falls back to the raw file on error.
+  function downscaleToDataURL(file, maxW, quality) {
+    return new Promise(function (resolve) {
+      try {
+        var img = new Image();
+        img.onload = function () {
+          var scale = Math.min(1, (maxW || 1200) / img.width);
+          var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+          var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          cv.getContext('2d').drawImage(img, 0, 0, w, h);
+          try { resolve(cv.toDataURL('image/jpeg', quality || 0.72)); }
+          catch (e) { fileToDataURL(file).then(resolve); }
+        };
+        img.onerror = function () { fileToDataURL(file).then(resolve); };
+        img.src = URL.createObjectURL(file);
+      } catch (e) { fileToDataURL(file).then(resolve); }
+    });
+  }
+  SP.downscaleToDataURL = downscaleToDataURL;
   SP.makeSlug = function (title) {
     var base = (title || 'post').toLowerCase().replace(/[^\w\u0e00-\u0e7f]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
     return (base || 'post') + '-' + Date.now().toString(36);
@@ -213,12 +243,21 @@
       var op = liked ? firebase.firestore.FieldValue.arrayRemove(_session.uid) : firebase.firestore.FieldValue.arrayUnion(_session.uid);
       return db.collection('comments').doc(id).update({ likes: op }).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
     };
-    SP.uploadImage = function (file) {
-      if (storage) {
-        var ref = storage.ref('uploads/' + Date.now() + '-' + (file.name || 'img').replace(/[^\w.\-]/g, '_'));
-        return ref.put(file).then(function (snap) { return snap.ref.getDownloadURL(); });
+    // Image uploads are FREE by default: images are compressed to a base64 data
+    // URL stored inside Firestore — no paid Storage bucket needed. If you later
+    // enable Firebase Storage (Blaze plan), set window.SP_USE_STORAGE = true in
+    // firebase-config.js to use it instead. A 5s timeout guards against hangs.
+    SP.uploadImage = function (file, maxW, quality) {
+      function fallback() { return downscaleToDataURL(file, maxW || 1200, quality || 0.72); }
+      if (storage && window.SP_USE_STORAGE === true) {
+        try {
+          var ref = storage.ref('uploads/' + Date.now() + '-' + ((file && file.name) || 'img').replace(/[^\w.\-]/g, '_'));
+          var put = ref.put(file).then(function (snap) { return snap.ref.getDownloadURL(); });
+          var timeout = new Promise(function (res) { setTimeout(function () { res(null); }, 5000); });
+          return Promise.race([put, timeout]).then(function (url) { return url || fallback(); }).catch(function () { return fallback(); });
+        } catch (e) { return fallback(); }
       }
-      return fileToDataURL(file);
+      return fallback();
     };
 
     // ---- coins / unlock (members spend their own coins; balance can never be self-raised) ----
@@ -229,11 +268,14 @@
       var ref = db.collection('users').doc(_session.uid);
       return db.runTransaction(function (tx) {
         return tx.get(ref).then(function (doc) {
-          var have = (doc.exists && doc.data().coins) || 0;
+          var data = (doc.exists && doc.data()) || {};
+          var have = data.coins || 0;
           if (have < price) { var e = new Error('insufficient'); e.insufficient = true; throw e; }
-          var upd = { coins: have - price };
-          upd['unlocks.' + key] = true;
-          tx.update(ref, upd);
+          var unlocks = data.unlocks || {};
+          unlocks[key] = true;
+          // write the WHOLE map (never a dotted field path — slugs contain
+          // dashes/Thai chars that are invalid in Firestore field paths)
+          tx.update(ref, { coins: have - price, unlocks: unlocks });
         });
       }).then(function () {
         _session.coins = (_session.coins || 0) - price;
@@ -257,11 +299,11 @@
       return db.collection('settings').doc('payment').set(obj, { merge: true })
         .then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
     };
-    SP.requestTopup = function (pkg) {
+    SP.requestTopup = function (pkg, slipUrl) {
       if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
       return db.collection('topupRequests').add({
         uid: _session.uid, name: _session.name, email: _session.email,
-        amount: pkg.amount, coins: pkg.coins, status: 'pending', date: new Date().toISOString()
+        amount: pkg.amount, coins: pkg.coins, slip: slipUrl || '', status: 'pending', date: new Date().toISOString()
       }).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
     };
     SP.myTopups = function () {
@@ -337,7 +379,10 @@
       return guard(db.collection('novels').doc(slug).get().then(function (doc) {
         if (!doc.exists) {
           var seed = baseNovels().find(function (n) { return n.slug === slug; });
-          return seed ? JSON.parse(JSON.stringify(seed)) : null;
+          if (!seed) return null;
+          var sc = JSON.parse(JSON.stringify(seed));
+          sc.chapters = ensureChapterIds(slug, sc.chapters);
+          return sc;
         }
         var meta = doc.data();
         return db.collection('novels').doc(slug).collection('chapters').get().then(function (snap) {
@@ -347,7 +392,7 @@
             meta.chapters = subs.map(function (c) { return { id: c.id, title: c.title, date: c.date, order: c.order, free: c.free, price: c.price, body: decBody(c.body) }; });
           } else {
             // legacy: chapters were embedded in the parent doc — flag for migration
-            meta.chapters = (meta.chapters || []).map(function (c, i) { return { title: c.title, date: c.date, order: i, body: decBody(c.body) }; });
+            meta.chapters = ensureChapterIds(slug, (meta.chapters || []).map(function (c, i) { return { title: c.title, date: c.date, order: i, free: c.free, price: c.price, body: decBody(c.body) }; }));
             if (meta.chapters.length) meta._legacy = true;
           }
           return meta;
@@ -511,7 +556,7 @@
     if (c) { c.likes = c.likes || []; var k = c.likes.indexOf(_session.uid); if (k > -1) c.likes.splice(k, 1); else c.likes.push(_session.uid); write(LS.comments, all); }
     return Promise.resolve({ ok: true });
   };
-  SP.uploadImage = function (file) { return fileToDataURL(file); };
+  SP.uploadImage = function (file, maxW, quality) { return downscaleToDataURL(file, maxW || 1200, quality || 0.72); };
 
   SP.listLinks = function () { return Promise.resolve(read(LS.links, [])); };
   SP.addLink = function (obj) { var l = read(LS.links, []); l.unshift(Object.assign({ id: uid('l'), date: new Date().toISOString() }, obj)); write(LS.links, l); return Promise.resolve(); };
@@ -527,11 +572,14 @@
     var stored = read(LS.novels, []).find(function (n) { return n.slug === slug; });
     if (stored) {
       var copy = JSON.parse(JSON.stringify(stored));
-      copy.chapters = (copy.chapters || []).map(function (c, i) { if (!c.id) c.id = uid('c'); c.order = i; return c; });
+      copy.chapters = ensureChapterIds(slug, copy.chapters);
       return Promise.resolve(copy);
     }
     var seed = baseNovels().find(function (n) { return n.slug === slug; });
-    return Promise.resolve(seed ? JSON.parse(JSON.stringify(seed)) : null);
+    if (!seed) return Promise.resolve(null);
+    var sc = JSON.parse(JSON.stringify(seed));
+    sc.chapters = ensureChapterIds(slug, sc.chapters);
+    return Promise.resolve(sc);
   };
   // save metadata only; preserve existing chapters (or seed chapters on first save)
   SP.saveNovel = function (meta) {
@@ -604,10 +652,10 @@
   };
   SP.getPayment = function () { return Promise.resolve(mergePayment(read(LS.pay, null))); };
   SP.savePayment = function (obj) { write(LS.pay, Object.assign(read(LS.pay, {}) || {}, obj)); return Promise.resolve({ ok: true }); };
-  SP.requestTopup = function (pkg) {
+  SP.requestTopup = function (pkg, slipUrl) {
     if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
     var t = read(LS.topups, []);
-    t.unshift({ id: uid('t'), uid: _session.uid, name: _session.name, email: _session.email, amount: pkg.amount, coins: pkg.coins, status: 'pending', date: new Date().toISOString() });
+    t.unshift({ id: uid('t'), uid: _session.uid, name: _session.name, email: _session.email, amount: pkg.amount, coins: pkg.coins, slip: slipUrl || '', status: 'pending', date: new Date().toISOString() });
     write(LS.topups, t); return Promise.resolve({ ok: true });
   };
   SP.myTopups = function () { if (!_session) return Promise.resolve([]); return Promise.resolve(read(LS.topups, []).filter(function (t) { return t.uid === _session.uid; })); };

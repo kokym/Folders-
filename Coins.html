@@ -60,6 +60,12 @@
 .st.done { color: var(--accent-green, #2e7d52); border: 1px solid color-mix(in srgb, #2e7d52 40%, transparent); }
 .st.rejected { color: var(--ink-faint); border: 1px solid var(--rule); }
 .flash-ok { background: color-mix(in srgb, var(--crimson) 8%, var(--paper-card)); border: 1px solid color-mix(in srgb, var(--crimson) 30%, transparent); color: var(--ink); padding: 14px 18px; margin-bottom: 18px; font-size: .96rem; }
+.slip-up { display: flex; align-items: center; gap: 14px; margin: 4px 0 16px; flex-wrap: wrap; }
+.slip-drop { display: inline-flex; align-items: center; border: 1px dashed var(--rule); padding: 12px 18px; cursor: pointer; color: var(--ink-soft); font-size: .92rem; transition: border-color .2s var(--ease), color .2s var(--ease); }
+.slip-drop:hover { border-color: var(--crimson); color: var(--crimson); }
+.slip-prev { position: relative; width: 64px; height: 64px; }
+.slip-prev img { width: 100%; height: 100%; object-fit: cover; border: 1px solid var(--rule); }
+.slip-prev button { position: absolute; top: -8px; right: -8px; width: 22px; height: 22px; border-radius: 50%; border: none; background: var(--ink); color: var(--paper); cursor: pointer; font-size: 14px; line-height: 1; }
 </style>
 </head>
 <body>
@@ -183,13 +189,35 @@
     var el = document.getElementById('confirmRow');
     if (selected < 0) { el.innerHTML = '<p class="sum" style="color:var(--ink-faint)">เลือกแพ็กเกจด้านบนเพื่อดำเนินการต่อ</p>'; return; }
     var p = packages[selected];
-    el.innerHTML = '<p class="sum">โอน <b>฿'+p.amount+'</b> เพื่อรับ <b>'+p.coins+' '+esc(coinName)+'</b> — หลังโอนเงินตามช่องทางด้านขวาแล้ว กดปุ่มด้านล่างเพื่อแจ้งทีมงาน</p>'+
+    el.innerHTML = '<p class="sum">โอน <b>฿'+p.amount+'</b> เพื่อรับ <b>'+p.coins+' '+esc(coinName)+'</b> — โอนเงินตามช่องทางด้านขวา แล้วแนบสลิปและกดแจ้งด้านล่าง</p>'+
+      '<div class="slip-up">'+
+        '<label class="slip-drop"><input type="file" accept="image/*" id="slipFile" hidden>'+
+          '<span id="slipText">+ แนบสลิปการโอนเงิน (รูปภาพ)</span>'+
+        '</label>'+
+        '<div class="slip-prev" id="slipPrev" style="display:none"><img alt="สลิป"><button type="button" id="slipClear" aria-label="ลบสลิป">×</button></div>'+
+      '</div>'+
       '<button class="btn btn-primary" id="notifyBtn" type="button">แจ้งโอนแล้ว — ขอรับ '+p.coins+' '+esc(coinName)+'</button>';
+    var slipUrl = '';
+    var slipFile = document.getElementById('slipFile');
+    var slipText = document.getElementById('slipText');
+    var slipPrev = document.getElementById('slipPrev');
+    slipFile.onchange = function(){
+      var f = this.files && this.files[0]; if(!f) return;
+      slipText.textContent = 'กำลังอัปโหลด…';
+      Promise.resolve(SP.uploadImage(f, 1100, 0.72)).then(function(url){
+        slipUrl = url; slipText.textContent = '✓ แนบสลิปแล้ว — เปลี่ยนรูป';
+        slipPrev.style.display = ''; slipPrev.querySelector('img').src = url;
+      }).catch(function(){ slipText.textContent = '+ แนบสลิปการโอนเงิน (รูปภาพ)'; alert('อัปโหลดสลิปไม่สำเร็จ'); });
+    };
+    document.getElementById('slipClear').onclick = function(){
+      slipUrl = ''; slipFile.value = ''; slipPrev.style.display = 'none';
+      slipText.textContent = '+ แนบสลิปการโอนเงิน (รูปภาพ)';
+    };
     document.getElementById('notifyBtn').onclick = function(){
       var btn = this; btn.disabled = true; btn.textContent = 'กำลังส่ง…';
-      Promise.resolve(SP.requestTopup(p)).then(function(r){
+      Promise.resolve(SP.requestTopup(p, slipUrl)).then(function(r){
         btn.disabled = false; btn.textContent = 'แจ้งโอนแล้ว — ขอรับ '+p.coins+' '+coinName;
-        if (r.ok){ selected = -1; render('ส่งคำขอเติม'+coinName+'เรียบร้อย! ทีมงานจะตรวจสอบการโอนและเติม'+coinName+'ให้โดยเร็ว'); }
+        if (r.ok){ selected = -1; render('ส่งคำขอเติม'+coinName+'เรียบร้อย! ทีมงานจะตรวจสอบสลิปและเติม'+coinName+'ให้โดยเร็ว'); }
         else alert(r.msg || 'ส่งคำขอไม่สำเร็จ');
       });
     };
