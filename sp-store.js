@@ -28,6 +28,25 @@
     return out;
   }
 
+  // ---- payment / coins settings ----
+  function payDefaults() {
+    var d = window.SP_PAYMENT_DEFAULTS || {};
+    return { coinName: d.coinName || 'เหรียญ', pricePerChapter: d.pricePerChapter || 1,
+      promptpay: d.promptpay || '', accountName: d.accountName || '', bankInfo: d.bankInfo || '',
+      note: d.note || '', packages: (d.packages || []).slice() };
+  }
+  function mergePayment(stored) {
+    var out = payDefaults();
+    if (stored) Object.keys(stored).forEach(function (k) { if (stored[k] != null) out[k] = stored[k]; });
+    return out;
+  }
+  // is a chapter free? (free===true, or no price and not explicitly paid)
+  SP.chapterIsFree = function (ch) { return !!(ch && (ch.free === true || (ch.free !== false && !(ch.price > 0)))); };
+  SP.chapterPrice = function (ch) { return SP.chapterIsFree(ch) ? 0 : (ch.price > 0 ? ch.price : (payDefaults().pricePerChapter || 1)); };
+  SP.unlockKey = function (slug, chId) { return slug + '__' + chId; };
+  SP.coins = function () { return (_session && _session.coins) || 0; };
+  SP.isUnlocked = function (slug, chId) { return !!(_session && _session.unlocks && _session.unlocks[SP.unlockKey(slug, chId)]); };
+
   // ---- base articles (always present, from data.js) ----
   // Firestore rejects nested arrays, so article `body` ([[type,text],...]) and
   // novel chapter bodies are stored as JSON strings in Firestore and decoded on read.
@@ -113,22 +132,32 @@
         if (!user) { setSession(null); resolve(); return; }
         db.collection('users').doc(user.uid).get().then(function (doc) {
           var d = doc.exists ? doc.data() : {};
-          setSession({ uid: user.uid, email: user.email, name: d.name || user.displayName || user.email, role: d.role || 'member' });
+          setSession({ uid: user.uid, email: user.email, name: d.name || user.displayName || user.email, role: d.role || 'member', coins: d.coins || 0, unlocks: d.unlocks || {} });
           resolve();
         }).catch(function () {
-          setSession({ uid: user.uid, email: user.email, name: user.displayName || user.email, role: 'member' });
+          setSession({ uid: user.uid, email: user.email, name: user.displayName || user.email, role: 'member', coins: 0, unlocks: {} });
           resolve();
         });
       });
     });
 
+    // re-read the signed-in user's doc (coins/unlocks may have changed server-side)
+    SP.refreshUser = function () {
+      if (!_session) return Promise.resolve(null);
+      return db.collection('users').doc(_session.uid).get().then(function (doc) {
+        var d = doc.exists ? doc.data() : {};
+        setSession(Object.assign({}, _session, { coins: d.coins || 0, unlocks: d.unlocks || {}, role: d.role || _session.role, name: d.name || _session.name }));
+        return _session;
+      }).catch(function () { return _session; });
+    };
+
     SP.register = function (email, pass, name) {
       return auth.createUserWithEmailAndPassword((email || '').trim(), pass).then(function (cred) {
         var u = cred.user;
         return db.collection('users').doc(u.uid).set({
-          name: (name || email).trim(), email: u.email, role: 'member', createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          name: (name || email).trim(), email: u.email, role: 'member', coins: 0, unlocks: {}, createdAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(function () {
-          setSession({ uid: u.uid, email: u.email, name: (name || email).trim(), role: 'member' });
+          setSession({ uid: u.uid, email: u.email, name: (name || email).trim(), role: 'member', coins: 0, unlocks: {} });
           return { ok: true };
         });
       }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
@@ -192,6 +221,88 @@
       return fileToDataURL(file);
     };
 
+    // ---- coins / unlock (members spend their own coins; balance can never be self-raised) ----
+    SP.unlockChapter = function (slug, chId, price) {
+      if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
+      var key = SP.unlockKey(slug, chId);
+      if (_session.unlocks && _session.unlocks[key]) return Promise.resolve({ ok: true, already: true });
+      var ref = db.collection('users').doc(_session.uid);
+      return db.runTransaction(function (tx) {
+        return tx.get(ref).then(function (doc) {
+          var have = (doc.exists && doc.data().coins) || 0;
+          if (have < price) { var e = new Error('insufficient'); e.insufficient = true; throw e; }
+          var upd = { coins: have - price };
+          upd['unlocks.' + key] = true;
+          tx.update(ref, upd);
+        });
+      }).then(function () {
+        _session.coins = (_session.coins || 0) - price;
+        if (!_session.unlocks) _session.unlocks = {};
+        _session.unlocks[key] = true;
+        setSession(_session);
+        return { ok: true };
+      }).catch(function (e) {
+        if (e && e.insufficient) return { ok: false, insufficient: true, msg: 'เหรียญไม่พอ' };
+        return { ok: false, msg: fbErr(e) };
+      });
+    };
+
+    // ---- top-up requests (member creates; admin approves -> adds coins) ----
+    SP.getPayment = function () {
+      return guard(db.collection('settings').doc('payment').get().then(function (doc) {
+        return mergePayment(doc.exists ? doc.data() : null);
+      }), payDefaults());
+    };
+    SP.savePayment = function (obj) {
+      return db.collection('settings').doc('payment').set(obj, { merge: true })
+        .then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
+    SP.requestTopup = function (pkg) {
+      if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
+      return db.collection('topupRequests').add({
+        uid: _session.uid, name: _session.name, email: _session.email,
+        amount: pkg.amount, coins: pkg.coins, status: 'pending', date: new Date().toISOString()
+      }).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
+    SP.myTopups = function () {
+      if (!_session) return Promise.resolve([]);
+      return guard(db.collection('topupRequests').where('uid', '==', _session.uid).get().then(function (snap) {
+        var a = []; snap.forEach(function (d) { a.push(Object.assign({ id: d.id }, d.data())); });
+        return a.sort(function (x, y) { return new Date(y.date) - new Date(x.date); });
+      }), []);
+    };
+    SP.listTopups = function () {
+      return guard(db.collection('topupRequests').orderBy('date', 'desc').get().then(function (snap) {
+        var a = []; snap.forEach(function (d) { a.push(Object.assign({ id: d.id }, d.data())); }); return a;
+      }), []);
+    };
+    SP.approveTopup = function (id) {
+      var ref = db.collection('topupRequests').doc(id);
+      return ref.get().then(function (doc) {
+        if (!doc.exists) return { ok: false, msg: 'ไม่พบรายการ' };
+        var r = doc.data();
+        if (r.status === 'done') return { ok: true, already: true };
+        return db.collection('users').doc(r.uid).update({ coins: firebase.firestore.FieldValue.increment(r.coins) })
+          .then(function () { return ref.update({ status: 'done', approvedAt: new Date().toISOString() }); })
+          .then(function () { return { ok: true }; });
+      }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
+    SP.rejectTopup = function (id) {
+      return db.collection('topupRequests').doc(id).update({ status: 'rejected' })
+        .then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
+    // ---- users (admin) ----
+    SP.listUsers = function () {
+      return guard(db.collection('users').get().then(function (snap) {
+        var a = []; snap.forEach(function (d) { a.push(Object.assign({ uid: d.id }, d.data())); }); return a;
+      }), []);
+    };
+    SP.addCoins = function (uid, amount) {
+      return db.collection('users').doc(uid).update({ coins: firebase.firestore.FieldValue.increment(amount) })
+        .then(function () { if (_session && _session.uid === uid) { _session.coins = (_session.coins || 0) + amount; setSession(_session); } return { ok: true }; })
+        .catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
+
     SP.listLinks = function () {
       return guard(db.collection('links').orderBy('date', 'desc').get().then(function (snap) {
         var l = []; snap.forEach(function (d) { l.push(Object.assign({ id: d.id }, d.data())); }); return l;
@@ -233,7 +344,7 @@
           var subs = []; snap.forEach(function (c) { var d = c.data(); d.id = c.id; subs.push(d); });
           if (subs.length) {
             subs.sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
-            meta.chapters = subs.map(function (c) { return { id: c.id, title: c.title, date: c.date, order: c.order, body: decBody(c.body) }; });
+            meta.chapters = subs.map(function (c) { return { id: c.id, title: c.title, date: c.date, order: c.order, free: c.free, price: c.price, body: decBody(c.body) }; });
           } else {
             // legacy: chapters were embedded in the parent doc — flag for migration
             meta.chapters = (meta.chapters || []).map(function (c, i) { return { title: c.title, date: c.date, order: i, body: decBody(c.body) }; });
@@ -259,7 +370,7 @@
     // add (no id) or update (with id) a single chapter; returns its id
     SP.saveChapter = function (slug, chapter) {
       try {
-        var data = { title: chapter.title || '', body: encBody(chapter.body), date: chapter.date || new Date().toISOString(), order: chapter.order || 0 };
+        var data = { title: chapter.title || '', body: encBody(chapter.body), date: chapter.date || new Date().toISOString(), order: chapter.order || 0, free: !!chapter.free, price: chapter.price || 0 };
         var col = db.collection('novels').doc(slug).collection('chapters');
         var ref = chapter.id ? col.doc(chapter.id) : col.doc();
         return ref.set(data).then(function () { return { ok: true, id: ref.id }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
@@ -320,7 +431,7 @@
   // ============================================================
   //  LOCAL DEMO MODE (localStorage)
   // ============================================================
-  var LS = { users: 'sp-users-v2', session: 'sp-session-v2', arts: 'sp-articles-v2', comments: 'sp-comments-v2', links: 'sp-links-v2', site: 'sp-site-v2', novels: 'sp-novels-v2' };
+  var LS = { users: 'sp-users-v2', session: 'sp-session-v2', arts: 'sp-articles-v2', comments: 'sp-comments-v2', links: 'sp-links-v2', site: 'sp-site-v2', novels: 'sp-novels-v2', pay: 'sp-pay-v2', topups: 'sp-topups-v2' };
   function read(k, def) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? def : v; } catch (e) { return def; } }
   function write(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
@@ -333,9 +444,15 @@
 
   function loadSession() {
     var s = read(LS.session, null);
+    if (s) { // refresh coins/unlocks/role from the user record
+      var u = read(LS.users, []).find(function (x) { return x.uid === s.uid; });
+      if (u) { s.coins = u.coins || 0; s.unlocks = u.unlocks || {}; s.role = u.role; s.name = u.name; }
+    }
     setSession(s);
   }
   SP.ready = Promise.resolve().then(loadSession);
+
+  SP.refreshUser = function () { loadSession(); return Promise.resolve(_session); };
 
   SP.register = function (email, pass, name) {
     email = (email || '').trim();
@@ -344,9 +461,9 @@
     var users = read(LS.users, []);
     if (users.some(function (x) { return x.email.toLowerCase() === email.toLowerCase(); }))
       return Promise.resolve({ ok: false, msg: 'อีเมลนี้ถูกใช้แล้ว' });
-    var nu = { uid: uid('u'), email: email, p: pass, role: 'member', name: (name || email).trim() };
+    var nu = { uid: uid('u'), email: email, p: pass, role: 'member', name: (name || email).trim(), coins: 0, unlocks: {} };
     users.push(nu); write(LS.users, users);
-    var sess = { uid: nu.uid, email: nu.email, name: nu.name, role: nu.role };
+    var sess = { uid: nu.uid, email: nu.email, name: nu.name, role: nu.role, coins: 0, unlocks: {} };
     write(LS.session, sess); setSession(sess);
     return Promise.resolve({ ok: true });
   };
@@ -354,7 +471,7 @@
     email = (email || '').trim();
     var f = read(LS.users, []).find(function (x) { return x.email.toLowerCase() === email.toLowerCase() && x.p === pass; });
     if (!f) return Promise.resolve({ ok: false, msg: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
-    var sess = { uid: f.uid, email: f.email, name: f.name, role: f.role };
+    var sess = { uid: f.uid, email: f.email, name: f.name, role: f.role, coins: f.coins || 0, unlocks: f.unlocks || {} };
     write(LS.session, sess); setSession(sess);
     return Promise.resolve({ ok: true });
   };
@@ -443,7 +560,7 @@
     if (!c[i].chapters) c[i].chapters = [];
     if (chapter.id) {
       var k = c[i].chapters.findIndex(function (x) { return x.id === chapter.id; });
-      if (k > -1) c[i].chapters[k] = Object.assign({}, c[i].chapters[k], { title: chapter.title, body: chapter.body, date: chapter.date || c[i].chapters[k].date });
+      if (k > -1) c[i].chapters[k] = Object.assign({}, c[i].chapters[k], { title: chapter.title, body: chapter.body, date: chapter.date || c[i].chapters[k].date, free: !!chapter.free, price: chapter.price || 0 });
       else c[i].chapters.push(Object.assign({ id: chapter.id }, chapter));
     } else {
       chapter.id = uid('c'); c[i].chapters.push(chapter);
@@ -465,4 +582,57 @@
   };
   SP.migrateNovelChapters = function () { return Promise.resolve({ ok: true }); };
   SP.deleteNovel = function (slug) { write(LS.novels, read(LS.novels, []).filter(function (n) { return n.slug !== slug; })); return Promise.resolve({ ok: true }); };
+
+  // ---- coins / unlock (local) ----
+  function lsUpdateUser(uid_, patch) {
+    var users = read(LS.users, []);
+    var i = users.findIndex(function (u) { return u.uid === uid_; });
+    if (i < 0) return null;
+    Object.assign(users[i], patch); write(LS.users, users);
+    return users[i];
+  }
+  SP.unlockChapter = function (slug, chId, price) {
+    if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
+    var key = SP.unlockKey(slug, chId);
+    if (_session.unlocks && _session.unlocks[key]) return Promise.resolve({ ok: true, already: true });
+    if ((_session.coins || 0) < price) return Promise.resolve({ ok: false, insufficient: true, msg: 'เหรียญไม่พอ' });
+    var unlocks = Object.assign({}, _session.unlocks || {}); unlocks[key] = true;
+    var coins = (_session.coins || 0) - price;
+    lsUpdateUser(_session.uid, { coins: coins, unlocks: unlocks });
+    _session.coins = coins; _session.unlocks = unlocks; setSession(_session);
+    return Promise.resolve({ ok: true });
+  };
+  SP.getPayment = function () { return Promise.resolve(mergePayment(read(LS.pay, null))); };
+  SP.savePayment = function (obj) { write(LS.pay, Object.assign(read(LS.pay, {}) || {}, obj)); return Promise.resolve({ ok: true }); };
+  SP.requestTopup = function (pkg) {
+    if (!_session) return Promise.resolve({ ok: false, msg: 'กรุณาเข้าสู่ระบบ' });
+    var t = read(LS.topups, []);
+    t.unshift({ id: uid('t'), uid: _session.uid, name: _session.name, email: _session.email, amount: pkg.amount, coins: pkg.coins, status: 'pending', date: new Date().toISOString() });
+    write(LS.topups, t); return Promise.resolve({ ok: true });
+  };
+  SP.myTopups = function () { if (!_session) return Promise.resolve([]); return Promise.resolve(read(LS.topups, []).filter(function (t) { return t.uid === _session.uid; })); };
+  SP.listTopups = function () { return Promise.resolve(read(LS.topups, [])); };
+  SP.approveTopup = function (id) {
+    var t = read(LS.topups, []); var r = t.find(function (x) { return x.id === id; });
+    if (!r) return Promise.resolve({ ok: false, msg: 'ไม่พบรายการ' });
+    if (r.status !== 'done') {
+      var u = read(LS.users, []).find(function (x) { return x.uid === r.uid; });
+      if (u) lsUpdateUser(r.uid, { coins: (u.coins || 0) + r.coins });
+      r.status = 'done'; r.approvedAt = new Date().toISOString(); write(LS.topups, t);
+      if (_session && _session.uid === r.uid) { loadSession(); }
+    }
+    return Promise.resolve({ ok: true });
+  };
+  SP.rejectTopup = function (id) {
+    var t = read(LS.topups, []); var r = t.find(function (x) { return x.id === id; });
+    if (r) { r.status = 'rejected'; write(LS.topups, t); }
+    return Promise.resolve({ ok: true });
+  };
+  SP.listUsers = function () { return Promise.resolve(read(LS.users, []).map(function (u) { return { uid: u.uid, name: u.name, email: u.email, role: u.role, coins: u.coins || 0 }; })); };
+  SP.addCoins = function (uid_, amount) {
+    var u = read(LS.users, []).find(function (x) { return x.uid === uid_; });
+    if (u) lsUpdateUser(uid_, { coins: (u.coins || 0) + amount });
+    if (_session && _session.uid === uid_) loadSession();
+    return Promise.resolve({ ok: true });
+  };
 })();

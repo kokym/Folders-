@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เติมเหรียญ — Shadow Phase 影变</title>
+<link rel="icon" type="image/png" href="assets/seal-sp.png">
+<script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="sp-app.css">
+<style>
+.page-head { padding: clamp(48px,6vw,82px) 0 clamp(24px,3vw,38px); }
+.page-head .eyebrow { margin-bottom: 20px; }
+.page-head h1 { font-size: clamp(2.2rem,4.6vw,3.4rem); margin: 0 0 14px; font-weight: 500; }
+
+.coin-ico { width: 1.05em; height: 1.05em; display: inline-block; vertical-align: -2px; }
+.balance-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  border: 1px solid var(--rule); background: var(--paper-card); padding: 26px 30px; margin-bottom: 14px;
+}
+.balance-card .lbl { font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+.balance-card .amt { font-family: var(--font-display); font-size: 2.6rem; color: var(--ink); display: flex; align-items: center; gap: .3em; line-height: 1; }
+.balance-card .amt .coin-ico { color: var(--crimson); width: .9em; height: .9em; }
+
+.cols { display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(28px,4vw,52px); align-items: start; padding-bottom: 40px; }
+@media (max-width: 820px){ .cols { grid-template-columns: 1fr; } }
+
+.sec-label { font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--crimson); margin: 0 0 16px; }
+.pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 460px){ .pkg-grid { grid-template-columns: 1fr; } }
+.pkg {
+  border: 1px solid var(--rule); background: var(--paper-card); padding: 22px 20px; cursor: pointer;
+  transition: border-color .2s var(--ease), transform .2s var(--ease); text-align: left; position: relative;
+}
+.pkg:hover { border-color: var(--crimson); transform: translateY(-2px); }
+.pkg.sel { border-color: var(--crimson); box-shadow: inset 0 0 0 1px var(--crimson); }
+.pkg .coins { font-family: var(--font-display); font-size: 1.9rem; color: var(--ink); display: flex; align-items: center; gap: .3em; line-height: 1; }
+.pkg .coins .coin-ico { color: var(--crimson); }
+.pkg .price { color: var(--ink-soft); margin-top: 8px; font-size: 1.02rem; }
+.pkg .bonus { display: inline-block; margin-top: 10px; font-size: .76rem; color: var(--crimson); border: 1px solid color-mix(in srgb, var(--crimson) 35%, transparent); padding: 2px 9px; border-radius: 100px; }
+
+.pay-box { border: 1px solid var(--rule); background: var(--paper-card); padding: 26px 26px; }
+.pay-row { display: flex; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--rule-soft); font-size: 1rem; }
+.pay-row:last-of-type { border-bottom: none; }
+.pay-row .k { color: var(--ink-faint); }
+.pay-row .v { color: var(--ink); font-weight: 500; text-align: right; }
+.pay-note { color: var(--ink-soft); font-size: .94rem; line-height: 1.8; margin: 16px 0 0; padding-top: 16px; border-top: 1px dashed var(--rule); }
+.pay-empty { color: var(--ink-faint); font-size: .95rem; line-height: 1.8; }
+.confirm-row { margin-top: 22px; }
+.confirm-row .sum { color: var(--ink-soft); font-size: .95rem; margin-bottom: 12px; }
+.confirm-row .sum b { color: var(--crimson); }
+
+.gate { text-align: center; padding: 70px 0; }
+.gate p { color: var(--ink-soft); margin-bottom: 20px; }
+
+.my-topups { margin-top: 14px; }
+.tu-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; border-top: 1px solid var(--rule-soft); padding: 12px 0; font-size: .92rem; }
+.tu-row .st { font-size: .76rem; padding: 3px 10px; border-radius: 100px; }
+.st.pending { color: #9a6a00; border: 1px solid color-mix(in srgb, #c98a00 40%, transparent); }
+.st.done { color: var(--accent-green, #2e7d52); border: 1px solid color-mix(in srgb, #2e7d52 40%, transparent); }
+.st.rejected { color: var(--ink-faint); border: 1px solid var(--rule); }
+.flash-ok { background: color-mix(in srgb, var(--crimson) 8%, var(--paper-card)); border: 1px solid color-mix(in srgb, var(--crimson) 30%, transparent); color: var(--ink); padding: 14px 18px; margin-bottom: 18px; font-size: .96rem; }
+</style>
+</head>
+<body>
+<script src="theme.js"></script>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
+      <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
+      <span class="lock"><span class="name" data-site="brandName">SHADOW PHASE</span><span class="sub" data-site="brandCn">影变</span></span>
+    </a>
+    <nav class="nav">
+      <a href="index.html">หน้าแรก</a>
+      <a href="Articles.html">บทความ</a>
+      <a href="Novels.html">นิยาย</a>
+      <a href="index.html#about">เกี่ยวกับ</a>
+    </nav>
+    <button class="theme-btn" data-theme-toggle aria-label="สลับโหมดสว่าง/มืด">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">เติมเหรียญเพื่ออ่านนิยาย <span class="cn">充值</span></span>
+      <h1 id="pageTitle">เติมเหรียญ</h1>
+    </div>
+  </section>
+  <div class="wrap" id="body"></div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-bottom">
+      <span data-site="footerCopyright">© 2026 Shadow Phase 影变</span>
+      <span class="cn" data-site="footerMotto">影者，光之所遺也</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data.js"></script>
+<script src="sp-store.js"></script>
+<script src="sp-content.js"></script>
+<script src="sp-auth-ui.js"></script>
+<script>
+(async function () {
+  await SP.ready;
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+  var coinSvg = '<svg class="coin-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.2 9.5h4a1.8 1.8 0 0 1 0 3.6h-4M9.2 13.1h4.2"/></svg>';
+
+  var body = document.getElementById('body');
+  var pay = await SP.getPayment();
+  var coinName = pay.coinName || 'เหรียญ';
+  document.getElementById('pageTitle').textContent = 'เติม' + coinName;
+
+  if (!SP.session()) {
+    body.innerHTML = '<div class="gate"><p>กรุณาเข้าสู่ระบบหรือสมัครสมาชิกก่อน เพื่อเติม'+esc(coinName)+'</p>'+
+      '<button class="btn btn-primary" id="gLogin" type="button">เข้าสู่ระบบ / สมัคร</button></div>';
+    document.getElementById('gLogin').onclick = function(){ SP.openAuth(); };
+    SP.onAuth(function(s){ if (s) location.reload(); });
+    return;
+  }
+
+  await SP.refreshUser();
+  var packages = (pay.packages && pay.packages.length) ? pay.packages : [{amount:20,coins:20},{amount:50,coins:55},{amount:100,coins:120}];
+  var selected = -1;
+
+  function payInfoHTML(){
+    var rows = '';
+    if (pay.promptpay) rows += '<div class="pay-row"><span class="k">พร้อมเพย์</span><span class="v">'+esc(pay.promptpay)+'</span></div>';
+    if (pay.accountName) rows += '<div class="pay-row"><span class="k">ชื่อบัญชี</span><span class="v">'+esc(pay.accountName)+'</span></div>';
+    if (pay.bankInfo) rows += '<div class="pay-row"><span class="k">ธนาคาร</span><span class="v">'+esc(pay.bankInfo)+'</span></div>';
+    if (!rows) return '<div class="pay-empty">ผู้ดูแลยังไม่ได้ตั้งค่าช่องทางการโอนเงิน — โปรดติดต่อทีมงานโดยตรง</div>';
+    return rows + (pay.note ? '<p class="pay-note">'+esc(pay.note)+'</p>' : '');
+  }
+
+  function render(flash){
+    var bal = SP.coins();
+    body.innerHTML =
+      (flash ? '<div class="flash-ok">'+esc(flash)+'</div>' : '')+
+      '<div class="balance-card"><div><div class="lbl">'+esc(coinName)+'คงเหลือ</div></div>'+
+        '<div class="amt">'+coinSvg+'<span id="balNum">'+bal+'</span></div></div>'+
+      '<div class="cols">'+
+        '<div>'+
+          '<p class="sec-label">เลือกแพ็กเกจ</p>'+
+          '<div class="pkg-grid">'+
+            packages.map(function(p,i){
+              return '<button class="pkg'+(i===selected?' sel':'')+'" data-i="'+i+'" type="button">'+
+                '<div class="coins">'+coinSvg+(p.coins)+'</div>'+
+                '<div class="price">฿'+(p.amount)+'</div>'+
+                (p.bonus?'<span class="bonus">'+esc(p.bonus)+'</span>':'')+
+              '</button>';
+            }).join('')+
+          '</div>'+
+          '<div class="confirm-row" id="confirmRow"></div>'+
+        '</div>'+
+        '<div>'+
+          '<p class="sec-label">ช่องทางการโอนเงิน</p>'+
+          '<div class="pay-box">'+payInfoHTML()+'</div>'+
+          '<div class="my-topups" id="myTopups"></div>'+
+        '</div>'+
+      '</div>';
+
+    body.querySelectorAll('.pkg').forEach(function(b){
+      b.onclick = function(){ selected = parseInt(b.dataset.i,10); render(flash); };
+    });
+    renderConfirm();
+    renderMyTopups();
+  }
+
+  function renderConfirm(){
+    var el = document.getElementById('confirmRow');
+    if (selected < 0) { el.innerHTML = '<p class="sum" style="color:var(--ink-faint)">เลือกแพ็กเกจด้านบนเพื่อดำเนินการต่อ</p>'; return; }
+    var p = packages[selected];
+    el.innerHTML = '<p class="sum">โอน <b>฿'+p.amount+'</b> เพื่อรับ <b>'+p.coins+' '+esc(coinName)+'</b> — หลังโอนเงินตามช่องทางด้านขวาแล้ว กดปุ่มด้านล่างเพื่อแจ้งทีมงาน</p>'+
+      '<button class="btn btn-primary" id="notifyBtn" type="button">แจ้งโอนแล้ว — ขอรับ '+p.coins+' '+esc(coinName)+'</button>';
+    document.getElementById('notifyBtn').onclick = function(){
+      var btn = this; btn.disabled = true; btn.textContent = 'กำลังส่ง…';
+      Promise.resolve(SP.requestTopup(p)).then(function(r){
+        btn.disabled = false; btn.textContent = 'แจ้งโอนแล้ว — ขอรับ '+p.coins+' '+coinName;
+        if (r.ok){ selected = -1; render('ส่งคำขอเติม'+coinName+'เรียบร้อย! ทีมงานจะตรวจสอบการโอนและเติม'+coinName+'ให้โดยเร็ว'); }
+        else alert(r.msg || 'ส่งคำขอไม่สำเร็จ');
+      });
+    };
+  }
+
+  async function renderMyTopups(){
+    var el = document.getElementById('myTopups');
+    var mine = await SP.myTopups();
+    if (!mine.length){ el.innerHTML = ''; return; }
+    var stTh = { pending:'รอตรวจสอบ', done:'เติมแล้ว', rejected:'ปฏิเสธ' };
+    el.innerHTML = '<p class="sec-label" style="margin-top:24px">คำขอเติมของคุณ</p>'+
+      mine.slice(0,6).map(function(t){
+        return '<div class="tu-row"><span>฿'+t.amount+' → '+t.coins+' '+esc(coinName)+'<br><span style="color:var(--ink-faint);font-size:.82rem">'+fmtDate(t.date)+'</span></span>'+
+          '<span class="st '+(t.status||'pending')+'">'+(stTh[t.status]||'รอตรวจสอบ')+'</span></div>';
+      }).join('');
+  }
+
+  render('');
+})();
+</script>
+</body>
+</html>

@@ -51,6 +51,7 @@
         <div class="admin-tabs">
           <button class="admin-tab active" data-panel="article" type="button">เพิ่มบทความ</button>
           <button class="admin-tab" data-panel="novels" type="button">นิยาย <span class="cn" style="opacity:.6">小说</span></button>
+          <button class="admin-tab" data-panel="coins" type="button">เหรียญ <span class="cn" style="opacity:.6">充值</span></button>
           <button class="admin-tab" data-panel="site" type="button">เนื้อหาหน้าเว็บ <span class="cn" style="opacity:.6">页面</span></button>
           <button class="admin-tab" data-panel="links" type="button">ลิงก์ &amp; อ้างอิง <span class="n" id="nLinks"></span></button>
           <button class="admin-tab" data-panel="comments" type="button">ความคิดเห็น <span class="n" id="nComments"></span></button>
@@ -138,6 +139,10 @@
                 </div>
                 <input type="hidden" id="chapIdx">
                 <div class="sp-field"><label>ชื่อตอน</label><input class="sp-input" name="title" required placeholder="เช่น กระจกในตรอกร้าง"></div>
+                <div class="chap-pay">
+                  <label class="chap-pay-toggle"><input type="checkbox" id="chapFree"> <span>ตอนนี้อ่านฟรี</span></label>
+                  <div class="sp-field chap-price" id="chapPriceWrap"><label>ราคา (เหรียญ)</label><input class="sp-input" type="number" min="1" step="1" id="chapPrice" value="1" style="max-width:120px"></div>
+                </div>
                 <div class="sp-field"><label>เนื้อหาตอน</label><textarea class="sp-textarea" name="body" style="min-height:280px" required placeholder="พิมพ์เนื้อหาของตอนที่นี่..."></textarea></div>
                 <div class="admin-syntax">
                   รูปแบบการเขียน — เว้นบรรทัดว่างเพื่อขึ้นย่อหน้าใหม่ · ขึ้นต้นด้วย <code>## </code> หัวข้อ · <code>&gt; </code> คำคม · <code>&lt;em&gt;…&lt;/em&gt;</code> เน้นสีแดง · แทรกรูป <code>![คำบรรยาย](URL)</code> เป็นบรรทัดเดี่ยว
@@ -150,6 +155,52 @@
             <h3>นิยายทั้งหมด</h3>
             <p class="sub">กด “จัดการ” เพื่อแก้ข้อมูลเรื่องและเพิ่ม/แก้ไขตอน · ลบได้เฉพาะเรื่องที่เพิ่ม/แก้ไขเอง</p>
             <div id="novList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL: coins -->
+    <section class="admin-panel" data-panel="coins">
+      <div class="wrap">
+        <div class="admin-flash" id="flashCoins"></div>
+        <div class="admin-grid">
+          <div>
+            <h3 style="font-family:var(--font-head);font-weight:500;font-size:1.3rem;margin:0 0 4px">คำขอเติมเหรียญ</h3>
+            <p class="sub" style="color:var(--ink-faint);margin:0 0 20px">ตรวจสอบการโอนเงิน แล้วกด “อนุมัติ” เพื่อเติมเหรียญให้ผู้ใช้อัตโนมัติ</p>
+            <div id="topupList"></div>
+
+            <div class="chap-sep" style="margin-top:34px"><span>เติมเหรียญด้วยตนเอง</span></div>
+            <form class="admin-form" id="manualForm">
+              <div class="row2">
+                <div class="sp-field"><label>ผู้ใช้</label><select class="sp-select" id="manualUser"></select></div>
+                <div class="sp-field"><label>จำนวนเหรียญ (+/−)</label><input class="sp-input" type="number" id="manualAmt" step="1" placeholder="เช่น 50 หรือ -10"></div>
+              </div>
+              <button class="btn btn-primary" type="submit" id="manualBtn" style="align-self:flex-start">เติม/ปรับเหรียญ</button>
+            </form>
+
+            <div class="chap-sep" style="margin-top:34px"><span>ตั้งค่าการชำระเงิน</span></div>
+            <form class="admin-form" id="payForm">
+              <div class="row2">
+                <div class="sp-field"><label>ชื่อเรียกเหรียญ</label><input class="sp-input" name="coinName" placeholder="เหรียญ"></div>
+                <div class="sp-field"><label>ราคาเริ่มต้น/ตอน (เหรียญ)</label><input class="sp-input" type="number" min="1" name="pricePerChapter" placeholder="1"></div>
+              </div>
+              <div class="row2">
+                <div class="sp-field"><label>พร้อมเพย์ (เบอร์/บัญชี)</label><input class="sp-input" name="promptpay" placeholder="0xx-xxx-xxxx"></div>
+                <div class="sp-field"><label>ชื่อบัญชี</label><input class="sp-input" name="accountName" placeholder="ชื่อ-นามสกุล"></div>
+              </div>
+              <div class="sp-field"><label>ธนาคาร / เลขบัญชี</label><input class="sp-input" name="bankInfo" placeholder="เช่น กสิกรไทย 123-4-56789-0"></div>
+              <div class="sp-field"><label>หมายเหตุถึงผู้ใช้</label><textarea class="sp-textarea" name="note" style="min-height:70px"></textarea></div>
+              <div class="sp-field"><label>แพ็กเกจ (บรรทัดละ 1 แพ็ก: บาท,เหรียญ,โบนัส)</label>
+                <textarea class="sp-textarea" id="pkgText" style="min-height:110px" placeholder="20,20,&#10;50,55,+5 โบนัส&#10;100,120,+20 โบนัส"></textarea>
+              </div>
+              <button class="btn btn-primary" type="submit" id="payBtn" style="align-self:flex-start">บันทึกการตั้งค่า</button>
+            </form>
+          </div>
+          <div class="admin-side">
+            <h3>ผู้ใช้ &amp; เหรียญคงเหลือ</h3>
+            <p class="sub">ยอดเหรียญของสมาชิกแต่ละคน</p>
+            <div id="userList"></div>
           </div>
         </div>
       </div>
@@ -265,6 +316,7 @@
 <script src="sp-store.js"></script>
 <script src="sp-content.js"></script>
 <script src="sp-admin-novels.js"></script>
+<script src="sp-admin-coins.js"></script>
 <script src="sp-auth-ui.js"></script>
 <script>
 (function () {
@@ -488,6 +540,8 @@
 
     // ===== novels =====
     if (window.initNovelAdmin) window.initNovelAdmin({ flash: flash });
+    // ===== coins =====
+    if (window.initCoinsAdmin) window.initCoinsAdmin({ flash: flash });
 
     renderArticles(); renderLinks(); renderComments();
   }

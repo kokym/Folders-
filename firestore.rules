@@ -12,15 +12,20 @@ service cloud.firestore {
     // ---- user profiles ----
     // a user may create/read/update only their OWN profile.
     // role is locked to "member" on create so nobody can self-promote.
+    // coins can NEVER be raised by the owner (only an admin top-up can add coins);
+    // the owner may lower their own coins + add unlock keys (= paying to read).
     // (to make an admin: edit that user's doc in the Firebase console and set role: "admin")
     match /users/{uid} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
                     && request.auth.uid == uid
-                    && request.resource.data.role == 'member';
-      allow update: if request.auth != null
-                    && request.auth.uid == uid
-                    && request.resource.data.role == resource.data.role; // can't change own role
+                    && request.resource.data.role == 'member'
+                    && request.resource.data.get('coins', 0) == 0;
+      allow update: if isAdmin()
+                    || ( request.auth != null
+                         && request.auth.uid == uid
+                         && request.resource.data.get('role', 'member') == resource.data.get('role', 'member')
+                         && request.resource.data.get('coins', 0) <= resource.data.get('coins', 0) );
       allow delete: if isAdmin();
     }
 
@@ -48,10 +53,22 @@ service cloud.firestore {
       }
     }
 
-    // ---- site content (editable page text) ---- public read, admin write
+    // ---- site content + payment settings ---- public read, admin write
     match /settings/{doc} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // ---- top-up requests ----
+    // a member creates their own request (status must start as "pending");
+    // only an admin may read all, approve (add coins) or reject.
+    match /topupRequests/{id} {
+      allow read: if isAdmin()
+                  || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
     }
 
     // ---- comments ----

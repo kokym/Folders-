@@ -18,14 +18,17 @@
       return;
     }
     var admin = s.role === 'admin';
+    var coins = (typeof SP.coins === 'function') ? SP.coins() : 0;
+    var coinSvg = '<svg class="coin-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.2 9.5h4a1.8 1.8 0 0 1 0 3.6h-4M9.2 13.1h4.2"/></svg>';
     wrap.innerHTML =
       '<div class="sp-chip" role="button" tabindex="0" aria-haspopup="true">' +
         '<span class="sp-ava">' + esc((s.name || s.email).slice(0, 1)) + '</span>' +
         '<span class="sp-chip-name">' + esc(s.name || s.email) + '</span>' +
-        (admin ? '<span class="sp-role">แอดมิน</span>' : '') +
+        (admin ? '<span class="sp-role">แอดมิน</span>' : '<span class="sp-coins" title="เหรียญคงเหลือ">' + coinSvg + coins + '</span>') +
       '</div>' +
       '<div class="sp-menu">' +
-        (admin ? '<a href="admin.html">แผงควบคุมแอดมิน</a><div class="sp-divider"></div>' : '') +
+        (admin ? '<a href="admin.html">แผงควบคุมแอดมิน</a>' : '<a href="Coins.html">' + coinSvg + ' เติมเหรียญ (' + coins + ')</a>') +
+        '<div class="sp-divider"></div>' +
         '<button type="button" class="sp-logout">ออกจากระบบ</button>' +
       '</div>';
     var chip = wrap.querySelector('.sp-chip'), menu = wrap.querySelector('.sp-menu');

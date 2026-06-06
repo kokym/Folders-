@@ -27,6 +27,13 @@ html[data-theme="dark"] .sp-ava { color: #16130f; }
   font-family: var(--font-body); font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
   color: var(--crimson); border: 1px solid var(--crimson); padding: 2px 7px; border-radius: 100px;
 }
+.sp-coins {
+  display: inline-flex; align-items: center; gap: .3em; font-size: .82rem; font-weight: 600;
+  color: var(--crimson); border: 1px solid color-mix(in srgb, var(--crimson) 35%, transparent);
+  padding: 2px 9px; border-radius: 100px;
+}
+.coin-ico { width: 1em; height: 1em; display: inline-block; vertical-align: -2px; }
+.sp-menu a .coin-ico { color: var(--crimson); margin-right: 2px; }
 
 .sp-menu {
   position: absolute; top: calc(100% + 10px); right: 0; min-width: 190px;
@@ -218,6 +225,16 @@ html[data-theme="dark"] .sp-ava { color: #16130f; }
 }
 .chap-sep::before, .chap-sep::after { content: ''; height: 1px; background: var(--rule); flex: 1; }
 .chap-sep span { white-space: nowrap; }
+.chap-pay { display: flex; align-items: flex-end; gap: 22px; flex-wrap: wrap; }
+.chap-pay-toggle { display: inline-flex; align-items: center; gap: 9px; font-size: .95rem; color: var(--ink); cursor: pointer; padding-bottom: 11px; }
+.chap-pay-toggle input { width: 17px; height: 17px; accent-color: var(--crimson); }
+.chap-free { font-size: .72rem; color: var(--ink-faint); border: 1px solid var(--rule); padding: 1px 8px; border-radius: 100px; }
+.chap-paid { font-size: .72rem; color: var(--crimson); border: 1px solid color-mix(in srgb, var(--crimson) 35%, transparent); padding: 1px 8px; border-radius: 100px; }
+.user-coins { font-family: var(--font-display); font-size: 1.35rem; color: var(--crimson); flex-shrink: 0; }
+.tu-st { font-size: .82rem; }
+.tu-st.pending { color: #b07900; }
+.tu-st.done { color: var(--crimson); }
+.tu-st.rejected { color: var(--ink-faint); }
 .admin-empty { color: var(--ink-faint); padding: 30px 0; }
 .admin-gate { text-align: center; padding: clamp(80px,16vh,180px) 0; }
 .admin-gate h1 { font-family: var(--font-head); font-size: 2rem; font-weight: 500; margin: 18px 0 10px; }

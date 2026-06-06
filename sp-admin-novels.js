@@ -107,9 +107,16 @@
     function resetChap(){
       chapForm.reset();
       document.getElementById('chapIdx').value='';
+      document.getElementById('chapFree').checked = false;
+      document.getElementById('chapPrice').value = 1;
+      syncPriceVis();
       document.getElementById('chapModeBar').style.display='none';
       document.getElementById('chapSubmit').textContent='เพิ่มตอน';
     }
+    function syncPriceVis(){
+      document.getElementById('chapPriceWrap').style.display = document.getElementById('chapFree').checked ? 'none' : '';
+    }
+    document.getElementById('chapFree').addEventListener('change', syncPriceVis);
     document.getElementById('chapCancel').onclick = resetChap;
 
     function renderChapters(){
@@ -117,9 +124,11 @@
       var chs = (editing && editing.chapters) || [];
       if (!chs.length){ el.innerHTML = '<div class="admin-empty">ยังไม่มีตอน — เพิ่มตอนแรกด้านล่าง</div>'; return; }
       el.innerHTML = chs.map(function(c,i){
+        var free = SP.chapterIsFree(c);
+        var tag = free ? '<span class="chap-free">ฟรี</span>' : '<span class="chap-paid">'+SP.chapterPrice(c)+' เหรียญ</span>';
         return '<div class="admin-row">'+
           '<div class="ar-body">'+
-            '<div class="ar-title"><span class="chap-n">'+(i+1)+'.</span> '+esc(c.title||('ตอนที่ '+(i+1)))+'</div>'+
+            '<div class="ar-title"><span class="chap-n">'+(i+1)+'.</span> '+esc(c.title||('ตอนที่ '+(i+1)))+' '+tag+'</div>'+
             '<div class="ar-meta">'+fmtDate(c.date||editing.date)+' · '+((c.body||[]).length)+' บล็อก</div>'+
           '</div>'+
           '<div class="chap-acts">'+
@@ -146,6 +155,10 @@
       var c = editing.chapters[i]; if(!c) return;
       chapForm.title.value = c.title || '';
       chapForm.body.value = SP.bodyToText(c.body);
+      var isFree = SP.chapterIsFree(c);
+      document.getElementById('chapFree').checked = isFree;
+      document.getElementById('chapPrice').value = isFree ? 1 : SP.chapterPrice(c);
+      syncPriceVis();
       document.getElementById('chapIdx').value = i;
       document.getElementById('chapModeBar').style.display='';
       document.getElementById('chapSubmit').textContent='บันทึกตอน';
@@ -179,10 +192,14 @@
       e.preventDefault();
       var idx = document.getElementById('chapIdx').value;
       var existing = idx !== '' ? editing.chapters[idx] : null;
+      var isFree = document.getElementById('chapFree').checked;
+      var price = isFree ? 0 : Math.max(1, parseInt(document.getElementById('chapPrice').value,10) || 1);
       var ch = {
         id: existing ? existing.id : undefined,
         title: chapForm.title.value.trim(),
         body: SP.parseBody(chapForm.body.value),
+        free: isFree,
+        price: price,
         date: existing ? (existing.date || new Date().toISOString()) : new Date().toISOString(),
         order: existing ? (existing.order != null ? existing.order : idx) : editing.chapters.length
       };
