@@ -62,6 +62,19 @@
       resetChap();
       renderChapters();
       window.scrollTo({top:0,behavior:'smooth'});
+      // one-time upgrade: old novels kept all chapters in a single document
+      // (hit Firestore's 1MB limit ~43 chapters). Move them to per-chapter docs.
+      if (n._legacy && editing.chapters.length && SP.migrateNovelChapters){
+        flash('flashNovel','กำลังอัพเกรดระบบตอนของเรื่องนี้… (ทำครั้งเดียว)');
+        Promise.resolve(SP.migrateNovelChapters(n.slug, editing.chapters)).then(function(r){
+          if (r && r.ok === false){ flash('flashNovel', r.msg || 'ย้ายข้อมูลไม่สำเร็จ'); return; }
+          // reload from the new structure so each chapter carries its id
+          Promise.resolve(SP.getNovel(n.slug)).then(function(fresh){
+            if (fresh){ editing = JSON.parse(JSON.stringify(fresh)); renderChapters(); }
+            flash('flashNovel','✅ อัพเกรดเรียบร้อย — ตอนนี้เพิ่มตอนได้ไม่จำกัด');
+          });
+        });
+      }
     }
 
     novForm.onsubmit = function(e){
@@ -77,14 +90,14 @@
         status: novForm.status.value,
         synopsis: novForm.synopsis.value.trim(),
         date: (editing && editing.date) || new Date().toISOString(),
-        updated: new Date().toISOString(),
-        chapters: chapters
+        chapterCount: chapters.length
       };
       var btn = document.getElementById('novSubmit'); btn.disabled = true;
       Promise.resolve(SP.saveNovel(obj)).then(function(r){
         btn.disabled = false;
         if (r && r.ok === false){ flash('flashNovel', r.msg || 'บันทึกไม่สำเร็จ'); return; }
         flash('flashNovel', (editing?'บันทึกเรื่อง “':'สร้างนิยาย “')+title+'” แล้ว — ตอนนี้เพิ่มตอนได้เลย');
+        obj.chapters = chapters;
         loadNovel(obj);     // stay in edit mode so chapters can be added
         renderNovels();
       });
@@ -123,14 +136,10 @@
       el.querySelectorAll('[data-down]').forEach(function(b){ b.onclick=function(){ moveChap(parseInt(b.dataset.down,10),1); }; });
     }
 
-    function persist(msg){
+    function bumpCount(){
+      editing.chapterCount = (editing.chapters || []).length;
       editing.updated = new Date().toISOString();
-      return Promise.resolve(SP.saveNovel(editing)).then(function(r){
-        if (r && r.ok === false){ flash('flashNovel', r.msg || 'บันทึกไม่สำเร็จ'); return false; }
-        if (msg) flash('flashNovel', msg);
-        renderChapters(); renderNovels();
-        return true;
-      });
+      return Promise.resolve(SP.saveNovel(editing));
     }
 
     function loadChap(i){
@@ -140,33 +149,54 @@
       document.getElementById('chapIdx').value = i;
       document.getElementById('chapModeBar').style.display='';
       document.getElementById('chapSubmit').textContent='บันทึกตอน';
-      chapForm.scrollIntoView ? null : null;
       window.scrollTo({top:document.getElementById('chapForm').offsetTop-40,behavior:'smooth'});
     }
     function delChap(i){
       if (!confirm('ลบตอนนี้?')) return;
-      editing.chapters.splice(i,1);
-      persist('ลบตอนแล้ว'); resetChap();
+      var c = editing.chapters[i]; if(!c) return;
+      Promise.resolve(c.id ? SP.deleteChapter(editing.slug, c.id) : {ok:true}).then(function(r){
+        if (r && r.ok === false){ flash('flashNovel', r.msg || 'ลบไม่สำเร็จ'); return; }
+        editing.chapters.splice(i,1);
+        bumpCount().then(function(){ renderChapters(); renderNovels(); flash('flashNovel','ลบตอนแล้ว'); });
+        resetChap();
+      });
     }
     function moveChap(i,dir){
       var j = i+dir; var a = editing.chapters;
       if (j<0 || j>=a.length) return;
       var tmp = a[i]; a[i]=a[j]; a[j]=tmp;
-      persist();
+      a[i].order = i; a[j].order = j;
+      renderChapters();
+      // persist new order for both swapped chapters
+      Promise.all([ SP.saveChapter(editing.slug, a[i]), SP.saveChapter(editing.slug, a[j]) ]).then(function(rs){
+        var bad = rs.find(function(r){ return r && r.ok === false; });
+        if (bad){ flash('flashNovel', bad.msg || 'สลับลำดับไม่สำเร็จ'); }
+        bumpCount();
+      });
     }
 
     chapForm.onsubmit = function(e){
       e.preventDefault();
       var idx = document.getElementById('chapIdx').value;
+      var existing = idx !== '' ? editing.chapters[idx] : null;
       var ch = {
+        id: existing ? existing.id : undefined,
         title: chapForm.title.value.trim(),
         body: SP.parseBody(chapForm.body.value),
-        date: new Date().toISOString()
+        date: existing ? (existing.date || new Date().toISOString()) : new Date().toISOString(),
+        order: existing ? (existing.order != null ? existing.order : idx) : editing.chapters.length
       };
-      if (idx !== ''){ ch.date = editing.chapters[idx].date || ch.date; editing.chapters[idx] = ch; }
-      else { editing.chapters.push(ch); }
       var btn = document.getElementById('chapSubmit'); btn.disabled = true;
-      persist(idx!==''?'บันทึกตอนแล้ว':'เพิ่มตอนแล้ว').then(function(){ btn.disabled=false; resetChap(); });
+      Promise.resolve(SP.saveChapter(editing.slug, ch)).then(function(r){
+        btn.disabled = false;
+        if (r && r.ok === false){ flash('flashNovel', r.msg || 'บันทึกตอนไม่สำเร็จ'); return; }
+        ch.id = r.id || ch.id;
+        if (existing) editing.chapters[idx] = ch; else editing.chapters.push(ch);
+        bumpCount().then(function(){
+          renderChapters(); renderNovels(); resetChap();
+          flash('flashNovel', existing?'บันทึกตอนแล้ว':'เพิ่มตอนที่ '+editing.chapters.length+' แล้ว');
+        });
+      });
     };
 
     // ---------- novel list ----------
@@ -183,7 +213,7 @@
           (n.cover?'<img class="ar-thumb" src="'+esc(n.cover)+'" alt="">':'')+
           '<div class="ar-body">'+
             '<div class="ar-title">'+esc(n.title)+(isStored?'':' <span class="ar-base">ตั้งต้น</span>')+'</div>'+
-            '<div class="ar-meta">'+st.th+' · '+((n.chapters||[]).length)+' ตอน · '+fmtDate(n.updated||n.date)+'</div>'+
+            '<div class="ar-meta">'+st.th+' · '+((typeof n.chapterCount==='number')?n.chapterCount:((n.chapters||[]).length))+' ตอน · '+fmtDate(n.updated||n.date)+'</div>'+
           '</div>'+
           '<div class="chap-acts">'+
             '<button class="ar-del ar-edit" data-manage="'+esc(n.slug)+'" type="button">จัดการ</button>'+
@@ -192,7 +222,13 @@
         '</div>';
       }).join('');
       el.querySelectorAll('[data-manage]').forEach(function(b){
-        b.onclick = function(){ loadNovel(all.find(function(x){return x.slug===b.dataset.manage;})); };
+        b.onclick = function(){
+          b.disabled = true; b.textContent = 'กำลังโหลด…';
+          Promise.resolve(SP.getNovel(b.dataset.manage)).then(function(full){
+            b.disabled = false; b.textContent = 'จัดการ';
+            if (full) loadNovel(full);
+          });
+        };
       });
       el.querySelectorAll('[data-del]').forEach(function(b){
         b.onclick = function(){ if(confirm('ลบนิยายเรื่องนี้ทั้งเรื่อง? (รวมทุกตอน)')){ Promise.resolve(SP.deleteNovel(b.dataset.del)).then(function(){ if(editing&&editing.slug===b.dataset.del) resetNovel(); renderNovels(); }); } };

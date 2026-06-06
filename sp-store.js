@@ -200,25 +200,98 @@
     SP.addLink = function (obj) { return db.collection('links').add(Object.assign({ date: new Date().toISOString() }, obj)).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
     SP.deleteLink = function (id) { return db.collection('links').doc(id).delete().then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
 
+    // novels: metadata in novels/{slug}; each chapter is its OWN doc in
+    // novels/{slug}/chapters/{id} — this sidesteps Firestore's 1 MB per-document
+    // limit so a novel can hold an effectively unlimited number of chapters.
     SP.listNovels = function () {
       return guard(db.collection('novels').get().then(function (snap) {
-        var custom = []; snap.forEach(function (d) { custom.push(decodeNovel(d.data())); });
+        var custom = []; snap.forEach(function (d) {
+          var n = d.data();
+          if (typeof n.chapterCount !== 'number') n.chapterCount = (n.chapters || []).length;
+          custom.push(n);
+        });
         return mergeNovels(custom);
       }), mergeNovels([]));
     };
     SP.customNovels = function () {
       return guard(db.collection('novels').get().then(function (snap) {
-        var a = []; snap.forEach(function (d) { a.push(decodeNovel(d.data())); }); return a;
+        var a = []; snap.forEach(function (d) {
+          var n = d.data();
+          if (typeof n.chapterCount !== 'number') n.chapterCount = (n.chapters || []).length;
+          a.push(n);
+        }); return a;
       }), []);
     };
-    SP.getNovel = function (slug) { return SP.listNovels().then(function (l) { return l.find(function (n) { return n.slug === slug; }); }); };
-    SP.saveNovel = function (obj) {
+    SP.getNovel = function (slug) {
+      return guard(db.collection('novels').doc(slug).get().then(function (doc) {
+        if (!doc.exists) {
+          var seed = baseNovels().find(function (n) { return n.slug === slug; });
+          return seed ? JSON.parse(JSON.stringify(seed)) : null;
+        }
+        var meta = doc.data();
+        return db.collection('novels').doc(slug).collection('chapters').get().then(function (snap) {
+          var subs = []; snap.forEach(function (c) { var d = c.data(); d.id = c.id; subs.push(d); });
+          if (subs.length) {
+            subs.sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+            meta.chapters = subs.map(function (c) { return { id: c.id, title: c.title, date: c.date, order: c.order, body: decBody(c.body) }; });
+          } else {
+            // legacy: chapters were embedded in the parent doc — flag for migration
+            meta.chapters = (meta.chapters || []).map(function (c, i) { return { title: c.title, date: c.date, order: i, body: decBody(c.body) }; });
+            if (meta.chapters.length) meta._legacy = true;
+          }
+          return meta;
+        });
+      }), null);
+    };
+    // save metadata ONLY (chapters live in the subcollection)
+    SP.saveNovel = function (meta) {
       try {
-        var toSave = Object.assign({}, obj, { chapters: (obj.chapters || []).map(function (c) { return Object.assign({}, c, { body: encBody(c.body) }); }) });
-        return db.collection('novels').doc(obj.slug).set(toSave).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+        var toSave = {
+          slug: meta.slug, title: meta.title, cn: meta.cn || '', cover: meta.cover || '',
+          status: meta.status || 'ongoing', synopsis: meta.synopsis || '',
+          date: meta.date || new Date().toISOString(), updated: new Date().toISOString(),
+          chapterCount: typeof meta.chapterCount === 'number' ? meta.chapterCount : (meta.chapters || []).length
+        };
+        return db.collection('novels').doc(meta.slug).set(toSave, { merge: true })
+          .then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
       } catch (e) { return Promise.resolve({ ok: false, msg: fbErr(e) }); }
     };
-    SP.deleteNovel = function (slug) { return db.collection('novels').doc(slug).delete().then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
+    // add (no id) or update (with id) a single chapter; returns its id
+    SP.saveChapter = function (slug, chapter) {
+      try {
+        var data = { title: chapter.title || '', body: encBody(chapter.body), date: chapter.date || new Date().toISOString(), order: chapter.order || 0 };
+        var col = db.collection('novels').doc(slug).collection('chapters');
+        var ref = chapter.id ? col.doc(chapter.id) : col.doc();
+        return ref.set(data).then(function () { return { ok: true, id: ref.id }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+      } catch (e) { return Promise.resolve({ ok: false, msg: fbErr(e) }); }
+    };
+    SP.deleteChapter = function (slug, id) {
+      return db.collection('novels').doc(slug).collection('chapters').doc(id).delete()
+        .then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
+    // one-time move: embedded chapters array -> subcollection docs; clears the embedded array
+    SP.migrateNovelChapters = function (slug, chapters) {
+      try {
+        var col = db.collection('novels').doc(slug).collection('chapters');
+        var batch = db.batch();
+        (chapters || []).forEach(function (c, i) {
+          var ref = col.doc();
+          batch.set(ref, { title: c.title || '', body: encBody(c.body), date: c.date || new Date().toISOString(), order: i });
+        });
+        batch.set(db.collection('novels').doc(slug), { chapters: firebase.firestore.FieldValue.delete(), chapterCount: (chapters || []).length }, { merge: true });
+        return batch.commit().then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+      } catch (e) { return Promise.resolve({ ok: false, msg: fbErr(e) }); }
+    };
+    SP.deleteNovel = function (slug) {
+      var col = db.collection('novels').doc(slug).collection('chapters');
+      return col.get().then(function (snap) {
+        var batch = db.batch();
+        snap.forEach(function (d) { batch.delete(d.ref); });
+        return batch.commit();
+      }).then(function () {
+        return db.collection('novels').doc(slug).delete();
+      }).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
+    };
 
     SP.getSite = function () {
       return guard(db.collection('settings').doc('site').get().then(function (doc) {
@@ -330,14 +403,66 @@
   SP.getSite = function () { return Promise.resolve(mergeSite(read(LS.site, null))); };
   SP.saveSite = function (obj) { write(LS.site, Object.assign(read(LS.site, {}) || {}, obj)); return Promise.resolve({ ok: true }); };
 
-  SP.customNovels = function () { return Promise.resolve(read(LS.novels, [])); };
-  SP.listNovels = function () { return Promise.resolve(mergeNovels(read(LS.novels, []))); };
-  SP.getNovel = function (slug) { return SP.listNovels().then(function (l) { return l.find(function (n) { return n.slug === slug; }); }); };
-  SP.saveNovel = function (obj) {
+  SP.customNovels = function () { return Promise.resolve(read(LS.novels, []).map(withCount)); };
+  SP.listNovels = function () { return Promise.resolve(mergeNovels(read(LS.novels, []).map(withCount))); };
+  function withCount(n){ if (typeof n.chapterCount !== 'number') n.chapterCount = (n.chapters || []).length; return n; }
+  SP.getNovel = function (slug) {
+    var stored = read(LS.novels, []).find(function (n) { return n.slug === slug; });
+    if (stored) {
+      var copy = JSON.parse(JSON.stringify(stored));
+      copy.chapters = (copy.chapters || []).map(function (c, i) { if (!c.id) c.id = uid('c'); c.order = i; return c; });
+      return Promise.resolve(copy);
+    }
+    var seed = baseNovels().find(function (n) { return n.slug === slug; });
+    return Promise.resolve(seed ? JSON.parse(JSON.stringify(seed)) : null);
+  };
+  // save metadata only; preserve existing chapters (or seed chapters on first save)
+  SP.saveNovel = function (meta) {
     var c = read(LS.novels, []);
-    var i = c.findIndex(function (n) { return n.slug === obj.slug; });
+    var i = c.findIndex(function (n) { return n.slug === meta.slug; });
+    var existing = i > -1 ? c[i] : (baseNovels().find(function (n) { return n.slug === meta.slug; }) || {});
+    var obj = {
+      slug: meta.slug, title: meta.title, cn: meta.cn || '', cover: meta.cover || '',
+      status: meta.status || 'ongoing', synopsis: meta.synopsis || '',
+      date: meta.date || existing.date || new Date().toISOString(), updated: new Date().toISOString(),
+      chapters: (existing.chapters || []).map(function (ch, k) { if (!ch.id) ch.id = uid('c'); ch.order = k; return ch; })
+    };
+    obj.chapterCount = obj.chapters.length;
     if (i > -1) c[i] = obj; else c.unshift(obj);
     write(LS.novels, c); return Promise.resolve({ ok: true });
   };
-  SP.deleteNovel = function (slug) { write(LS.novels, read(LS.novels, []).filter(function (n) { return n.slug !== slug; })); return Promise.resolve(); };
+  SP.saveChapter = function (slug, chapter) {
+    var c = read(LS.novels, []);
+    var i = c.findIndex(function (n) { return n.slug === slug; });
+    if (i < 0) {
+      // novel not yet stored (seed) — clone seed then save
+      var seed = baseNovels().find(function (n) { return n.slug === slug; });
+      if (!seed) return Promise.resolve({ ok: false, msg: 'ไม่พบนิยาย' });
+      c.unshift(JSON.parse(JSON.stringify(seed))); i = 0;
+    }
+    if (!c[i].chapters) c[i].chapters = [];
+    if (chapter.id) {
+      var k = c[i].chapters.findIndex(function (x) { return x.id === chapter.id; });
+      if (k > -1) c[i].chapters[k] = Object.assign({}, c[i].chapters[k], { title: chapter.title, body: chapter.body, date: chapter.date || c[i].chapters[k].date });
+      else c[i].chapters.push(Object.assign({ id: chapter.id }, chapter));
+    } else {
+      chapter.id = uid('c'); c[i].chapters.push(chapter);
+    }
+    c[i].chapters.sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    c[i].chapterCount = c[i].chapters.length;
+    c[i].updated = new Date().toISOString();
+    write(LS.novels, c); return Promise.resolve({ ok: true, id: chapter.id });
+  };
+  SP.deleteChapter = function (slug, id) {
+    var c = read(LS.novels, []);
+    var i = c.findIndex(function (n) { return n.slug === slug; });
+    if (i > -1) {
+      c[i].chapters = (c[i].chapters || []).filter(function (x) { return x.id !== id; });
+      c[i].chapterCount = c[i].chapters.length;
+      write(LS.novels, c);
+    }
+    return Promise.resolve({ ok: true });
+  };
+  SP.migrateNovelChapters = function () { return Promise.resolve({ ok: true }); };
+  SP.deleteNovel = function (slug) { write(LS.novels, read(LS.novels, []).filter(function (n) { return n.slug !== slug; })); return Promise.resolve({ ok: true }); };
 })();

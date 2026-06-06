@@ -141,7 +141,7 @@
   } else {
     listEl.innerHTML = novels.map(function(n){
       var st = ST[n.status] || ST.ongoing;
-      var nCh = (n.chapters || []).length;
+      var nCh = (typeof n.chapterCount === 'number') ? n.chapterCount : (n.chapters || []).length;
       var cover = n.cover
         ? '<div class="nv-cover"><img src="'+esc(n.cover)+'" alt="ปก '+esc(n.title)+'" loading="lazy"></div>'
         : '<div class="nv-cover ph"><span>'+esc(n.cn||'书')+'</span></div>';

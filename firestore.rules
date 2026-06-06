@@ -37,9 +37,15 @@ service cloud.firestore {
     }
 
     // ---- novels (นิยายแบบแบ่งตอน) ---- public read, admin write
+    // each chapter is its own doc in novels/{slug}/chapters/{id}
+    // (avoids the 1 MB per-document limit so chapter count is effectively unlimited)
     match /novels/{slug} {
       allow read: if true;
       allow write: if isAdmin();
+      match /chapters/{cid} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
     }
 
     // ---- site content (editable page text) ---- public read, admin write
