@@ -93,6 +93,19 @@
 
 .comments { max-width: var(--read); margin: 0 auto; padding-top: 20px; }
 
+/* ---------- copy protection (reader content only) ---------- */
+.reader.no-copy {
+  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+}
+.reader.no-copy img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+.copy-toast {
+  position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: var(--paper); padding: 12px 22px; border-radius: 100px;
+  font-size: .9rem; opacity: 0; pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); z-index: 200;
+}
+.copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 /* ---------- paywall ---------- */
 .paywall { max-width: var(--read); margin: 0 auto; padding: clamp(36px,5vw,56px) 0 0; }
 .pw-card {
@@ -336,7 +349,7 @@
   }
 
   var readerInner = locked ? '<div class="paywall" id="paywall">'+paywallHTML()+'</div>'
-                           : '<div class="reader" id="reader">'+renderBody(ch.body)+'</div>';
+                           : '<div class="reader no-copy" id="reader">'+renderBody(ch.body)+'</div>';
 
   main.innerHTML =
     '<article>'+
@@ -371,6 +384,32 @@
     };
   }
   wirePaywall();
+
+  // ---------- copy protection on the reader content ----------
+  (function protectReader(){
+    var reader = document.getElementById('reader');
+    if (!reader) return; // locked chapters have no body to protect
+    var toast;
+    function warn(){
+      if (!toast){ toast = document.createElement('div'); toast.className = 'copy-toast'; toast.textContent = 'เนื้อหานี้สงวนลิขสิทธิ์ — ไม่อนุญาตให้คัดลอก'; document.body.appendChild(toast); }
+      toast.classList.add('show');
+      clearTimeout(warn._t); warn._t = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+    }
+    function block(e){ e.preventDefault(); warn(); return false; }
+    ['copy','cut','contextmenu','dragstart','selectstart'].forEach(function(ev){
+      reader.addEventListener(ev, block);
+    });
+    // block common shortcuts while focus/selection is within the reader
+    document.addEventListener('keydown', function(e){
+      var k = (e.key || '').toLowerCase();
+      var sel = window.getSelection && window.getSelection();
+      var inReader = sel && sel.anchorNode && reader.contains(sel.anchorNode);
+      if ((e.ctrlKey || e.metaKey) && ['c','x','a','s','p'].indexOf(k) > -1 && (inReader || k === 's' || k === 'p')) {
+        // allow Ctrl+C/X/A only outside reader; always discourage Save/Print of the page
+        if (inReader || k === 's' || k === 'p') { e.preventDefault(); warn(); }
+      }
+    });
+  })();
   // re-render the gate if auth state changes while on the page (login from modal)
   SP.onAuth(function(){
     if (!locked) return;
