@@ -365,6 +365,7 @@
       return guard(db.collection('novels').get().then(function (snap) {
         var custom = []; snap.forEach(function (d) {
           var n = d.data();
+          n.slug = d.id; // always use the doc ID as the slug so cards link correctly
           if (typeof n.chapterCount !== 'number') n.chapterCount = (n.chapters || []).length;
           custom.push(n);
         });
@@ -375,32 +376,40 @@
       return guard(db.collection('novels').get().then(function (snap) {
         var a = []; snap.forEach(function (d) {
           var n = d.data();
+          n.slug = d.id;
           if (typeof n.chapterCount !== 'number') n.chapterCount = (n.chapters || []).length;
           a.push(n);
         }); return a;
       }), []);
     };
     SP.getNovel = function (slug) {
-      return guard(db.collection('novels').doc(slug).get().then(function (doc) {
-        if (!doc.exists) {
-          var seed = baseNovels().find(function (n) { return n.slug === slug; });
-          if (!seed) return null;
-          var sc = JSON.parse(JSON.stringify(seed));
-          sc.chapters = ensureChapterIds(slug, sc.chapters);
-          return sc;
-        }
-        var meta = doc.data();
-        return db.collection('novels').doc(slug).collection('chapters').get().then(function (snap) {
+      // look up by doc ID; if that doc doesn't exist, fall back to a query on the
+      // slug field (handles any historical id/field mismatch) before giving up.
+      function loadChapters(meta, id) {
+        return db.collection('novels').doc(id).collection('chapters').get().then(function (snap) {
           var subs = []; snap.forEach(function (c) { var d = c.data(); d.id = c.id; subs.push(d); });
           if (subs.length) {
             subs.sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
             meta.chapters = subs.map(function (c) { return { id: c.id, title: c.title, date: c.date, order: c.order, free: c.free, price: c.price, body: decBody(c.body) }; });
           } else {
-            // legacy: chapters were embedded in the parent doc — flag for migration
-            meta.chapters = ensureChapterIds(slug, (meta.chapters || []).map(function (c, i) { return { title: c.title, date: c.date, order: i, free: c.free, price: c.price, body: decBody(c.body) }; }));
+            meta.chapters = ensureChapterIds(id, (meta.chapters || []).map(function (c, i) { return { title: c.title, date: c.date, order: i, free: c.free, price: c.price, body: decBody(c.body) }; }));
             if (meta.chapters.length) meta._legacy = true;
           }
+          meta.slug = id;
           return meta;
+        });
+      }
+      return guard(db.collection('novels').doc(slug).get().then(function (doc) {
+        if (doc.exists) return loadChapters(doc.data(), doc.id);
+        // fallback 1: query by slug field
+        return db.collection('novels').where('slug', '==', slug).limit(1).get().then(function (qs) {
+          if (!qs.empty) { var d = qs.docs[0]; return loadChapters(d.data(), d.id); }
+          // fallback 2: a built-in seed novel
+          var seed = baseNovels().find(function (n) { return n.slug === slug; });
+          if (!seed) return null;
+          var sc = JSON.parse(JSON.stringify(seed));
+          sc.chapters = ensureChapterIds(slug, sc.chapters);
+          return sc;
         });
       }), null);
     };
