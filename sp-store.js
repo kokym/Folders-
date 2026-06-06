@@ -266,7 +266,7 @@
       var key = SP.unlockKey(slug, chId);
       if (_session.unlocks && _session.unlocks[key]) return Promise.resolve({ ok: true, already: true });
       var ref = db.collection('users').doc(_session.uid);
-      return db.runTransaction(function (tx) {
+      var work = db.runTransaction(function (tx) {
         return tx.get(ref).then(function (doc) {
           var data = (doc.exists && doc.data()) || {};
           var have = data.coins || 0;
@@ -287,6 +287,11 @@
         if (e && e.insufficient) return { ok: false, insufficient: true, msg: 'เหรียญไม่พอ' };
         return { ok: false, msg: fbErr(e) };
       });
+      // never let the button hang silently — fail clearly after 12s
+      var timeout = new Promise(function (res) {
+        setTimeout(function () { res({ ok: false, timeout: true, msg: 'ระบบตอบสนองช้า (อาจติดลิมิตชั่วคราว) — กรุณาลองใหม่อีกครั้งภายหลัง' }); }, 12000);
+      });
+      return Promise.race([work, timeout]);
     };
 
     // ---- top-up requests (member creates; admin approves -> adds coins) ----
@@ -468,6 +473,7 @@
       if (c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-credential') return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
       if (c === 'permission-denied' || c === 'PERMISSION_DENIED') return 'Firebase ปฏิเสธการบันทึก (permission-denied) — โปรดตรวจ 2 อย่าง: 1) Publish กฎจากไฟล์ firestore.rules ใน Console แล้วหรือยัง  2) บัญชีนี้ตั้ง role เป็น "admin" ใน Firestore › users แล้วหรือยัง';
       if (c === 'unavailable' || c === 'failed-precondition') return 'เชื่อมต่อฐานข้อมูลไม่ได้ชั่วคราว ลองใหม่อีกครั้ง';
+      if (c === 'resource-exhausted') return 'Firebase ใช้โควต้าฟรีหมดชั่วคราว (จะรีเซ็ตเองทุกเที่ยงคืนเวลาแปซิฟิก ~บ่ายโมงเวลาไทย) กรุณาลองใหม่ภายหลัง';
       return (e && e.message) || 'เกิดข้อผิดพลาด';
     }
     return;

@@ -9,140 +9,55 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="sp-app.css">
 <style>
-.progress { position: fixed; top: 0; left: 0; height: 2.5px; background: var(--crimson); width: 0; z-index: 100; transition: width .1s linear; }
+.page-head { padding: clamp(54px,7vw,90px) 0 clamp(30px,4vw,46px); }
+.page-head .eyebrow { margin-bottom: 22px; }
+.page-head h1 { font-size: clamp(2.4rem,5vw,3.8rem); margin: 0 0 16px; font-weight: 500; }
+.page-head p { color: var(--ink-soft); max-width: 54ch; font-size: 1.05rem; margin: 0; line-height: 1.8; }
 
-/* ---------- novel cover / table of contents ---------- */
-.nv-hero { padding: clamp(48px,6vw,80px) 0 clamp(28px,3vw,44px); }
-.nv-hero .back { display: inline-flex; align-items: center; gap: .5em; color: var(--ink-faint); font-size: .88rem; margin-bottom: 32px; transition: color .2s var(--ease); }
-.nv-hero .back:hover { color: var(--crimson); }
-.nv-top { display: grid; grid-template-columns: 230px 1fr; gap: clamp(28px,5vw,56px); align-items: start; }
-.nv-poster { aspect-ratio: 3/4; overflow: hidden; border: 1px solid var(--rule-soft); background: var(--paper-2); }
-.nv-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.nv-poster.ph { display: flex; align-items: center; justify-content: center;
-  background: repeating-linear-gradient(45deg, var(--paper-2) 0 12px, transparent 12px 24px), var(--paper-card); }
-.nv-poster.ph span { font-family: var(--font-cn); font-size: 4rem; color: var(--crimson); opacity: .55; }
-.nv-info .statusrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-.nv-status { display: inline-flex; align-items: center; gap: .5em; font-weight: 600; font-size: .74rem; letter-spacing: .08em; padding: 5px 12px; border-radius: 100px; white-space: nowrap; }
+.nv-list { padding: 8px 0 0; display: flex; flex-direction: column; }
+.nv-card {
+  display: grid; grid-template-columns: 188px 1fr; gap: clamp(24px,4vw,44px); align-items: stretch;
+  border-top: 1px solid var(--rule); padding: 34px 0; cursor: pointer;
+}
+.nv-card:last-child { border-bottom: 1px solid var(--rule); }
+.nv-cover {
+  position: relative; aspect-ratio: 3/4; overflow: hidden; background: var(--paper-2);
+  border: 1px solid var(--rule-soft);
+}
+.nv-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s var(--ease); }
+.nv-card:hover .nv-cover img { transform: scale(1.04); }
+.nv-cover.ph {
+  display: flex; align-items: center; justify-content: center;
+  background:
+    repeating-linear-gradient(45deg, var(--paper-2) 0 11px, transparent 11px 22px),
+    var(--paper-card);
+}
+.nv-cover.ph span { font-family: var(--font-cn); font-size: 3.2rem; color: var(--crimson); opacity: .55; letter-spacing: .1em; }
+.nv-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.nv-statusrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.nv-status {
+  display: inline-flex; align-items: center; gap: .5em; font-family: var(--font-body); font-weight: 600;
+  font-size: .74rem; letter-spacing: .08em; padding: 5px 12px; border-radius: 100px; white-space: nowrap;
+}
 .nv-status.ongoing { color: var(--crimson); border: 1px solid color-mix(in srgb, var(--crimson) 40%, transparent); }
 .nv-status.completed { color: var(--ink-faint); border: 1px solid var(--rule); }
 .nv-status .dotpulse { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.nv-info h1 { font-size: clamp(2rem,4.2vw,3.1rem); margin: 0 0 12px; font-weight: 500; line-height: 1.16; max-width: 20ch; text-wrap: balance; }
-.nv-info .cn-title { font-family: var(--font-cn); font-size: clamp(1.4rem,2.6vw,1.9rem); color: var(--crimson); letter-spacing: .28em; margin-bottom: 22px; }
-.nv-info .syn { color: var(--ink-soft); font-size: 1.08rem; line-height: 1.9; max-width: 60ch; margin: 0 0 22px; }
-.nv-info .facts { display: flex; gap: 14px; color: var(--ink-faint); font-size: .9rem; flex-wrap: wrap; }
-.nv-info .facts .dot { width:3px;height:3px;border-radius:50%;background:var(--ink-faint);align-self:center; }
-.nv-info .read-cta { margin-top: 26px; }
+.nv-card h2 { font-size: clamp(1.5rem,2.8vw,2.1rem); margin: 0; font-weight: 500; transition: color .25s var(--ease); line-height: 1.2; }
+.nv-card:hover h2 { color: var(--crimson); }
+.nv-cn { font-family: var(--font-cn); color: var(--ink-faint); letter-spacing: .22em; font-size: 1.05rem; }
+.nv-syn { color: var(--ink-soft); font-size: 1rem; line-height: 1.85; max-width: 62ch; }
+.nv-meta { margin-top: auto; display: flex; align-items: center; gap: 14px; color: var(--ink-faint); font-size: .88rem; flex-wrap: wrap; padding-top: 6px; }
+.nv-meta .dot { width:3px;height:3px;border-radius:50%;background:var(--ink-faint); }
+.nv-meta .go { color: var(--crimson); font-weight: 600; display: inline-flex; align-items: center; gap: .5em; margin-left: auto; }
+.nv-empty { padding: 70px 0; text-align: center; color: var(--ink-faint); border-top: 1px solid var(--rule); }
 
-/* chapter list */
-.toc { padding-top: clamp(40px,5vw,64px); }
-.toc .sec-head { margin-bottom: 8px; }
-.toc-list { display: flex; flex-direction: column; }
-.toc-row {
-  display: grid; grid-template-columns: 58px 1fr auto; gap: 20px; align-items: center;
-  border-top: 1px solid var(--rule); padding: 20px 4px; cursor: pointer; transition: background-color .2s var(--ease), padding-left .2s var(--ease);
+@media (max-width: 600px){
+  .nv-card { grid-template-columns: 110px 1fr; gap: 20px; }
+  .nv-meta .go { margin-left: 0; width: 100%; }
 }
-.toc-row:last-child { border-bottom: 1px solid var(--rule); }
-.toc-row:hover { background: var(--paper-card); padding-left: 14px; }
-.toc-row .n { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink-faint); }
-.toc-row .t { font-size: 1.12rem; font-weight: 500; color: var(--ink); }
-.toc-row:hover .t { color: var(--crimson); }
-.toc-row .when { color: var(--ink-faint); font-size: .84rem; white-space: nowrap; }
-@media (max-width: 640px){
-  .nv-top { grid-template-columns: 130px 1fr; gap: 22px; }
-  .toc-row { grid-template-columns: 36px 1fr; }
-  .toc-row .when { display: none; }
-}
-
-/* ---------- chapter reader ---------- */
-.ch-head { padding: clamp(44px,5vw,72px) 0 clamp(20px,2vw,30px); }
-.ch-head .back { display: inline-flex; align-items: center; gap: .5em; color: var(--ink-faint); font-size: .88rem; margin-bottom: 28px; transition: color .2s var(--ease); }
-.ch-head .back:hover { color: var(--crimson); }
-.ch-head .eyebrow { margin-bottom: 14px; }
-.ch-head h1 { font-size: clamp(1.9rem,4vw,2.9rem); margin: 0; font-weight: 500; line-height: 1.18; max-width: 24ch; text-wrap: balance; }
-.ch-head .ch-meta { margin-top: 16px; color: var(--ink-faint); font-size: .9rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.ch-head .ch-meta .dot { width:3px;height:3px;border-radius:50%;background:var(--ink-faint); }
-.art-divider { height: 1px; background: var(--rule); }
-
-.reader { max-width: var(--read); margin: 0 auto; padding: clamp(38px,5vw,56px) 0 0; }
-.reader p { font-size: 1.18rem; line-height: 1.95; color: var(--ink); margin: 0 0 1.5em; letter-spacing: .003em; }
-.reader p em { font-style: normal; font-weight: 600; color: var(--crimson); }
-.reader > p:first-of-type::first-letter { font-family: var(--font-display); font-weight: 600; float: left; font-size: 4.2rem; line-height: .82; padding: 6px 14px 0 0; color: var(--crimson); }
-.reader h2 { font-family: var(--font-head); font-size: clamp(1.5rem,2.6vw,2rem); font-weight: 500; margin: 2em 0 .7em; padding-top: .3em; position: relative; line-height: 1.3; }
-.reader h2::before { content:''; position:absolute; top:0; left:0; width:38px; height:2px; background: var(--crimson); }
-.reader blockquote { margin: 2.2em 0; padding: 0 0 0 30px; border-left: 2px solid var(--crimson); font-family: var(--font-head); font-style: italic; font-size: clamp(1.4rem,2.6vw,1.75rem); line-height: 1.5; color: var(--ink); font-weight: 400; }
-.reader blockquote .src { display:block; font-family: var(--font-body); font-style: normal; font-size: .92rem; color: var(--ink-faint); margin-top: 14px; }
-.reader figure.art-fig { margin: 2.4em 0; }
-.reader figure.art-fig img { width: 100%; display: block; border: 1px solid var(--rule-soft); }
-.reader figure.art-fig figcaption { font-size: .88rem; color: var(--ink-faint); margin-top: 10px; text-align: center; }
-
-/* prev / next pager */
-.ch-pager { max-width: var(--read); margin: clamp(48px,6vw,72px) auto 0; padding-top: 36px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.ch-nav {
-  display: flex; flex-direction: column; gap: 6px; padding: 18px 22px; border: 1px solid var(--rule);
-  background: var(--paper-card); cursor: pointer; transition: border-color .25s var(--ease), transform .25s var(--ease); text-decoration: none;
-}
-.ch-nav:hover { border-color: var(--crimson); transform: translateY(-2px); }
-.ch-nav.next { text-align: right; }
-.ch-nav.disabled { opacity: .35; pointer-events: none; }
-.ch-nav .dir { font-size: .76rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
-.ch-nav .ttl { font-family: var(--font-head); font-size: 1.05rem; color: var(--ink); }
-.ch-toc-link { max-width: var(--read); margin: 22px auto 0; text-align: center; }
-.ch-toc-link a { color: var(--ink-faint); font-size: .9rem; }
-.ch-toc-link a:hover { color: var(--crimson); }
-@media (max-width: 560px){ .ch-pager { grid-template-columns: 1fr; } }
-
-.comments { max-width: var(--read); margin: 0 auto; padding-top: 20px; }
-
-/* ---------- copy protection (reader content only) ---------- */
-.reader.no-copy {
-  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
-  -webkit-touch-callout: none;
-}
-.reader.no-copy img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
-.copy-toast {
-  position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px);
-  background: var(--ink); color: var(--paper); padding: 12px 22px; border-radius: 100px;
-  font-size: .9rem; opacity: 0; pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); z-index: 200;
-}
-.copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ---------- paywall ---------- */
-.paywall { max-width: var(--read); margin: 0 auto; padding: clamp(36px,5vw,56px) 0 0; }
-.pw-card {
-  border: 1px solid var(--rule); background: var(--paper-card); padding: clamp(34px,5vw,52px) clamp(26px,4vw,46px);
-  text-align: center; position: relative; overflow: hidden;
-}
-.pw-card::before {
-  content: '影'; position: absolute; right: -10px; bottom: -28px; font-family: var(--font-cn);
-  font-size: 9rem; color: var(--crimson); opacity: .05; pointer-events: none; line-height: 1;
-}
-.pw-lock {
-  width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--crimson) 40%, transparent); color: var(--crimson); margin-bottom: 20px;
-}
-.pw-lock svg { width: 26px; height: 26px; }
-.pw-card h2 { font-family: var(--font-head); font-weight: 500; font-size: clamp(1.4rem,2.6vw,1.9rem); margin: 0 0 10px; }
-.pw-card p { color: var(--ink-soft); font-size: 1.02rem; line-height: 1.8; margin: 0 auto 8px; max-width: 46ch; }
-.pw-price {
-  display: inline-flex; align-items: center; gap: .5em; margin: 18px 0 24px; padding: 10px 20px;
-  border: 1px solid var(--rule); border-radius: 100px; font-family: var(--font-head); font-size: 1.15rem; color: var(--ink);
-}
-.pw-coin { color: var(--crimson); font-weight: 600; }
-.pw-bal { font-size: .9rem; color: var(--ink-faint); margin-top: 6px; }
-.pw-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
-.coin-ico { width: 1.05em; height: 1.05em; display: inline-block; vertical-align: -2px; }
-.pw-syn {
-  max-width: var(--read); margin: 26px auto 0; padding: 24px 0 0; border-top: 1px dashed var(--rule);
-  color: var(--ink-soft); font-size: 1.05rem; line-height: 1.9; text-align: left;
-}
-.pw-syn .lbl { display:block; font-size:.74rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px; }
-.toc-row .lock-tag { display:inline-flex; align-items:center; gap:.4em; font-size:.74rem; color:var(--crimson); margin-left:8px; }
-.toc-row .free-tag { font-size:.72rem; color:var(--ink-faint); border:1px solid var(--rule); padding:2px 8px; border-radius:100px; margin-left:8px; }
-.toc-row .lock-tag svg { width:13px; height:13px; }
 </style>
 </head>
 <body>
-<div class="progress" id="progress"></div>
 <script src="theme.js"></script>
 
 <header class="site-head">
@@ -164,7 +79,19 @@
   </div>
 </header>
 
-<main id="main"></main>
+<main>
+  <section class="page-head">
+    <div class="wrap">
+      <span class="eyebrow">เรื่องสั้น &amp; นิยาย <span class="cn">小说</span></span>
+      <h1>นิยายแบ่งตอน</h1>
+      <p>เรื่องเล่าขนาดยาวที่ทยอยเผยแพร่ทีละตอน ทั้งเรื่องแต่งอิงประวัติศาสตร์ราชวงศ์จีนและจินตนาการว่าด้วยเงาของกาลเวลา</p>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="nv-list" id="list"></div>
+  </div>
+</main>
 
 <footer class="site-foot">
   <div class="wrap">
@@ -199,247 +126,54 @@
 <script src="sp-store.js"></script>
 <script src="sp-content.js"></script>
 <script src="sp-auth-ui.js"></script>
-<script src="sp-comments.js"></script>
 <script>
 (async function () {
   var cats = window.SP_CATEGORIES, ST = window.SP_NOVEL_STATUS;
   await SP.ready;
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function attr(s){return String(s).replace(/"/g,'&quot;');}
-  function fmtDate(s){var d=new Date(s);var m=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
 
-  var params = new URLSearchParams(location.search);
-  var slug = params.get('n');
-  var chParam = params.get('c');
-  var main = document.getElementById('main');
+  var novels = await SP.listNovels();
+  var listEl = document.getElementById('list');
 
-  // footer categories
+  if (!novels.length) {
+    listEl.innerHTML = '<div class="nv-empty">ยังไม่มีนิยายในขณะนี้ — โปรดติดตามเร็ว ๆ นี้</div>';
+  } else {
+    listEl.innerHTML = novels.map(function(n){
+      var st = ST[n.status] || ST.ongoing;
+      var nCh = (typeof n.chapterCount === 'number') ? n.chapterCount : (n.chapters || []).length;
+      var cover = n.cover
+        ? '<div class="nv-cover"><img src="'+esc(n.cover)+'" alt="ปก '+esc(n.title)+'" loading="lazy"></div>'
+        : '<div class="nv-cover ph"><span>'+esc(n.cn||'书')+'</span></div>';
+      return '<article class="nv-card" data-slug="'+esc(n.slug)+'">'+
+        cover+
+        '<div class="nv-body">'+
+          '<div class="nv-statusrow">'+
+            '<span class="nv-status '+(n.status==='completed'?'completed':'ongoing')+'"><span class="dotpulse"></span>'+st.th+'</span>'+
+            '<span class="nv-cn">'+esc(n.cn||'')+'</span>'+
+          '</div>'+
+          '<h2>'+esc(n.title)+'</h2>'+
+          '<p class="nv-syn">'+esc(n.synopsis||'')+'</p>'+
+          '<div class="nv-meta">'+
+            '<span>'+nCh+' ตอน</span><span class="dot"></span>'+
+            '<span>อัปเดต '+fmtDate(n.updated||n.date)+'</span>'+
+            '<span class="go">อ่านนิยาย <span aria-hidden="true">→</span></span>'+
+          '</div>'+
+        '</div>'+
+      '</article>';
+    }).join('');
+    listEl.querySelectorAll('.nv-card').forEach(function(c){
+      c.onclick = function(){ location.href = 'Novel.html?n='+encodeURIComponent(c.dataset.slug); };
+    });
+  }
+
+  // footer categories (fiction routes here to the novels hub)
   var order = ['history','reflection','fiction','review'];
   document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
     order.map(function(k){
       var href = k==='fiction' ? 'Novels.html' : 'Articles.html?cat='+k+'#cats';
       return '<a href="'+href+'">'+cats[k].th+'</a>';
     }).join('');
-
-  var novel = slug ? await SP.getNovel(slug) : null;
-  if (!novel) {
-    main.innerHTML = '<div class="wrap" style="padding:90px 0;text-align:center;color:var(--ink-faint)">'+
-      '<p style="margin-bottom:20px">ไม่พบนิยายที่ต้องการ</p>'+
-      '<a class="btn btn-primary" href="Novels.html">กลับสู่หน้านิยาย</a></div>';
-    return;
-  }
-  var chapters = novel.chapters || [];
-  var st = ST[novel.status] || ST.ongoing;
-
-  function renderBody(blocks){
-    return (blocks||[]).map(function(b){
-      if(b[0]==='h2') return '<h2>'+b[1]+'</h2>';
-      if(b[0]==='quote') return '<blockquote>'+b[1]+(b[2]?'<span class="src">'+b[2]+'</span>':'')+'</blockquote>';
-      if(b[0]==='img') return '<figure class="art-fig"><img src="'+attr(b[1])+'" alt="'+attr(b[2]||'')+'" loading="lazy">'+(b[2]?'<figcaption>'+b[2]+'</figcaption>':'')+'</figure>';
-      return '<p>'+b[1]+'</p>';
-    }).join('');
-  }
-
-  var chIndex = chParam === null ? -1 : parseInt(chParam, 10);
-  var reading = chIndex >= 0 && chIndex < chapters.length;
-
-  if (!reading) {
-    // ---------- TABLE OF CONTENTS ----------
-    document.title = novel.title + ' — Shadow Phase 影变';
-    var poster = novel.cover
-      ? '<div class="nv-poster"><img src="'+attr(novel.cover)+'" alt="ปก '+esc(novel.title)+'"></div>'
-      : '<div class="nv-poster ph"><span>'+esc(novel.cn||'书')+'</span></div>';
-    var firstCta = chapters.length
-      ? '<a class="btn btn-primary read-cta" href="Novel.html?n='+encodeURIComponent(slug)+'&c=0">เริ่มอ่านตอนแรก</a>'
-      : '<span class="read-cta" style="color:var(--ink-faint)">ยังไม่มีตอนเผยแพร่</span>';
-
-    var tocRows = chapters.length
-      ? chapters.map(function(c,i){
-          var n = (i+1)<10 ? '0'+(i+1) : ''+(i+1);
-          var free = SP.chapterIsFree(c);
-          var unlocked = c.id && SP.isUnlocked(slug, c.id);
-          var tag = free ? '<span class="free-tag">ฟรี</span>'
-            : (unlocked ? '' : '<span class="lock-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'+SP.chapterPrice(c)+'</span>');
-          return '<div class="toc-row" data-i="'+i+'">'+
-            '<span class="n">'+n+'</span>'+
-            '<span class="t">'+esc(c.title || ('ตอนที่ '+(i+1)))+tag+'</span>'+
-            '<span class="when">'+fmtDate(c.date||novel.date)+'</span>'+
-          '</div>';
-        }).join('')
-      : '<div class="nv-empty" style="border-top:1px solid var(--rule)">ยังไม่มีตอนในนิยายเรื่องนี้</div>';
-
-    main.innerHTML =
-      '<section class="nv-hero"><div class="wrap">'+
-        '<a class="back" href="Novels.html">← กลับสู่หน้านิยาย</a>'+
-        '<div class="nv-top">'+
-          poster+
-          '<div class="nv-info">'+
-            '<div class="statusrow">'+
-              '<span class="nv-status '+(novel.status==='completed'?'completed':'ongoing')+'"><span class="dotpulse"></span>'+st.th+'</span>'+
-              '<span class="nv-cn" style="font-family:var(--font-cn);color:var(--ink-faint);letter-spacing:.22em">'+esc(novel.cn||'')+'</span>'+
-            '</div>'+
-            '<h1>'+esc(novel.title)+'</h1>'+
-            '<p class="syn">'+esc(novel.synopsis||'')+'</p>'+
-            '<div class="facts"><span>'+chapters.length+' ตอน</span><span class="dot"></span><span>อัปเดตล่าสุด '+fmtDate(novel.updated||novel.date)+'</span></div>'+
-            firstCta+
-          '</div>'+
-        '</div>'+
-      '</div></section>'+
-      '<section class="toc"><div class="wrap">'+
-        '<div class="sec-head"><div><span class="eyebrow">สารบัญตอน <span class="cn">目录</span></span></div></div>'+
-        '<div class="toc-list">'+tocRows+'</div>'+
-      '</div></section>';
-
-    main.querySelectorAll('.toc-row').forEach(function(row){
-      row.onclick = function(){ location.href = 'Novel.html?n='+encodeURIComponent(slug)+'&c='+row.dataset.i; };
-    });
-    window.scrollTo(0,0);
-    return;
-  }
-
-  // ---------- CHAPTER READER ----------
-  var ch = chapters[chIndex];
-  document.title = (ch.title||('ตอนที่ '+(chIndex+1)))+' — '+novel.title;
-  var prev = chIndex > 0 ? chIndex - 1 : -1;
-  var next = chIndex < chapters.length - 1 ? chIndex + 1 : -1;
-
-  // paywall: a paid chapter is gated unless the member has unlocked it
-  var pay = await SP.getPayment();
-  var coinName = pay.coinName || 'เหรียญ';
-  var free = SP.chapterIsFree(ch);
-  var price = SP.chapterPrice(ch);
-  var unlocked = ch.id && SP.isUnlocked(slug, ch.id);
-  var locked = !free && !unlocked;
-
-  var coinSvg = '<svg class="coin-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.2 9.5h4a1.8 1.8 0 0 1 0 3.6h-4M9.2 13.1h4.2"/></svg>';
-
-  function navCard(i, dir){
-    if (i < 0) return '<span class="ch-nav '+dir+' disabled"><span class="dir">'+(dir==='prev'?'ตอนก่อนหน้า':'ตอนถัดไป')+'</span><span class="ttl">'+(dir==='prev'?'นี่คือตอนแรก':'ติดตามตอนต่อไป')+'</span></span>';
-    var c = chapters[i];
-    return '<a class="ch-nav '+dir+'" href="Novel.html?n='+encodeURIComponent(slug)+'&c='+i+'">'+
-      '<span class="dir">'+(dir==='prev'?'← ตอนก่อนหน้า':'ตอนถัดไป →')+'</span>'+
-      '<span class="ttl">'+esc(c.title||('ตอนที่ '+(i+1)))+'</span></a>';
-  }
-
-  function paywallHTML(){
-    var s = SP.session();
-    var bal = SP.coins();
-    var lockIcon = '<span class="pw-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M7.5 10.5V7.5a4.5 4.5 0 0 1 9 0v3"/></svg></span>';
-    var synBlock = (novel.synopsis ? '<div class="pw-syn"><span class="lbl">เรื่องย่อ</span>'+esc(novel.synopsis)+'</div>' : '');
-    if (!s) {
-      return '<div class="pw-card">'+lockIcon+
-        '<h2>ตอนนี้สำหรับสมาชิก</h2>'+
-        '<p>เข้าสู่ระบบหรือสมัครสมาชิก แล้วเติม'+esc(coinName)+'เพื่อปลดล็อกอ่านตอนนี้</p>'+
-        '<div class="pw-price">'+coinSvg+'<span class="pw-coin">'+price+' '+esc(coinName)+'</span> / ตอน</div>'+
-        '<div class="pw-actions"><button class="btn btn-primary" id="pwLogin" type="button">เข้าสู่ระบบ / สมัคร</button></div>'+
-        '</div>'+synBlock;
-    }
-    var enough = bal >= price;
-    return '<div class="pw-card">'+lockIcon+
-      '<h2>ปลดล็อกตอนนี้</h2>'+
-      '<p>ใช้ '+price+' '+esc(coinName)+' เพื่ออ่าน “'+esc(ch.title||('ตอนที่ '+(chIndex+1)))+'” แบบถาวร</p>'+
-      '<div class="pw-price">'+coinSvg+'<span class="pw-coin">'+price+' '+esc(coinName)+'</span></div>'+
-      '<div class="pw-bal">'+coinSvg+' คุณมี '+bal+' '+esc(coinName)+'</div>'+
-      '<div class="pw-actions" style="margin-top:18px">'+
-        (enough
-          ? '<button class="btn btn-primary" id="pwUnlock" type="button">ปลดล็อกด้วย '+price+' '+esc(coinName)+'</button>'
-          : '<a class="btn btn-primary" href="Coins.html">เติม'+esc(coinName)+'</a><span style="align-self:center;color:var(--crimson);font-size:.9rem">'+esc(coinName)+'ไม่พอ</span>')+
-      '</div>'+
-      '</div>'+synBlock;
-  }
-
-  var readerInner = locked ? '<div class="paywall" id="paywall">'+paywallHTML()+'</div>'
-                           : '<div class="reader no-copy" id="reader">'+renderBody(ch.body)+'</div>';
-
-  main.innerHTML =
-    '<article>'+
-      '<div class="ch-head"><div class="wrap">'+
-        '<a class="back" href="Novel.html?n='+encodeURIComponent(slug)+'">← สารบัญ: '+esc(novel.title)+'</a>'+
-        '<span class="eyebrow">ตอนที่ '+(chIndex+1)+' / '+chapters.length+' <span class="cn">'+esc(novel.cn||'')+'</span></span>'+
-        '<h1>'+esc(ch.title||('ตอนที่ '+(chIndex+1)))+'</h1>'+
-        '<div class="ch-meta"><span>'+fmtDate(ch.date||novel.date)+'</span><span class="dot"></span>'+
-          (free?'<span style="color:var(--ink-faint)">ตอนฟรี</span>':'<span class="cn" style="color:var(--crimson)">'+(unlocked?'ปลดล็อกแล้ว':price+' '+esc(coinName))+'</span>')+
-        '</div>'+
-      '</div></div>'+
-      '<div class="art-divider"></div>'+
-      '<div class="wrap">'+
-        readerInner+
-        '<div class="ch-pager">'+navCard(prev,'prev')+navCard(next,'next')+'</div>'+
-        '<div class="ch-toc-link"><a href="Novel.html?n='+encodeURIComponent(slug)+'">↑ ดูสารบัญทั้งหมด</a></div>'+
-        '<section class="comments" id="comments"></section>'+
-      '</div>'+
-    '</article>';
-
-  function wirePaywall(){
-    var lg = document.getElementById('pwLogin');
-    if (lg) lg.onclick = function(){ SP.openAuth(); };
-    var un = document.getElementById('pwUnlock');
-    if (un) un.onclick = function(){
-      un.disabled = true; un.textContent = 'กำลังปลดล็อก…';
-      Promise.resolve(SP.unlockChapter(slug, ch.id, price)).then(function(r){
-        if (r.ok){ location.reload(); return; }
-        un.disabled = false; un.textContent = 'ปลดล็อกด้วย '+price+' '+coinName;
-        if (r.insufficient) location.href = 'Coins.html'; else alert(r.msg || 'ปลดล็อกไม่สำเร็จ');
-      });
-    };
-  }
-  wirePaywall();
-
-  // ---------- copy protection on the reader content ----------
-  (function protectReader(){
-    var reader = document.getElementById('reader');
-    if (!reader) return; // locked chapters have no body to protect
-    var toast;
-    function warn(){
-      if (!toast){ toast = document.createElement('div'); toast.className = 'copy-toast'; toast.textContent = 'เนื้อหานี้สงวนลิขสิทธิ์ — ไม่อนุญาตให้คัดลอก'; document.body.appendChild(toast); }
-      toast.classList.add('show');
-      clearTimeout(warn._t); warn._t = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
-    }
-    function block(e){ e.preventDefault(); warn(); return false; }
-    ['copy','cut','contextmenu','dragstart','selectstart'].forEach(function(ev){
-      reader.addEventListener(ev, block);
-    });
-    // block common shortcuts while focus/selection is within the reader
-    document.addEventListener('keydown', function(e){
-      var k = (e.key || '').toLowerCase();
-      var sel = window.getSelection && window.getSelection();
-      var inReader = sel && sel.anchorNode && reader.contains(sel.anchorNode);
-      if ((e.ctrlKey || e.metaKey) && ['c','x','a','s','p'].indexOf(k) > -1 && (inReader || k === 's' || k === 'p')) {
-        // allow Ctrl+C/X/A only outside reader; always discourage Save/Print of the page
-        if (inReader || k === 's' || k === 'p') { e.preventDefault(); warn(); }
-      }
-    });
-  })();
-  // re-render the gate if auth state changes while on the page (login from modal)
-  SP.onAuth(function(){
-    if (!locked) return;
-    SP.refreshUser && SP.refreshUser();
-    var pwEl = document.getElementById('paywall');
-    if (pwEl){
-      unlocked = ch.id && SP.isUnlocked(slug, ch.id);
-      if (!free && !unlocked){ pwEl.innerHTML = paywallHTML(); wirePaywall(); }
-      else location.reload();
-    }
-  });
-
-  // comments scoped to this chapter
-  SP.mountComments(document.getElementById('comments'), 'novel:'+slug+':'+chIndex);
-
-  // reading progress
-  var bar = document.getElementById('progress');
-  window.addEventListener('scroll', function(){
-    var h = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = (h>0 ? (window.scrollY/h*100) : 0)+'%';
-  }, {passive:true});
-
-  // keyboard nav between chapters
-  document.addEventListener('keydown', function(e){
-    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
-    if (e.key === 'ArrowLeft' && prev >= 0) location.href = 'Novel.html?n='+encodeURIComponent(slug)+'&c='+prev;
-    if (e.key === 'ArrowRight' && next >= 0) location.href = 'Novel.html?n='+encodeURIComponent(slug)+'&c='+next;
-  });
-
-  window.scrollTo(0,0);
 })();
 </script>
 </body>
