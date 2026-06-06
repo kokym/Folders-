@@ -3,92 +3,112 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shadow Phase 影变 — แหล่งรวมงานเขียน</title>
+<title>นิยาย — Shadow Phase 影变</title>
 <link rel="icon" type="image/png" href="assets/seal-sp.png">
 <script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="sp-app.css">
 <style>
-/* ---- Home hero ---- */
-.hero { position: relative; padding: clamp(70px,11vw,140px) 0 clamp(56px,8vw,96px); overflow: hidden; }
-.hero .ink-splash {
-  position: absolute; top: 8%; right: -6%; width: min(46vw, 560px); aspect-ratio: 1; pointer-events: none;
-  background: radial-gradient(circle at 38% 42%, var(--crimson) 0%, transparent 60%);
-  opacity: .07; filter: blur(8px);
-}
-.hero .wrap { position: relative; }
-.hero .eyebrow { margin-bottom: 30px; }
-.quote-mark { font-family: var(--font-display); font-size: clamp(5rem,12vw,9rem); line-height: .6; color: var(--crimson); opacity: .9; height: .5em; display: block; }
-.hero blockquote {
-  margin: 0; font-family: var(--font-head); font-weight: 400;
-  font-size: clamp(1.9rem, 4.4vw, 3.5rem); line-height: 1.28; letter-spacing: .01em;
-  max-width: 20ch; text-wrap: balance;
-}
-.hero blockquote em { font-style: italic; color: var(--crimson); }
-.hero .attrib { margin-top: 34px; display: flex; align-items: center; gap: 16px; color: var(--ink-faint); }
-.hero .attrib .ln { width: 44px; height: 1px; background: var(--ink-faint); }
-.hero .attrib .cn { font-family: var(--font-cn); color: var(--crimson); font-size: 1.05rem; }
+.progress { position: fixed; top: 0; left: 0; height: 2.5px; background: var(--crimson); width: 0; z-index: 100; transition: width .1s linear; }
 
-/* ---- Featured ---- */
-.featured-wrap { padding-top: 18px; }
-.feat-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(36px,5vw,72px); align-items: start; }
-.feat-main { border-top: 2px solid var(--crimson); padding-top: 28px; cursor: pointer; }
-.feat-main .cat-tag { display: block; margin-bottom: 16px; }
-.feat-main h2 { font-size: clamp(2rem,3.6vw,2.9rem); margin: 0 0 14px; font-weight: 500; transition: color .25s var(--ease); }
-.feat-main:hover h2 { color: var(--crimson); }
-.feat-main .cn-sub { font-family: var(--font-cn); color: var(--ink-faint); font-size: 1.2rem; letter-spacing: .2em; margin-bottom: 18px; }
-.feat-main .excerpt { color: var(--ink-soft); font-size: 1.05rem; line-height: 1.85; max-width: 46ch; margin-bottom: 22px; }
-.feat-side { display: flex; flex-direction: column; }
-.feat-side .card:first-child { border-top: 1px solid var(--rule); padding-top: 0; }
-.feat-side .card { padding: 22px 0; }
-.feat-side .card h3 { font-size: 1.2rem; }
+/* ---------- novel cover / table of contents ---------- */
+.nv-hero { padding: clamp(48px,6vw,80px) 0 clamp(28px,3vw,44px); }
+.nv-hero .back { display: inline-flex; align-items: center; gap: .5em; color: var(--ink-faint); font-size: .88rem; margin-bottom: 32px; transition: color .2s var(--ease); }
+.nv-hero .back:hover { color: var(--crimson); }
+.nv-top { display: grid; grid-template-columns: 230px 1fr; gap: clamp(28px,5vw,56px); align-items: start; }
+.nv-poster { aspect-ratio: 3/4; overflow: hidden; border: 1px solid var(--rule-soft); background: var(--paper-2); }
+.nv-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.nv-poster.ph { display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(45deg, var(--paper-2) 0 12px, transparent 12px 24px), var(--paper-card); }
+.nv-poster.ph span { font-family: var(--font-cn); font-size: 4rem; color: var(--crimson); opacity: .55; }
+.nv-info .statusrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.nv-status { display: inline-flex; align-items: center; gap: .5em; font-weight: 600; font-size: .74rem; letter-spacing: .08em; padding: 5px 12px; border-radius: 100px; white-space: nowrap; }
+.nv-status.ongoing { color: var(--crimson); border: 1px solid color-mix(in srgb, var(--crimson) 40%, transparent); }
+.nv-status.completed { color: var(--ink-faint); border: 1px solid var(--rule); }
+.nv-status .dotpulse { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.nv-info h1 { font-size: clamp(2rem,4.2vw,3.1rem); margin: 0 0 12px; font-weight: 500; line-height: 1.16; max-width: 20ch; text-wrap: balance; }
+.nv-info .cn-title { font-family: var(--font-cn); font-size: clamp(1.4rem,2.6vw,1.9rem); color: var(--crimson); letter-spacing: .28em; margin-bottom: 22px; }
+.nv-info .syn { color: var(--ink-soft); font-size: 1.08rem; line-height: 1.9; max-width: 60ch; margin: 0 0 22px; }
+.nv-info .facts { display: flex; gap: 14px; color: var(--ink-faint); font-size: .9rem; flex-wrap: wrap; }
+.nv-info .facts .dot { width:3px;height:3px;border-radius:50%;background:var(--ink-faint);align-self:center; }
+.nv-info .read-cta { margin-top: 26px; }
 
-/* ---- Categories ---- */
-.cats { padding-top: 96px; }
-.cat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; }
-.cat-cell {
-  position: relative; padding: 30px 26px 26px; border: 1px solid var(--rule);
-  background: var(--paper-card); min-height: 188px; display: flex; flex-direction: column;
-  justify-content: space-between; cursor: pointer; overflow: hidden;
-  transition: border-color .3s var(--ease), transform .3s var(--ease), background-color .5s var(--ease);
+/* chapter list */
+.toc { padding-top: clamp(40px,5vw,64px); }
+.toc .sec-head { margin-bottom: 8px; }
+.toc-list { display: flex; flex-direction: column; }
+.toc-row {
+  display: grid; grid-template-columns: 58px 1fr auto; gap: 20px; align-items: center;
+  border-top: 1px solid var(--rule); padding: 20px 4px; cursor: pointer; transition: background-color .2s var(--ease), padding-left .2s var(--ease);
 }
-.cat-cell:hover { border-color: var(--crimson); transform: translateY(-3px); }
-.cat-cell .cn-big {
-  position: absolute; right: -8px; bottom: -22px; font-family: var(--font-cn);
-  font-size: 5.2rem; color: var(--crimson); opacity: .08; line-height: 1; user-select: none;
-  transition: opacity .3s var(--ease);
+.toc-row:last-child { border-bottom: 1px solid var(--rule); }
+.toc-row:hover { background: var(--paper-card); padding-left: 14px; }
+.toc-row .n { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink-faint); }
+.toc-row .t { font-size: 1.12rem; font-weight: 500; color: var(--ink); }
+.toc-row:hover .t { color: var(--crimson); }
+.toc-row .when { color: var(--ink-faint); font-size: .84rem; white-space: nowrap; }
+@media (max-width: 640px){
+  .nv-top { grid-template-columns: 130px 1fr; gap: 22px; }
+  .toc-row { grid-template-columns: 36px 1fr; }
+  .toc-row .when { display: none; }
 }
-.cat-cell:hover .cn-big { opacity: .16; }
-.cat-cell .num { font-family: var(--font-display); font-size: .85rem; color: var(--ink-faint); letter-spacing: .1em; }
-.cat-cell h3 { font-size: 1.32rem; margin: 0; font-weight: 500; position: relative; }
-.cat-cell .count { font-size: .82rem; color: var(--ink-faint); position: relative; }
 
-@media (max-width: 900px) {
-  .feat-grid { grid-template-columns: 1fr; }
-  .cat-grid { grid-template-columns: repeat(2,1fr); }
+/* ---------- chapter reader ---------- */
+.ch-head { padding: clamp(44px,5vw,72px) 0 clamp(20px,2vw,30px); }
+.ch-head .back { display: inline-flex; align-items: center; gap: .5em; color: var(--ink-faint); font-size: .88rem; margin-bottom: 28px; transition: color .2s var(--ease); }
+.ch-head .back:hover { color: var(--crimson); }
+.ch-head .eyebrow { margin-bottom: 14px; }
+.ch-head h1 { font-size: clamp(1.9rem,4vw,2.9rem); margin: 0; font-weight: 500; line-height: 1.18; max-width: 24ch; text-wrap: balance; }
+.ch-head .ch-meta { margin-top: 16px; color: var(--ink-faint); font-size: .9rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.ch-head .ch-meta .dot { width:3px;height:3px;border-radius:50%;background:var(--ink-faint); }
+.art-divider { height: 1px; background: var(--rule); }
+
+.reader { max-width: var(--read); margin: 0 auto; padding: clamp(38px,5vw,56px) 0 0; }
+.reader p { font-size: 1.18rem; line-height: 1.95; color: var(--ink); margin: 0 0 1.5em; letter-spacing: .003em; }
+.reader p em { font-style: normal; font-weight: 600; color: var(--crimson); }
+.reader > p:first-of-type::first-letter { font-family: var(--font-display); font-weight: 600; float: left; font-size: 4.2rem; line-height: .82; padding: 6px 14px 0 0; color: var(--crimson); }
+.reader h2 { font-family: var(--font-head); font-size: clamp(1.5rem,2.6vw,2rem); font-weight: 500; margin: 2em 0 .7em; padding-top: .3em; position: relative; line-height: 1.3; }
+.reader h2::before { content:''; position:absolute; top:0; left:0; width:38px; height:2px; background: var(--crimson); }
+.reader blockquote { margin: 2.2em 0; padding: 0 0 0 30px; border-left: 2px solid var(--crimson); font-family: var(--font-head); font-style: italic; font-size: clamp(1.4rem,2.6vw,1.75rem); line-height: 1.5; color: var(--ink); font-weight: 400; }
+.reader blockquote .src { display:block; font-family: var(--font-body); font-style: normal; font-size: .92rem; color: var(--ink-faint); margin-top: 14px; }
+.reader figure.art-fig { margin: 2.4em 0; }
+.reader figure.art-fig img { width: 100%; display: block; border: 1px solid var(--rule-soft); }
+.reader figure.art-fig figcaption { font-size: .88rem; color: var(--ink-faint); margin-top: 10px; text-align: center; }
+
+/* prev / next pager */
+.ch-pager { max-width: var(--read); margin: clamp(48px,6vw,72px) auto 0; padding-top: 36px; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ch-nav {
+  display: flex; flex-direction: column; gap: 6px; padding: 18px 22px; border: 1px solid var(--rule);
+  background: var(--paper-card); cursor: pointer; transition: border-color .25s var(--ease), transform .25s var(--ease); text-decoration: none;
 }
-@media (max-width: 540px) {
-  .cat-grid { grid-template-columns: 1fr; }
-}
+.ch-nav:hover { border-color: var(--crimson); transform: translateY(-2px); }
+.ch-nav.next { text-align: right; }
+.ch-nav.disabled { opacity: .35; pointer-events: none; }
+.ch-nav .dir { font-size: .76rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+.ch-nav .ttl { font-family: var(--font-head); font-size: 1.05rem; color: var(--ink); }
+.ch-toc-link { max-width: var(--read); margin: 22px auto 0; text-align: center; }
+.ch-toc-link a { color: var(--ink-faint); font-size: .9rem; }
+.ch-toc-link a:hover { color: var(--crimson); }
+@media (max-width: 560px){ .ch-pager { grid-template-columns: 1fr; } }
+
+.comments { max-width: var(--read); margin: 0 auto; padding-top: 20px; }
 </style>
 </head>
 <body>
+<div class="progress" id="progress"></div>
 <script src="theme.js"></script>
 
 <header class="site-head">
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
       <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-      <span class="lock">
-        <span class="name" data-site="brandName">SHADOW PHASE</span>
-        <span class="sub" data-site="brandCn">影变</span>
-      </span>
+      <span class="lock"><span class="name" data-site="brandName">SHADOW PHASE</span><span class="sub" data-site="brandCn">影变</span></span>
     </a>
     <nav class="nav">
-      <a href="index.html" aria-current="page">หน้าแรก</a>
+      <a href="index.html">หน้าแรก</a>
       <a href="Articles.html">บทความ</a>
       <a href="Articles.html#cats">หมวดหมู่</a>
-      <a href="#about">เกี่ยวกับ</a>
+      <a href="index.html#about">เกี่ยวกับ</a>
     </nav>
     <button class="theme-btn" data-theme-toggle aria-label="สลับโหมดสว่าง/มืด">
       <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
@@ -97,80 +117,21 @@
   </div>
 </header>
 
-<main>
-  <!-- HERO / opening quote -->
-  <section class="hero">
-    <div class="ink-splash"></div>
-    <div class="wrap">
-      <span class="eyebrow"><span data-site="heroEyebrow">บันทึก เงา และกาลเวลา</span> <span class="cn" data-site="heroEyebrowCn">影变</span></span>
-      <span class="quote-mark">“</span>
-      <blockquote data-site="heroQuote">
-        ประวัติศาสตร์ไม่ได้ <em>ซ้ำรอย</em> หากแต่มัน<em>คล้องจอง</em> กันเหมือนบทกวี
-      </blockquote>
-      <div class="attrib">
-        <span class="ln"></span>
-        <span data-site="heroTagline">แหล่งรวมงานเขียนแนวประวัติศาสตร์ราชวงศ์จีน และข้อคิด</span>
-        <span class="cn" data-site="heroTaglineCn">辭</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURED -->
-  <section class="featured-wrap">
-    <div class="wrap">
-      <div class="sec-head">
-        <div>
-          <span class="eyebrow">งานเขียนล่าสุด <span class="cn">近作</span></span>
-        </div>
-        <a class="link-arrow" href="Articles.html">ดูทั้งหมด <span class="ar">→</span></a>
-      </div>
-      <div class="feat-grid">
-        <article class="feat-main" id="featMain"></article>
-        <div class="feat-side" id="featSide"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CATEGORIES -->
-  <section class="cats" id="about">
-    <div class="wrap">
-      <div class="sec-head">
-        <div>
-          <span class="eyebrow"><span data-site="catsEyebrow">เลือกอ่านตามหมวด</span> <span class="cn">分類</span></span>
-          <h2 data-site="catsHeading">สี่สายธารของงานเขียน</h2>
-        </div>
-      </div>
-      <div class="cat-grid" id="catGrid"></div>
-    </div>
-  </section>
-
-  <!-- LINKS / references (admin-managed) -->
-  <section class="links-sec" id="linksSec" style="display:none">
-    <div class="wrap">
-      <div class="sec-head">
-        <div>
-          <span class="eyebrow">แหล่งอ้างอิง &amp; ลิงก์ <span class="cn">參考</span></span>
-          <h2>คลังลิงก์คัดสรร</h2>
-        </div>
-      </div>
-      <div class="links-grid" id="linksGrid"></div>
-    </div>
-  </section>
-</main>
+<main id="main"></main>
 
 <footer class="site-foot">
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-brand">
         <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-        <p data-site="footerAbout">Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา ทุกบทความเขียนและประทับตราด้วยมือ</p>
+        <p data-site="footerAbout">Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา</p>
       </div>
       <div class="foot-cols">
         <div class="foot-col">
           <h4>สำรวจ</h4>
           <a href="index.html">หน้าแรก</a>
           <a href="Articles.html">บทความทั้งหมด</a>
-          <a href="Articles.html#cats">หมวดหมู่</a>
+          <a href="Novels.html">นิยาย</a>
         </div>
         <div class="foot-col" id="footCats"></div>
       </div>
@@ -191,69 +152,149 @@
 <script src="sp-store.js"></script>
 <script src="sp-content.js"></script>
 <script src="sp-auth-ui.js"></script>
+<script src="sp-comments.js"></script>
 <script>
 (async function () {
-  var cats = window.SP_CATEGORIES;
+  var cats = window.SP_CATEGORIES, ST = window.SP_NOVEL_STATUS;
   await SP.ready;
-  var arts = await SP.listArticles();
-  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
-  function go(slug){return function(){location.href='Article.html?a='+slug;};}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function attr(s){return String(s).replace(/"/g,'&quot;');}
+  function fmtDate(s){var d=new Date(s);var m=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
 
-  var sorted = arts.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
-  var novels = await SP.listNovels();
-  var main = sorted[0];
-  var side = sorted.slice(1,4);
+  var params = new URLSearchParams(location.search);
+  var slug = params.get('n');
+  var chParam = params.get('c');
+  var main = document.getElementById('main');
 
-  // featured main
-  var fm = document.getElementById('featMain');
-  fm.innerHTML = '<span class="cat-tag">'+cats[main.cat].th+'</span>'+
-    '<h2>'+main.title+'</h2>'+
-    '<div class="cn-sub">'+main.cn+'</div>'+
-    '<p class="excerpt">'+main.excerpt+'</p>'+
-    '<span class="link-arrow">อ่านบทความ <span class="ar">→</span></span>';
-  fm.onclick = go(main.slug);
-
-  // featured side
-  var fs = document.getElementById('featSide');
-  fs.innerHTML = side.map(function(a){
-    return '<article class="card" data-slug="'+a.slug+'">'+
-      '<div class="meta-row"><span class="cat-tag">'+cats[a.cat].th+'</span><span class="dot"></span><span class="when">'+fmtDate(a.date)+'</span></div>'+
-      '<h3>'+a.title+'</h3>'+
-      '<p class="excerpt">'+a.excerpt+'</p></article>';
-  }).join('');
-  fs.querySelectorAll('.card').forEach(function(c){ c.onclick = go(c.dataset.slug); });
-
-  // categories — "เรื่องสั้น & นิยาย" (fiction) routes to the novels hub
+  // footer categories
   var order = ['history','reflection','fiction','review'];
-  function catHref(key){ return key==='fiction' ? 'Novels.html' : 'Articles.html?cat='+key+'#cats'; }
-  var grid = document.getElementById('catGrid');
-  grid.innerHTML = order.map(function(key,i){
-    var isFiction = key==='fiction';
-    var n = isFiction ? novels.length : arts.filter(function(a){return a.cat===key;}).length;
-    var label = isFiction ? (n+' เรื่อง') : (n+' บทความ');
-    return '<div class="cat-cell" data-cat="'+key+'">'+
-      '<span class="num">0'+(i+1)+'</span>'+
-      '<span class="cn-big">'+cats[key].cn+'</span>'+
-      '<div><h3>'+cats[key].th+'</h3><span class="count">'+label+'</span></div></div>';
-  }).join('');
-  grid.querySelectorAll('.cat-cell').forEach(function(c){ c.onclick=function(){location.href=catHref(c.dataset.cat);}; });
-
-  // footer cats
   document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
-    order.map(function(k){return '<a href="'+catHref(k)+'">'+cats[k].th+'</a>';}).join('');
+    order.map(function(k){
+      var href = k==='fiction' ? 'Novels.html' : 'Articles.html?cat='+k+'#cats';
+      return '<a href="'+href+'">'+cats[k].th+'</a>';
+    }).join('');
 
-  // admin-managed links
-  var links = await SP.listLinks();
-  if (links.length) {
-    document.getElementById('linksSec').style.display = '';
-    document.getElementById('linksGrid').innerHTML = links.map(function(l){
-      var safe = String(l.url||'').replace(/"/g,'&quot;');
-      return '<a class="link-card" href="'+safe+'" target="_blank" rel="noopener">'+
-        '<div class="lk-top"><h3>'+l.title+'</h3><span class="lk-arrow">↗</span></div>'+
-        (l.desc?'<p>'+l.desc+'</p>':'')+
-        '<span class="lk-url">'+safe.replace(/^https?:\/\//,'')+'</span></a>';
+  var novel = slug ? await SP.getNovel(slug) : null;
+  if (!novel) {
+    main.innerHTML = '<div class="wrap" style="padding:90px 0;text-align:center;color:var(--ink-faint)">'+
+      '<p style="margin-bottom:20px">ไม่พบนิยายที่ต้องการ</p>'+
+      '<a class="btn btn-primary" href="Novels.html">กลับสู่หน้านิยาย</a></div>';
+    return;
+  }
+  var chapters = novel.chapters || [];
+  var st = ST[novel.status] || ST.ongoing;
+
+  function renderBody(blocks){
+    return (blocks||[]).map(function(b){
+      if(b[0]==='h2') return '<h2>'+b[1]+'</h2>';
+      if(b[0]==='quote') return '<blockquote>'+b[1]+(b[2]?'<span class="src">'+b[2]+'</span>':'')+'</blockquote>';
+      if(b[0]==='img') return '<figure class="art-fig"><img src="'+attr(b[1])+'" alt="'+attr(b[2]||'')+'" loading="lazy">'+(b[2]?'<figcaption>'+b[2]+'</figcaption>':'')+'</figure>';
+      return '<p>'+b[1]+'</p>';
     }).join('');
   }
+
+  var chIndex = chParam === null ? -1 : parseInt(chParam, 10);
+  var reading = chIndex >= 0 && chIndex < chapters.length;
+
+  if (!reading) {
+    // ---------- TABLE OF CONTENTS ----------
+    document.title = novel.title + ' — Shadow Phase 影变';
+    var poster = novel.cover
+      ? '<div class="nv-poster"><img src="'+attr(novel.cover)+'" alt="ปก '+esc(novel.title)+'"></div>'
+      : '<div class="nv-poster ph"><span>'+esc(novel.cn||'书')+'</span></div>';
+    var firstCta = chapters.length
+      ? '<a class="btn btn-primary read-cta" href="Novel.html?n='+encodeURIComponent(slug)+'&c=0">เริ่มอ่านตอนแรก</a>'
+      : '<span class="read-cta" style="color:var(--ink-faint)">ยังไม่มีตอนเผยแพร่</span>';
+
+    var tocRows = chapters.length
+      ? chapters.map(function(c,i){
+          var n = (i+1)<10 ? '0'+(i+1) : ''+(i+1);
+          return '<div class="toc-row" data-i="'+i+'">'+
+            '<span class="n">'+n+'</span>'+
+            '<span class="t">'+esc(c.title || ('ตอนที่ '+(i+1)))+'</span>'+
+            '<span class="when">'+fmtDate(c.date||novel.date)+'</span>'+
+          '</div>';
+        }).join('')
+      : '<div class="nv-empty" style="border-top:1px solid var(--rule)">ยังไม่มีตอนในนิยายเรื่องนี้</div>';
+
+    main.innerHTML =
+      '<section class="nv-hero"><div class="wrap">'+
+        '<a class="back" href="Novels.html">← กลับสู่หน้านิยาย</a>'+
+        '<div class="nv-top">'+
+          poster+
+          '<div class="nv-info">'+
+            '<div class="statusrow">'+
+              '<span class="nv-status '+(novel.status==='completed'?'completed':'ongoing')+'"><span class="dotpulse"></span>'+st.th+'</span>'+
+              '<span class="nv-cn" style="font-family:var(--font-cn);color:var(--ink-faint);letter-spacing:.22em">'+esc(novel.cn||'')+'</span>'+
+            '</div>'+
+            '<h1>'+esc(novel.title)+'</h1>'+
+            '<p class="syn">'+esc(novel.synopsis||'')+'</p>'+
+            '<div class="facts"><span>'+chapters.length+' ตอน</span><span class="dot"></span><span>อัปเดตล่าสุด '+fmtDate(novel.updated||novel.date)+'</span></div>'+
+            firstCta+
+          '</div>'+
+        '</div>'+
+      '</div></section>'+
+      '<section class="toc"><div class="wrap">'+
+        '<div class="sec-head"><div><span class="eyebrow">สารบัญตอน <span class="cn">目录</span></span></div></div>'+
+        '<div class="toc-list">'+tocRows+'</div>'+
+      '</div></section>';
+
+    main.querySelectorAll('.toc-row').forEach(function(row){
+      row.onclick = function(){ location.href = 'Novel.html?n='+encodeURIComponent(slug)+'&c='+row.dataset.i; };
+    });
+    window.scrollTo(0,0);
+    return;
+  }
+
+  // ---------- CHAPTER READER ----------
+  var ch = chapters[chIndex];
+  document.title = (ch.title||('ตอนที่ '+(chIndex+1)))+' — '+novel.title;
+  var prev = chIndex > 0 ? chIndex - 1 : -1;
+  var next = chIndex < chapters.length - 1 ? chIndex + 1 : -1;
+
+  function navCard(i, dir){
+    if (i < 0) return '<span class="ch-nav '+dir+' disabled"><span class="dir">'+(dir==='prev'?'ตอนก่อนหน้า':'ตอนถัดไป')+'</span><span class="ttl">'+(dir==='prev'?'นี่คือตอนแรก':'ติดตามตอนต่อไป')+'</span></span>';
+    var c = chapters[i];
+    return '<a class="ch-nav '+dir+'" href="Novel.html?n='+encodeURIComponent(slug)+'&c='+i+'">'+
+      '<span class="dir">'+(dir==='prev'?'← ตอนก่อนหน้า':'ตอนถัดไป →')+'</span>'+
+      '<span class="ttl">'+esc(c.title||('ตอนที่ '+(i+1)))+'</span></a>';
+  }
+
+  main.innerHTML =
+    '<article>'+
+      '<div class="ch-head"><div class="wrap">'+
+        '<a class="back" href="Novel.html?n='+encodeURIComponent(slug)+'">← สารบัญ: '+esc(novel.title)+'</a>'+
+        '<span class="eyebrow">ตอนที่ '+(chIndex+1)+' / '+chapters.length+' <span class="cn">'+esc(novel.cn||'')+'</span></span>'+
+        '<h1>'+esc(ch.title||('ตอนที่ '+(chIndex+1)))+'</h1>'+
+        '<div class="ch-meta"><span>'+fmtDate(ch.date||novel.date)+'</span><span class="dot"></span><span class="cn" style="color:var(--crimson)">S.P. 親筆</span></div>'+
+      '</div></div>'+
+      '<div class="art-divider"></div>'+
+      '<div class="wrap">'+
+        '<div class="reader" id="reader">'+renderBody(ch.body)+'</div>'+
+        '<div class="ch-pager">'+navCard(prev,'prev')+navCard(next,'next')+'</div>'+
+        '<div class="ch-toc-link"><a href="Novel.html?n='+encodeURIComponent(slug)+'">↑ ดูสารบัญทั้งหมด</a></div>'+
+        '<section class="comments" id="comments"></section>'+
+      '</div>'+
+    '</article>';
+
+  // comments scoped to this chapter
+  SP.mountComments(document.getElementById('comments'), 'novel:'+slug+':'+chIndex);
+
+  // reading progress
+  var bar = document.getElementById('progress');
+  window.addEventListener('scroll', function(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h>0 ? (window.scrollY/h*100) : 0)+'%';
+  }, {passive:true});
+
+  // keyboard nav between chapters
+  document.addEventListener('keydown', function(e){
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if (e.key === 'ArrowLeft' && prev >= 0) location.href = 'Novel.html?n='+encodeURIComponent(slug)+'&c='+prev;
+    if (e.key === 'ArrowRight' && next >= 0) location.href = 'Novel.html?n='+encodeURIComponent(slug)+'&c='+next;
+  });
+
+  window.scrollTo(0,0);
 })();
 </script>
 </body>

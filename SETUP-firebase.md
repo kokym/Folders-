@@ -1,180 +1,69 @@
-<!DOCTYPE html>
-<html lang="th" data-theme="light">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>นิยาย — Shadow Phase 影变</title>
-<link rel="icon" type="image/png" href="assets/seal-sp.png">
-<script>(function(){var k='sp-theme',s=localStorage.getItem(k);if(!s)s=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',s);})();</script>
-<link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="sp-app.css">
-<style>
-.page-head { padding: clamp(54px,7vw,90px) 0 clamp(30px,4vw,46px); }
-.page-head .eyebrow { margin-bottom: 22px; }
-.page-head h1 { font-size: clamp(2.4rem,5vw,3.8rem); margin: 0 0 16px; font-weight: 500; }
-.page-head p { color: var(--ink-soft); max-width: 54ch; font-size: 1.05rem; margin: 0; line-height: 1.8; }
+# ตั้งค่า Firebase ให้ Shadow Phase 影变
 
-.nv-list { padding: 8px 0 0; display: flex; flex-direction: column; }
-.nv-card {
-  display: grid; grid-template-columns: 188px 1fr; gap: clamp(24px,4vw,44px); align-items: stretch;
-  border-top: 1px solid var(--rule); padding: 34px 0; cursor: pointer;
-}
-.nv-card:last-child { border-bottom: 1px solid var(--rule); }
-.nv-cover {
-  position: relative; aspect-ratio: 3/4; overflow: hidden; background: var(--paper-2);
-  border: 1px solid var(--rule-soft);
-}
-.nv-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s var(--ease); }
-.nv-card:hover .nv-cover img { transform: scale(1.04); }
-.nv-cover.ph {
-  display: flex; align-items: center; justify-content: center;
-  background:
-    repeating-linear-gradient(45deg, var(--paper-2) 0 11px, transparent 11px 22px),
-    var(--paper-card);
-}
-.nv-cover.ph span { font-family: var(--font-cn); font-size: 3.2rem; color: var(--crimson); opacity: .55; letter-spacing: .1em; }
-.nv-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.nv-statusrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.nv-status {
-  display: inline-flex; align-items: center; gap: .5em; font-family: var(--font-body); font-weight: 600;
-  font-size: .74rem; letter-spacing: .08em; padding: 5px 12px; border-radius: 100px; white-space: nowrap;
-}
-.nv-status.ongoing { color: var(--crimson); border: 1px solid color-mix(in srgb, var(--crimson) 40%, transparent); }
-.nv-status.completed { color: var(--ink-faint); border: 1px solid var(--rule); }
-.nv-status .dotpulse { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.nv-card h2 { font-size: clamp(1.5rem,2.8vw,2.1rem); margin: 0; font-weight: 500; transition: color .25s var(--ease); line-height: 1.2; }
-.nv-card:hover h2 { color: var(--crimson); }
-.nv-cn { font-family: var(--font-cn); color: var(--ink-faint); letter-spacing: .22em; font-size: 1.05rem; }
-.nv-syn { color: var(--ink-soft); font-size: 1rem; line-height: 1.85; max-width: 62ch; }
-.nv-meta { margin-top: auto; display: flex; align-items: center; gap: 14px; color: var(--ink-faint); font-size: .88rem; flex-wrap: wrap; padding-top: 6px; }
-.nv-meta .dot { width:3px;height:3px;border-radius:50%;background:var(--ink-faint); }
-.nv-meta .go { color: var(--crimson); font-weight: 600; display: inline-flex; align-items: center; gap: .5em; margin-left: auto; }
-.nv-empty { padding: 70px 0; text-align: center; color: var(--ink-faint); border-top: 1px solid var(--rule); }
+เว็บนี้ทำงาน **2 โหมด** อัตโนมัติ:
 
-@media (max-width: 600px){
-  .nv-card { grid-template-columns: 110px 1fr; gap: 20px; }
-  .nv-meta .go { margin-left: 0; width: 100%; }
-}
-</style>
-</head>
-<body>
-<script src="theme.js"></script>
+- **โหมดสาธิต (ค่าเริ่มต้น)** — ยังไม่ใส่ค่า Firebase → ข้อมูลเก็บในเครื่องผู้ใช้ ใช้ทดลองเล่นได้เลย
+  บัญชีแอดมินทดสอบ: `admin@shadowphase.local` / `admin1234`
+- **โหมดจริง (Firebase)** — ใส่ค่าใน `firebase-config.js` แล้ว → สมาชิก/บทความ/คอมเมนต์ซิงค์ข้ามเครื่อง ทุกคนเห็นตรงกัน
 
-<header class="site-head">
-  <div class="wrap">
-    <a class="brand" href="index.html" aria-label="Shadow Phase หน้าแรก">
-      <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-      <span class="lock"><span class="name" data-site="brandName">SHADOW PHASE</span><span class="sub" data-site="brandCn">影变</span></span>
-    </a>
-    <nav class="nav">
-      <a href="index.html">หน้าแรก</a>
-      <a href="Articles.html">บทความ</a>
-      <a href="Articles.html#cats">หมวดหมู่</a>
-      <a href="index.html#about">เกี่ยวกับ</a>
-    </nav>
-    <button class="theme-btn" data-theme-toggle aria-label="สลับโหมดสว่าง/มืด">
-      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
-      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5z"/></svg>
-    </button>
-  </div>
-</header>
+ทำตาม 6 ขั้นตอนนี้เพื่อเปิดโหมดจริง 👇
 
-<main>
-  <section class="page-head">
-    <div class="wrap">
-      <span class="eyebrow">เรื่องสั้น &amp; นิยาย <span class="cn">小说</span></span>
-      <h1>นิยายแบ่งตอน</h1>
-      <p>เรื่องเล่าขนาดยาวที่ทยอยเผยแพร่ทีละตอน ทั้งเรื่องแต่งอิงประวัติศาสตร์ราชวงศ์จีนและจินตนาการว่าด้วยเงาของกาลเวลา</p>
-    </div>
-  </section>
+---
 
-  <div class="wrap">
-    <div class="nv-list" id="list"></div>
-  </div>
-</main>
+## 1. สร้างโปรเจกต์ Firebase
+1. เข้า https://console.firebase.google.com → **Add project** → ตั้งชื่อ (เช่น `shadow-phase`) → สร้าง
+2. ปิด Google Analytics ได้ ไม่จำเป็น
 
-<footer class="site-foot">
-  <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <img class="seal seal-img" src="assets/seal-sp.png" alt="ตราประทับ S.P.">
-        <p data-site="footerAbout">Shadow Phase 影变 — พื้นที่บันทึกความคิดว่าด้วยประวัติศาสตร์ราชวงศ์จีน ปรัชญา และเงาของกาลเวลา</p>
-      </div>
-      <div class="foot-cols">
-        <div class="foot-col">
-          <h4>สำรวจ</h4>
-          <a href="index.html">หน้าแรก</a>
-          <a href="Articles.html">บทความทั้งหมด</a>
-          <a href="Novels.html">นิยาย</a>
-        </div>
-        <div class="foot-col" id="footCats"></div>
-      </div>
-    </div>
-    <div class="foot-bottom">
-      <span data-site="footerCopyright">© 2026 Shadow Phase 影变</span>
-      <span class="cn" data-site="footerMotto">影者，光之所遺也</span>
-    </div>
-  </div>
-</footer>
+## 2. เพิ่มเว็บแอป แล้วคัดลอกค่า config
+1. ในหน้าโปรเจกต์ กดไอคอน **`</>`** (Web)
+2. ตั้งชื่อเล่น เช่น `shadow-phase-web` → **Register app**
+3. จะเห็นโค้ด `const firebaseConfig = { ... }` — คัดลอกค่าข้างใน
+4. เปิดไฟล์ **`firebase-config.js`** ในโปรเจกต์นี้ แล้ววางทับค่าเดิม (apiKey, authDomain, projectId, ฯลฯ ให้ครบ)
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="data.js"></script>
-<script src="sp-store.js"></script>
-<script src="sp-content.js"></script>
-<script src="sp-auth-ui.js"></script>
-<script>
-(async function () {
-  var cats = window.SP_CATEGORIES, ST = window.SP_NOVEL_STATUS;
-  await SP.ready;
-  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function fmtDate(s){var d=new Date(s);var m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+m[d.getMonth()]+' '+(d.getFullYear()+543);}
+## 3. เปิดระบบล็อกอิน (Authentication)
+1. เมนูซ้าย → **Build › Authentication** → **Get started**
+2. แท็บ **Sign-in method** → เปิด **Email/Password** → **Save**
 
-  var novels = await SP.listNovels();
-  var listEl = document.getElementById('list');
+## 4. สร้างฐานข้อมูล (Firestore)
+1. เมนูซ้าย → **Build › Firestore Database** → **Create database**
+2. เลือก **Start in production mode** → เลือกที่ตั้งเซิร์ฟเวอร์ (เช่น `asia-southeast1`) → Enable
 
-  if (!novels.length) {
-    listEl.innerHTML = '<div class="nv-empty">ยังไม่มีนิยายในขณะนี้ — โปรดติดตามเร็ว ๆ นี้</div>';
-  } else {
-    listEl.innerHTML = novels.map(function(n){
-      var st = ST[n.status] || ST.ongoing;
-      var nCh = (n.chapters || []).length;
-      var cover = n.cover
-        ? '<div class="nv-cover"><img src="'+esc(n.cover)+'" alt="ปก '+esc(n.title)+'" loading="lazy"></div>'
-        : '<div class="nv-cover ph"><span>'+esc(n.cn||'书')+'</span></div>';
-      return '<article class="nv-card" data-slug="'+esc(n.slug)+'">'+
-        cover+
-        '<div class="nv-body">'+
-          '<div class="nv-statusrow">'+
-            '<span class="nv-status '+(n.status==='completed'?'completed':'ongoing')+'"><span class="dotpulse"></span>'+st.th+'</span>'+
-            '<span class="nv-cn">'+esc(n.cn||'')+'</span>'+
-          '</div>'+
-          '<h2>'+esc(n.title)+'</h2>'+
-          '<p class="nv-syn">'+esc(n.synopsis||'')+'</p>'+
-          '<div class="nv-meta">'+
-            '<span>'+nCh+' ตอน</span><span class="dot"></span>'+
-            '<span>อัปเดต '+fmtDate(n.updated||n.date)+'</span>'+
-            '<span class="go">อ่านนิยาย <span aria-hidden="true">→</span></span>'+
-          '</div>'+
-        '</div>'+
-      '</article>';
-    }).join('');
-    listEl.querySelectorAll('.nv-card').forEach(function(c){
-      c.onclick = function(){ location.href = 'Novel.html?n='+encodeURIComponent(c.dataset.slug); };
-    });
-  }
+## 5. วางกฎความปลอดภัย (สำคัญมาก)
+1. ใน Firestore → แท็บ **Rules**
+2. ลบของเดิมทั้งหมด แล้ววางเนื้อหาจากไฟล์ **`firestore.rules`** ในโปรเจกต์นี้ → **Publish**
+   - กฎนี้กำหนดให้: ใครก็อ่านบทความ/คอมเมนต์ได้ · เฉพาะสมาชิกที่ล็อกอินคอมเมนต์ได้ · เฉพาะแอดมินเพิ่มบทความ/ลิงก์และลบคอมเมนต์ได้ · ห้ามใครเลื่อนตัวเองเป็นแอดมินเอง
 
-  // footer categories (fiction routes here to the novels hub)
-  var order = ['history','reflection','fiction','review'];
-  document.getElementById('footCats').innerHTML = '<h4>หมวดหมู่</h4>'+
-    order.map(function(k){
-      var href = k==='fiction' ? 'Novels.html' : 'Articles.html?cat='+k+'#cats';
-      return '<a href="'+href+'">'+cats[k].th+'</a>';
-    }).join('');
-})();
-</script>
-</body>
-</html>
+## 6. แต่งตั้งแอดมินคนแรก
+ระบบไม่ให้ตั้งตัวเองเป็นแอดมินผ่านหน้าเว็บ (เพื่อความปลอดภัย) ต้องทำในคอนโซลครั้งเดียว:
+1. เปิดเว็บที่เผยแพร่แล้ว → **สมัครสมาชิก** ด้วยอีเมลที่จะเป็นแอดมิน
+2. กลับไป Firebase Console → **Firestore › คอลเลกชัน `users`** → เปิดเอกสารของบัญชีนั้น
+3. แก้ฟิลด์ **`role`** จาก `member` → **`admin`** → Save
+4. รีเฟรชเว็บ แล้วล็อกอินใหม่ → จะเห็นเมนู **แผงควบคุมแอดมิน**
+
+เสร็จแล้ว! แอดมินคนแรกเพิ่มบทความ/ลิงก์ และดูแลคอมเมนต์ได้ทันที
+
+> 🆕 **แก้ไขข้อความทั้งหน้าเว็บได้แล้ว** — ในแผงแอดมินมีแท็บ **“เนื้อหาเว็บ”** สำหรับแก้ ชื่อแบรนด์ · คำคมหน้าแรก · คำบรรยาย · หัวข้อหมวด · และส่วนท้ายเว็บ (footer) เปลี่ยนแล้วมีผลกับทุกหน้าทันที ข้อมูลเก็บใน Firestore คอลเลกชัน `settings` (กฎใน `firestore.rules` ครอบคลุมให้แล้ว: ใครก็อ่านได้ เฉพาะแอดมินแก้ได้)
+
+## 7. (ไม่บังคับ) เปิดอัปโหลดรูปด้วย Firebase Storage
+ถ้าต้องการให้แอดมิน **อัปโหลดไฟล์รูป** (รูปปก/รูปแทรกในบทความ) แทนการวาง URL:
+1. เมนูซ้าย → **Build › Storage** → **Get started** → ทำตามขั้นตอนเริ่มต้น
+2. แท็บ **Rules** → วางเนื้อหาจากไฟล์ **`storage.rules`** ในโปรเจกต์นี้ → **Publish**
+   - กฎนี้ให้: ใครก็ดูรูปได้ · เฉพาะแอดมินอัปโหลดได้ · จำกัดไฟล์ภาพไม่เกิน 5 MB
+3. เสร็จแล้วปุ่ม “อัปโหลด” ในแผงแอดมินจะเก็บรูปขึ้น Storage และได้ลิงก์ถาวรอัตโนมัติ
+
+> หมายเหตุ: ถ้าไม่เปิด Storage ปุ่มอัปโหลดยังใช้ได้ในโหมดสาธิต (ฝังรูปลงในข้อมูลโดยตรง) แต่บนเว็บจริงแนะนำให้เปิด Storage หรือใช้วิธีวาง URL รูปจากที่อื่น เพื่อไม่ให้เอกสารมีขนาดใหญ่เกินไป
+
+---
+
+## เผยแพร่เว็บ (เลือกทางใดทางหนึ่ง)
+อัปโหลด **ทุกไฟล์ในโปรเจกต์** (รวมโฟลเดอร์ `assets/`) ขึ้นที่ใดก็ได้ที่โฮสต์ static site:
+
+- **Firebase Hosting** (เข้าชุดกับที่ตั้งไว้): ติดตั้ง Firebase CLI → `firebase init hosting` → `firebase deploy`
+- **Netlify Drop**: ลากโฟลเดอร์ทั้งหมดไปวางที่ https://app.netlify.com/drop
+- **GitHub Pages / Vercel / Cloudflare Pages**: อัปโหลด repo แล้วเชื่อมต่อ
+
+> ⚠️ อย่าลืม: หลังเผยแพร่ ให้ไป Firebase Console › Authentication › Settings › **Authorized domains** แล้วเพิ่มโดเมนเว็บจริงของคุณ (เช่น `your-site.netlify.app`) ไม่งั้นล็อกอินจะถูกบล็อก
+
+## หมายเหตุเรื่องความปลอดภัย
+- `firebase-config.js` เปิดเผยต่อสาธารณะได้ตามปกติ (ไม่ใช่ความลับ) — ความปลอดภัยจริงอยู่ที่ **Firestore Rules** ในข้อ 5
+- บทความตั้งต้น 6 ชิ้นฝังอยู่ในไฟล์ `data.js` เสมอ ส่วนบทความที่แอดมินเพิ่มจะอยู่ใน Firestore และถูกนำมารวมแสดงให้อัตโนมัติ
