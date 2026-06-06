@@ -365,8 +365,9 @@
         body: body
       };
       var btn = document.getElementById('artSubmit'); btn.disabled = true;
-      Promise.resolve(SP.addArticle(obj)).then(function(){
+      Promise.resolve(SP.addArticle(obj)).then(function(r){
         btn.disabled = false;
+        if (r && r.ok === false){ flash('flashArticle', r.msg || 'บันทึกไม่สำเร็จ'); return; }
         flash('flashArticle', (editing?'บันทึกการแก้ไข “':'เผยแพร่ “')+title+'” เรียบร้อยแล้ว');
         resetForm();
         renderArticles();
@@ -395,7 +396,7 @@
         b.onclick = function(){ loadForEdit(all.find(function(x){return x.slug===b.dataset.slug;})); };
       });
       el.querySelectorAll('[data-del]').forEach(function(b){
-        b.onclick = function(){ if(confirm('ลบบทความนี้? (ถ้าเป็นบทความตั้งต้นที่เคยแก้ไข จะกลับไปใช้ฉบับเดิม)')){ Promise.resolve(SP.deleteArticle(b.dataset.del)).then(renderArticles); } };
+        b.onclick = function(){ if(confirm('ลบบทความนี้? (ถ้าเป็นบทความตั้งต้นที่เคยแก้ไข จะกลับไปใช้ฉบับเดิม)')){ Promise.resolve(SP.deleteArticle(b.dataset.del)).then(function(r){ if(r&&r.ok===false){ flash('flashArticle', r.msg); return; } renderArticles(); }); } };
       });
     }
 
@@ -403,10 +404,14 @@
     var linkForm = document.getElementById('linkForm');
     linkForm.onsubmit = function(e){
       e.preventDefault();
-      SP.addLink({ title: linkForm.title.value.trim(), url: linkForm.url.value.trim(), desc: linkForm.desc.value.trim() });
-      linkForm.reset();
-      flash('flashLink','เพิ่มลิงก์เรียบร้อยแล้ว');
-      renderLinks();
+      var btn = linkForm.querySelector('button[type=submit]'); if(btn) btn.disabled = true;
+      Promise.resolve(SP.addLink({ title: linkForm.title.value.trim(), url: linkForm.url.value.trim(), desc: linkForm.desc.value.trim() })).then(function(r){
+        if(btn) btn.disabled = false;
+        if (r && r.ok === false){ flash('flashLink', r.msg || 'บันทึกไม่สำเร็จ'); return; }
+        linkForm.reset();
+        flash('flashLink','เพิ่มลิงก์เรียบร้อยแล้ว');
+        renderLinks();
+      });
     };
     async function renderLinks(){
       var links = await SP.listLinks();

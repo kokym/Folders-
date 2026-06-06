@@ -140,8 +140,8 @@
       }), []);
     };
     SP.getArticle = function (slug) { return SP.listArticles().then(function (l) { return l.find(function (a) { return a.slug === slug; }); }); };
-    SP.addArticle = function (obj) { return db.collection('articles').doc(obj.slug).set(obj); };
-    SP.deleteArticle = function (slug) { return db.collection('articles').doc(slug).delete(); };
+    SP.addArticle = function (obj) { return db.collection('articles').doc(obj.slug).set(obj).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
+    SP.deleteArticle = function (slug) { return db.collection('articles').doc(slug).delete().then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
 
     SP.listComments = function (slug) {
       return guard(db.collection('comments').where('slug', '==', slug).get().then(function (snap) {
@@ -161,7 +161,7 @@
         slug: slug, uid: _session.uid, name: _session.name, role: _session.role, text: text, likes: [], date: new Date().toISOString()
       }).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; });
     };
-    SP.deleteComment = function (id) { return db.collection('comments').doc(id).delete(); };
+    SP.deleteComment = function (id) { return db.collection('comments').doc(id).delete().then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
     SP.toggleLike = function (id, liked) {
       if (!_session) return Promise.resolve({ ok: false });
       var op = liked ? firebase.firestore.FieldValue.arrayRemove(_session.uid) : firebase.firestore.FieldValue.arrayUnion(_session.uid);
@@ -180,8 +180,8 @@
         var l = []; snap.forEach(function (d) { l.push(Object.assign({ id: d.id }, d.data())); }); return l;
       }), []);
     };
-    SP.addLink = function (obj) { return db.collection('links').add(Object.assign({ date: new Date().toISOString() }, obj)); };
-    SP.deleteLink = function (id) { return db.collection('links').doc(id).delete(); };
+    SP.addLink = function (obj) { return db.collection('links').add(Object.assign({ date: new Date().toISOString() }, obj)).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
+    SP.deleteLink = function (id) { return db.collection('links').doc(id).delete().then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
 
     SP.listNovels = function () {
       return guard(db.collection('novels').get().then(function (snap) {
@@ -196,7 +196,7 @@
     };
     SP.getNovel = function (slug) { return SP.listNovels().then(function (l) { return l.find(function (n) { return n.slug === slug; }); }); };
     SP.saveNovel = function (obj) { return db.collection('novels').doc(obj.slug).set(obj).then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
-    SP.deleteNovel = function (slug) { return db.collection('novels').doc(slug).delete(); };
+    SP.deleteNovel = function (slug) { return db.collection('novels').doc(slug).delete().then(function () { return { ok: true }; }).catch(function (e) { return { ok: false, msg: fbErr(e) }; }); };
 
     SP.getSite = function () {
       return guard(db.collection('settings').doc('site').get().then(function (doc) {
@@ -215,7 +215,8 @@
       if (c === 'auth/invalid-email') return 'รูปแบบอีเมลไม่ถูกต้อง';
       if (c === 'auth/weak-password') return 'รหัสผ่านสั้นเกินไป (อย่างน้อย 6 ตัว)';
       if (c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-credential') return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-      if (c === 'permission-denied') return 'ไม่มีสิทธิ์ดำเนินการนี้';
+      if (c === 'permission-denied' || c === 'PERMISSION_DENIED') return 'Firebase ปฏิเสธการบันทึก (permission-denied) — โปรดตรวจ 2 อย่าง: 1) Publish กฎจากไฟล์ firestore.rules ใน Console แล้วหรือยัง  2) บัญชีนี้ตั้ง role เป็น "admin" ใน Firestore › users แล้วหรือยัง';
+      if (c === 'unavailable' || c === 'failed-precondition') return 'เชื่อมต่อฐานข้อมูลไม่ได้ชั่วคราว ลองใหม่อีกครั้ง';
       return (e && e.message) || 'เกิดข้อผิดพลาด';
     }
     return;
