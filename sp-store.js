@@ -18,7 +18,23 @@
   SP.isAdmin  = function () { return !!(_session && _session.role === 'admin'); };
   SP.isMember = function () { return !!_session; };
   SP.onAuth   = function (cb) { _authCbs.push(cb); if (_authResolved) cb(_session); };
-  function setSession(s) { _session = s; _authResolved = true; _authCbs.forEach(function (cb) { try { cb(s); } catch (e) {} }); }
+  // Fingerprint of the meaningful session state. If two setSession calls produce
+  // the same fingerprint we must NOT re-fire onAuth callbacks: a callback that
+  // re-reads the user doc (refreshUser) would call setSession again with identical
+  // data and re-enter forever — an infinite loop that hammered Firestore reads and
+  // blew the daily free quota. Re-firing only on a REAL change kills that loop.
+  function _sessionSig(s) {
+    if (!s) return 'null';
+    return [s.uid, s.role, s.name, s.coins, JSON.stringify(s.unlocks || {})].join('|');
+  }
+  var _lastSig = '__init__';
+  function setSession(s) {
+    var sig = _sessionSig(s);
+    var unchanged = _authResolved && sig === _lastSig;
+    _session = s; _authResolved = true; _lastSig = sig;
+    if (unchanged) return;   // identical session → don't re-run callbacks (loop guard)
+    _authCbs.forEach(function (cb) { try { cb(s); } catch (e) {} });
+  }
 
   // ---- site content (editable page text: hero, headings, footer, brand) ----
   function siteDefaults() { return Object.assign({}, window.SP_SITE_DEFAULTS || {}); }

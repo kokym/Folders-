@@ -201,6 +201,11 @@
 <script src="sp-auth-ui.js"></script>
 <script src="sp-comments.js"></script>
 <script>
+// Version stamp — open DevTools › Console on the live site. If you DON'T see this
+// exact line, GitHub Pages is still serving the OLD looping code (hard-refresh /
+// wait for Pages to rebuild). The fix that stops the read-quota-burning loop is
+// only in builds that print "novel-fix-2".
+console.log('%cNovel.html build: novel-fix-2 (loop guard active)', 'color:#8a1c1c;font-weight:bold');
 (async function () {
   var cats = window.SP_CATEGORIES, ST = window.SP_NOVEL_STATUS;
   var main = document.getElementById('main');
