@@ -9,6 +9,7 @@
   var CFG = window.SP_FIREBASE_CONFIG || {};
   var fbReady = (typeof firebase !== 'undefined') && CFG.apiKey && CFG.apiKey.indexOf('PASTE') === -1;
   SP.mode = fbReady ? 'firebase' : 'local';
+  console.log('%csp-store.js build: store-fix-3 (read breaker) — mode: ' + SP.mode, 'color:#1c5c8a;font-weight:bold');
 
   // ---- shared auth state (cached, sync-readable) ----
   var _session = null;        // { uid, name, email, role }
@@ -188,13 +189,36 @@
     });
 
     // re-read the signed-in user's doc (coins/unlocks may have changed server-side)
-    SP.refreshUser = function () {
+    //
+    // CIRCUIT BREAKER: this used to be a raw .get() with no throttle, so any caller
+    // that looped (or many callers firing together) could hammer users/{uid} every
+    // few hundred ms — exactly the BatchGetDocuments-every-few-seconds storm that
+    // returned 429 resource-exhausted and burned the daily read quota. We now:
+    //   (a) de-dupe concurrent calls — one in-flight read is shared by all callers;
+    //   (b) throttle — if asked again within MIN_GAP ms of the last real read, we
+    //       return the cached session WITHOUT touching Firestore.
+    // Result: no code path can read the user doc more than ~once per MIN_GAP, so a
+    // runaway loop can no longer exhaust quota. force=true bypasses the throttle for
+    // the few places that genuinely need fresh data right now (e.g. opening Coins).
+    var _refreshInflight = null;
+    var _refreshLastAt = 0;
+    var MIN_GAP = 5000; // ms — minimum spacing between real user-doc reads
+    SP.refreshUser = function (force) {
       if (!_session) return Promise.resolve(null);
-      return db.collection('users').doc(_session.uid).get().then(function (doc) {
+      if (_refreshInflight) return _refreshInflight;            // (a) share in-flight read
+      var now = Date.now();
+      if (!force && (now - _refreshLastAt) < MIN_GAP) {         // (b) throttle
+        return Promise.resolve(_session);
+      }
+      _refreshLastAt = now;
+      _refreshInflight = db.collection('users').doc(_session.uid).get().then(function (doc) {
         var d = doc.exists ? doc.data() : {};
         setSession(Object.assign({}, _session, { coins: d.coins || 0, unlocks: d.unlocks || {}, role: d.role || _session.role, name: d.name || _session.name }));
         return _session;
-      }).catch(function () { return _session; });
+      }).catch(function () { return _session; }).then(function (r) {
+        _refreshInflight = null; return r;
+      });
+      return _refreshInflight;
     };
 
     SP.register = function (email, pass, name) {

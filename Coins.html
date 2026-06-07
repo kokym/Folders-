@@ -138,7 +138,7 @@
     return;
   }
 
-  await SP.refreshUser();
+  await SP.refreshUser(true);
   var packages = (pay.packages && pay.packages.length) ? pay.packages : [{amount:20,coins:20},{amount:50,coins:55},{amount:100,coins:120}];
   var selected = -1;
 
