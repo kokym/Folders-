@@ -429,16 +429,25 @@
       }
     });
   })();
-  // re-render the gate if auth state changes while on the page (login from modal)
-  SP.onAuth(function(){
+  // Re-render the gate ONLY when the signed-in identity actually changes
+  // (e.g. the user logs in from the modal). The previous version called
+  // SP.refreshUser() inside this callback, which read the user doc and called
+  // setSession() — which in turn fires every onAuth callback again, re-entering
+  // here and calling refreshUser() once more: an endless loop that re-rendered
+  // the paywall many times per second. That constant innerHTML churn replaced the
+  // unlock button between mousedown and mouseup, so the browser never dispatched a
+  // `click` on it and the button appeared dead (no action, no alert). Tracking the
+  // last uid and bailing out when it is unchanged keeps the live button stable.
+  var _gateUid = (SP.session() && SP.session().uid) || null;
+  SP.onAuth(function (s) {
     if (!locked) return;
-    SP.refreshUser && SP.refreshUser();
+    var uid = (s && s.uid) || null;
+    if (uid === _gateUid) return;        // same identity → leave the live button alone
+    _gateUid = uid;
+    unlocked = ch.id && SP.isUnlocked(slug, ch.id);
+    if (unlocked) { location.reload(); return; }
     var pwEl = document.getElementById('paywall');
-    if (pwEl){
-      unlocked = ch.id && SP.isUnlocked(slug, ch.id);
-      if (!free && !unlocked){ pwEl.innerHTML = paywallHTML(); wirePaywall(); }
-      else location.reload();
-    }
+    if (pwEl) { pwEl.innerHTML = paywallHTML(); wirePaywall(); }
   });
 
   // comments scoped to this chapter
